@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{FDCB4C71-AF99-4D8A-81E4-42FBE8A1BEA8}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>PeachCam</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ws2_32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="drivers\AnalogIn.h" />
+    <ClInclude Include="drivers\DigitalIn.h" />
+    <ClInclude Include="drivers\DigitalOut.h" />
+    <ClInclude Include="drivers\I2C.h" />
+    <ClInclude Include="drivers\InterruptIn.h" />
+    <ClInclude Include="drivers\PinNames.h" />
+    <ClInclude Include="drivers\SPI.h" />
+    <ClInclude Include="events\equeue\equeue.h" />
+    <ClInclude Include="events\equeue\equeue_platform.h" />
+    <ClInclude Include="events\Event.h" />
+    <ClInclude Include="events\EventQueue.h" />
+    <ClInclude Include="events\mbed_events.h" />
+    <ClInclude Include="events\mbed_shared_queues.h" />
+    <ClInclude Include="gr_libs\AUDIO_GRBoard.h" />
+    <ClInclude Include="gr_libs\AUDIO_RBSP.h" />
+    <ClInclude Include="gr_libs\camera_if.hpp" />
+    <ClInclude Include="gr_libs\DisplayBase.h" />
+    <ClInclude Include="gr_libs\EasyAttach_CameraAndLCD.h" />
+    <ClInclude Include="gr_libs\ESP32Interface.h" />
+    <ClInclude Include="gr_libs\ESP32Stack.h" />
+    <ClInclude Include="gr_libs\face_detector.hpp" />
+    <ClInclude Include="gr_libs\JPEG_Converter.h" />
+    <ClInclude Include="gr_libs\LcdCfg_4_3inch.h" />
+    <ClInclude Include="gr_libs\LEPTON_ErrorCodes.h" />
+    <ClInclude Include="gr_libs\LEPTON_OEM.h" />
+    <ClInclude Include="gr_libs\LEPTON_SDK.h" />
+    <ClInclude Include="gr_libs\LEPTON_SYS.h" />
+    <ClInclude Include="gr_libs\LEPTON_Types.h" />
+    <ClInclude Include="gr_libs\SdUsbConnect.h" />
+    <ClInclude Include="gr_libs\TLV320_RBSP.h" />
+    <ClInclude Include="gr_libs\TouchKey_4_3inch.h" />
+    <ClInclude Include="mbed-http\https_request.h" />
+    <ClInclude Include="mbed-http\http_parsed_url.h" />
+    <ClInclude Include="mbed-http\http_parser\http_parser.h" />
+    <ClInclude Include="mbed-http\http_request.h" />
+    <ClInclude Include="mbed-http\http_request_builder.h" />
+    <ClInclude Include="mbed-http\http_request_parser.h" />
+    <ClInclude Include="mbed-http\http_response.h" />
+    <ClInclude Include="mbed-http\tls_socket.h" />
+    <ClInclude Include="netsocket\CellularBase.h" />
+    <ClInclude Include="netsocket\DNS.h" />
+    <ClInclude Include="netsocket\EMAC.h" />
+    <ClInclude Include="netsocket\EMACInterface.h" />
+    <ClInclude Include="netsocket\EMACMemoryManager.h" />
+    <ClInclude Include="netsocket\EthernetInterface.h" />
+    <ClInclude Include="netsocket\EthInterface.h" />
+    <ClInclude Include="netsocket\InternetSocket.h" />
+    <ClInclude Include="netsocket\MeshInterface.h" />
+    <ClInclude Include="netsocket\NetworkInterface.h" />
+    <ClInclude Include="netsocket\NetworkStack.h" />
+    <ClInclude Include="netsocket\nsapi.h" />
+    <ClInclude Include="netsocket\nsapi_dns.h" />
+    <ClInclude Include="netsocket\nsapi_ppp.h" />
+    <ClInclude Include="netsocket\nsapi_types.h" />
+    <ClInclude Include="netsocket\OnboardNetworkStack.h" />
+    <ClInclude Include="netsocket\Socket.h" />
+    <ClInclude Include="netsocket\SocketAddress.h" />
+    <ClInclude Include="netsocket\TCPServer.h" />
+    <ClInclude Include="netsocket\TCPSocket.h" />
+    <ClInclude Include="netsocket\UDPSocket.h" />
+    <ClInclude Include="netsocket\WiFiAccessPoint.h" />
+    <ClInclude Include="netsocket\WiFiInterface.h" />
+    <ClInclude Include="platform\Callback.h" />
+    <ClInclude Include="platform\CriticalSectionLock.h" />
+    <ClInclude Include="platform\mbed_assert.h" />
+    <ClInclude Include="platform\mbed_debug.h" />
+    <ClInclude Include="platform\mbed_toolchain.h" />
+    <ClInclude Include="platform\NonCopyable.h" />
+    <ClInclude Include="rtos\cmsis.h" />
+    <ClInclude Include="rtos\cmsis_os.h" />
+    <ClInclude Include="rtos\EventFlags.h" />
+    <ClInclude Include="rtos\Kernel.h" />
+    <ClInclude Include="rtos\Mutex.h" />
+    <ClInclude Include="rtos\Semaphore.h" />
+    <ClInclude Include="rtos\ThisThread.h" />
+    <ClInclude Include="rtos\Thread.h" />
+    <ClInclude Include="src\bh1792.h" />
+    <ClInclude Include="src\GoogleDrive.h" />
+    <ClInclude Include="src\draw_font.h" />
+    <ClInclude Include="src\GlobalState.h" />
+    <ClInclude Include="src\jsonsl.h" />
+    <ClInclude Include="src\Lepton.h" />
+    <ClInclude Include="src\MediaTask.h" />
+    <ClInclude Include="src\NetTask.h" />
+    <ClInclude Include="src\Palettes.h" />
+    <ClInclude Include="src\SensorTask.h" />
+    <ClInclude Include="src\shnm12_font.h" />
+    <ClInclude Include="src\SocketInterface.h" />
+    <ClInclude Include="src\SocketStack.h" />
+    <ClInclude Include="src\TaskBase.h" />
+    <ClInclude Include="mbed.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="drivers\AnalogIn.cpp" />
+    <ClCompile Include="drivers\DigitalIn.cpp" />
+    <ClCompile Include="drivers\DigitalOut.cpp" />
+    <ClCompile Include="drivers\I2C.cpp" />
+    <ClCompile Include="drivers\InterruptIn.cpp" />
+    <ClCompile Include="drivers\SPI.cpp" />
+    <ClCompile Include="events\equeue\equeue.cpp" />
+    <ClCompile Include="events\equeue\equeue_mbed.cpp" />
+    <ClCompile Include="events\EventQueue.cpp" />
+    <ClCompile Include="events\mbed_shared_queues.cpp" />
+    <ClCompile Include="gr_libs\camera_if.cpp" />
+    <ClCompile Include="gr_libs\EasyAttach_CameraAndLCD.cpp" />
+    <ClCompile Include="gr_libs\ESP32Interface.cpp" />
+    <ClCompile Include="gr_libs\ESP32Stack.cpp" />
+    <ClCompile Include="gr_libs\face_detector.cpp" />
+    <ClCompile Include="gr_libs\JPEG_Converter.cpp" />
+    <ClCompile Include="gr_libs\LcdCfg_4_3inch.cpp" />
+    <ClCompile Include="gr_libs\TLV320_RBSP.cpp" />
+    <ClCompile Include="gr_libs\TouchKey_4_3inch.cpp" />
+    <ClCompile Include="mbed-http\http_parser\http_parser.cpp" />
+    <ClCompile Include="netsocket\InternetSocket.cpp" />
+    <ClCompile Include="netsocket\NetworkInterface.cpp" />
+    <ClCompile Include="netsocket\NetworkStack.cpp" />
+    <ClCompile Include="netsocket\nsapi_dns.cpp" />
+    <ClCompile Include="netsocket\SocketAddress.cpp" />
+    <ClCompile Include="netsocket\TCPServer.cpp" />
+    <ClCompile Include="netsocket\TCPSocket.cpp" />
+    <ClCompile Include="netsocket\UDPSocket.cpp" />
+    <ClCompile Include="PeachCam.cpp" />
+    <ClCompile Include="rtos\EventFlags.cpp" />
+    <ClCompile Include="rtos\Kernel.cpp" />
+    <ClCompile Include="rtos\Mutex.cpp" />
+    <ClCompile Include="rtos\Semaphore.cpp" />
+    <ClCompile Include="rtos\ThisThread.cpp" />
+    <ClCompile Include="rtos\Thread.cpp" />
+    <ClCompile Include="src\bh1792.cpp" />
+    <ClCompile Include="src\GoogleDrive.cpp" />
+    <ClCompile Include="src\draw_font.cpp" />
+    <ClCompile Include="src\GlobalState.cpp" />
+    <ClCompile Include="src\jsonsl.cpp" />
+    <ClCompile Include="src\Lepton.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MediaTask.cpp" />
+    <ClCompile Include="src\mock.cpp" />
+    <ClCompile Include="src\NetTask.cpp" />
+    <ClCompile Include="src\Palettes.cpp" />
+    <ClCompile Include="src\SensorTask.cpp" />
+    <ClCompile Include="src\shnm12_font.cpp" />
+    <ClCompile Include="src\SocketInterface.cpp" />
+    <ClCompile Include="src\SocketStack.cpp" />
+    <ClCompile Include="src\TaskBase.cpp" />
+    <ClCompile Include="mbed.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libcurl\libcurl.vcxproj">
+      <Project>{906f7deb-91bf-4a28-acdb-d719cde267f8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libexpat\libexpat.vcxproj">
+      <Project>{a783f856-4d65-4672-a60a-afaeae21a49b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libwolfssl\libwolfssl.vcxproj">
+      <Project>{42950f28-7c79-4ed4-a762-f03c0f71fc88}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\libzlib\libzlib.vcxproj">
+      <Project>{2808ab78-811d-4600-940d-49aa86e6cc3d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\3rdparty\libjpeg\libjpeg.vcxproj">
+      <Project>{21c68138-19d3-4b16-bb6c-ea7758ecaa0f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\3rdparty\libpng\libpng.vcxproj">
+      <Project>{fcef5d35-e00a-4397-9394-2a2d98f4fe1c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\core\core.vcxproj">
+      <Project>{5d333ad4-883c-4b04-9f5e-06988333e7c7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\imgcodecs\imgcodecs.vcxproj">
+      <Project>{8b979abd-f70b-499d-8d2d-cadb0c9f39d4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\imgproc\imgproc.vcxproj">
+      <Project>{562f7a3b-4b5c-4eec-9a8e-9f26e99b3e34}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\objdetect\objdetect.vcxproj">
+      <Project>{07b8a252-8bb3-49a4-8e0a-b722b2103d35}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\opencv_contrib\modules\face\face.vcxproj">
+      <Project>{6b95cbe8-87fb-4ebc-bba7-d690e42a0777}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\opencv-lib\videoio\videoio.vcxproj">
+      <Project>{f5a7384f-31b3-4b41-b2d6-da6b57c4dea2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TestBenchInit\TestBenchInit.vcxproj">
+      <Project>{513b50c4-d9fe-4148-b6fa-c53c36ecb689}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

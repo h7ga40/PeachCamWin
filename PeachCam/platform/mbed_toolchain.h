@@ -1,0 +1,10 @@
+#ifndef _MBED_TOOLCHAIN_H_
+#define _MBED_TOOLCHAIN_H_
+
+#define MBED_DEPRECATED_SINCE(a, b)
+#define MBED_PRETTY_FUNCTION __FUNCTION__
+#define MBED_UNUSED
+#define MBED_DEPRECATED(M)
+#define MBED_UNREACHABLE while(0);
+
+#endif // _MBED_TOOLCHAIN_H_
