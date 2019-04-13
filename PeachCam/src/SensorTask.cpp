@@ -52,7 +52,7 @@ GripButtonTask::GripButtonTask(SensorTask *owner) :
 	button(A0),
 	_state(State::Release),
 	_count(0),
-	_threshold(0.9f)
+	_threshold(0.8f)
 {
 }
 

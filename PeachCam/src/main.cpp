@@ -19,8 +19,6 @@ using namespace cv;
 #define TOUCH_NUM               (1u)
 
 /* Application variables */
-Mat frame_gray;     // Input frame (in grayscale)
-
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
@@ -50,6 +48,12 @@ enum parse_state_t {
 	psUpload,
 	psUploadServer,
 	psUploadStorage,
+	psLepton,
+	psLeptonRadiometry,
+	psLeptonFFCNorm,
+	psLeptonTelemetry,
+	psLeptonOffset,
+	psLeptonColor,
 	psError
 };
 
@@ -67,8 +71,10 @@ struct upload_config_t {
 struct config_data_t {
 	parse_state_t state;
 	int pos;
+	char temp[16];
 	wifi_config_t wifi;
 	upload_config_t upload;
+	lepton_config_t lepton;
 };
 
 static void XMLCALL
@@ -83,6 +89,9 @@ start(void *data, const XML_Char *el, const XML_Char **attr)
 		}
 		else if (strcmp(el, "upload") == 0) {
 			cd->state = psUpload;
+		}
+		else if (strcmp(el, "lepton") == 0) {
+			cd->state = psLepton;
 		}
 		break;
 	case psWifi:
@@ -112,6 +121,30 @@ start(void *data, const XML_Char *el, const XML_Char **attr)
 			cd->upload.storage[0] = '\0';
 			cd->pos = 0;
 			cd->state = psUploadStorage;
+		}
+		break;
+	case psLepton:
+		if (strcmp(el, "radiometry") == 0) {
+			cd->lepton.radiometry = 0;
+			cd->state = psLeptonRadiometry;
+		}
+		else if (strcmp(el, "ffcnorm") == 0) {
+			cd->lepton.ffcnorm = 0;
+			cd->state = psLeptonFFCNorm;
+		}
+		else if (strcmp(el, "telemetry") == 0) {
+			cd->lepton.telemetry = 0;
+			cd->state = psLeptonTelemetry;
+		}
+		else if (strcmp(el, "offset") == 0) {
+			cd->temp[0] = '\0';
+			cd->pos = 0;
+			cd->state = psLeptonOffset;
+		}
+		else if (strcmp(el, "color") == 0) {
+			cd->temp[0] = '\0';
+			cd->pos = 0;
+			cd->state = psLeptonColor;
 		}
 		break;
 	default:
@@ -161,6 +194,33 @@ end(void *data, const XML_Char *el)
 	case psUploadStorage:
 		if (strcmp(el, "storage") == 0) {
 			cd->state = psUpload;
+		}
+		break;
+	case psLeptonRadiometry:
+		if (strcmp(el, "radiometry") == 0) {
+			cd->state = psLepton;
+		}
+		break;
+	case psLeptonFFCNorm:
+		if (strcmp(el, "ffcnorm") == 0) {
+			cd->state = psLepton;
+		}
+		break;
+	case psLeptonTelemetry:
+		if (strcmp(el, "telemetry") == 0) {
+			cd->state = psLepton;
+		}
+		break;
+	case psLeptonOffset:
+		if (strcmp(el, "offset") == 0) {
+			cd->lepton.offset = atoi(cd->temp);
+			cd->state = psLepton;
+		}
+		break;
+	case psLeptonColor:
+		if (strcmp(el, "color") == 0) {
+			cd->lepton.color = atoi(cd->temp);
+			cd->state = psLepton;
 		}
 		break;
 	default:
@@ -238,6 +298,31 @@ text(void *data, const XML_Char *s, int len)
 			cd->upload.storage[cd->pos] = '\0';
 		}
 		break;
+	case psLeptonRadiometry:
+		if (*s != '\0')
+			cd->lepton.radiometry = 1;
+		break;
+	case psLeptonFFCNorm:
+		if (*s != '\0')
+			cd->lepton.ffcnorm = 1;
+		break;
+	case psLeptonTelemetry:
+		if (*s != '\0')
+			cd->lepton.telemetry = 1;
+		break;
+	case psLeptonOffset:
+	case psLeptonColor:
+		maxlen = sizeof(cd->temp) - 1;
+		l = cd->pos + len;
+		if (l > maxlen)
+			len = maxlen - cd->pos;
+
+		if (len > 0) {
+			memcpy(cd->temp + cd->pos, s, len);
+			cd->pos += len;
+			cd->temp[cd->pos] = '\0';
+		}
+		break;
 	default:
 		break;
 	}
@@ -286,9 +371,14 @@ bool ReadIniFile(std::string filename)
 	return true;
 }
 
-int main(void)
+extern "C" int usrcmd_lpt(int argc, char **argv)
 {
-	char textbuf[32];
+	return 0;
+}
+
+int main()
+{
+	char textbuf[80];
 	globalState.storage = &sdUsbConnect;
 	globalState.wifi = &wifi;
 	globalState.netTask = &netTask;
@@ -311,6 +401,7 @@ int main(void)
 	netTask.Init(config.wifi.ssid, config.wifi.password, config.wifi.host_name,
 		config.upload.server, config.upload.storage);
 	faceDetectTask.Init(FACE_DETECTOR_MODEL);
+	leptonTask.SetConfig(&config.lepton);
 
 	netTask.Start();
 	sensorTask.Start();
@@ -343,6 +434,30 @@ int main(void)
 
 			temp = std::string(ctime(&tm));
 			lcd_drawString(temp.c_str(), 330, 0, 0xFCCC, 0x0000);
+#if 0
+			uint16_t *data = leptonTask.GetTelemetryA();
+			snprintf(textbuf, sizeof(textbuf), "TmA:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+			lcd_drawString(textbuf, 72, 148, 0xFCCC, 0x0000);
+
+			data = leptonTask.GetTelemetryB();
+			snprintf(textbuf, sizeof(textbuf), "TmB:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+			lcd_drawString(textbuf, 72, 160, 0xFCCC, 0x0000);
+
+			data = leptonTask.GetTelemetryC();
+			snprintf(textbuf, sizeof(textbuf), "TmC:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+			lcd_drawString(textbuf, 72, 172, 0xFCCC, 0x0000);
+#endif
+			int fpatem = leptonTask.GetFpaTemperature() - 27315;
+			snprintf(textbuf, sizeof(textbuf), "FPA:%4d.%02uŽ", fpatem / 100, (fpatem > 0) ? (fpatem % 100) : (100 - fpatem % 100));
+			lcd_drawString(textbuf, 400, 172, 0xFCCC, 0x0000);
+
+			int minValue = (int)(2.6 * (leptonTask.GetMinValue() - 8192)) + config.lepton.offset - 27315;
+			snprintf(textbuf, sizeof(textbuf), "min:%4d.%02uŽ", minValue / 100, (minValue > 0) ? (minValue % 100) : (100 + minValue % 100));
+			lcd_drawString(textbuf, 400, 184, 0xFCCC, 0x0000);
+
+			int maxValue = (int)(2.6 * (leptonTask.GetMaxValue() - 8192)) + config.lepton.offset - 27315;
+			snprintf(textbuf, sizeof(textbuf), "max:%4d.%02uŽ", maxValue / 100, (maxValue > 0) ? (maxValue % 100) : (100 + maxValue % 100));
+			lcd_drawString(textbuf, 400, 196, 0xFCCC, 0x0000);
 		}
 		/* Get coordinates */
 		touch_num = touch.GetCoordinates(TOUCH_NUM, touch_pos);

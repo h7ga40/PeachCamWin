@@ -141,15 +141,6 @@
     <ClInclude Include="gr_libs\SdUsbConnect.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="gr_libs\LEPTON_SYS.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="gr_libs\LEPTON_SDK.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="gr_libs\LEPTON_OEM.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="netsocket\EMACInterface.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -178,12 +169,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="netsocket\nsapi_types.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="gr_libs\LEPTON_Types.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="gr_libs\LEPTON_ErrorCodes.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="gr_libs\camera_if.hpp">

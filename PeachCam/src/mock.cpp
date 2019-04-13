@@ -1,6 +1,8 @@
 #include "mbed.h"
 #include "DisplayBase.h"
 #include "JPEG_Converter.h"
+#include "LEPTON_Types.h"
+#include "LEPTON_ErrorCodes.h"
 #include "LEPTON_SYS.h"
 #include "opencv.hpp"
 #include "SocketInterface.h"
@@ -106,21 +108,6 @@ int32_t R_BSP_Ssif::read(void * const p_data, uint32_t data_size, const rbsp_dat
 int32_t R_BSP_Ssif::write(void * const p_data, uint32_t data_size, const rbsp_data_conf_t * const p_data_conf)
 {
 	return TestBench->i2s_write(&_i2s, (uint8_t *)p_data, data_size, (intptr_t)p_data_conf->p_notify_func, (intptr_t)p_data_conf->p_app_data);
-}
-
-LEP_RESULT LEP_GetSysFlirSerialNumber(LEP_CAMERA_PORT_DESC_T_TAG *, unsigned __int64 *)
-{
-	return LEP_OK;
-}
-
-LEP_RESULT LEP_GetSysTelemetryEnableState(LEP_CAMERA_PORT_DESC_T_TAG *, LEP_SYS_TELEMETRY_ENABLE_STATE_E_TAG *)
-{
-	return LEP_OK;
-}
-
-LEP_RESULT LEP_OpenPort(void *, LEP_CAMERA_PORT_E_TAG, unsigned short, LEP_CAMERA_PORT_DESC_T_TAG *)
-{
-	return LEP_OK;
 }
 
 SdUsbConnect::SdUsbConnect(const char *name)

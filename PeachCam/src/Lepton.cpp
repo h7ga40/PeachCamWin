@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "LEPTON_SDK.h"
 #include "LEPTON_SYS.h"
 #include "LEPTON_OEM.h"
+#include "LEPTON_RAD.h"
 #include "Palettes.h"
 #include "EasyAttach_CameraAndLCD.h"
 
@@ -36,6 +37,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RESULT_BUFFER_STRIDE          (((LCD_PIXEL_WIDTH * RESULT_BUFFER_BYTE_PER_PIXEL) + 31u) & ~31u)
 #define RESULT_BUFFER_HEIGHT          (LCD_PIXEL_HEIGHT)
 extern uint8_t user_frame_buffer_result[RESULT_BUFFER_STRIDE * RESULT_BUFFER_HEIGHT]__attribute((section("NC_BSS"), aligned(32)));
+
+const unsigned char BMPHeader[BITMAP_HEADER_SIZE] = {
+	0x42, 0x4D,					// "BM"
+	0xC6, 0x25, 0x00, 0x00,		// ファイルサイズ[byte]
+	0x00, 0x00,					// 予約領域１
+	0x00, 0x00,					// 予約領域２
+	0x46, 0x00, 0x00, 0x00,		// ファイル先頭から画像データまでのオフセット[byte]
+	0x38, 0x00, 0x00, 0x00,		// 情報ヘッダサイズ[byte]
+	0x50, 0x00, 0x00, 0x00,		// 画像の幅[ピクセル]
+	0x3C, 0x00, 0x00, 0x00,		// 画像の高さ[ピクセル]
+	0x01, 0x00,					// プレーン数
+	0x10, 0x00,					// 色ビット数[bit]
+	0x03, 0x00, 0x00, 0x00,		// 圧縮形式
+	0x80, 0x25, 0x00, 0x00,		// 画像データサイズ[byte]
+	0x13, 0x0B, 0x00, 0x00,		// 水平解像度[dot/m]
+	0x13, 0x0B, 0x00, 0x00,		// 垂直解像度[dot/m]
+	0x00, 0x00, 0x00, 0x00,		// 格納パレット数[使用色数]
+	0x00, 0x00, 0x00, 0x00,		// 重要色数
+	0x00, 0xF8, 0x00, 0x00,		// 赤成分のカラーマスク
+	0xE0, 0x07, 0x00, 0x00,		// 緑成分のカラーマスク
+	0x1F, 0x00, 0x00, 0x00,		// 青成分のカラーマスク
+	0x00, 0x00, 0x00, 0x00		// α成分のカラーマスク
+};
 
 LeptonTask::LeptonTask(TaskThread *taskThread) :
 	Task(osWaitForever),
@@ -48,6 +72,7 @@ LeptonTask::LeptonTask(TaskThread *taskThread) :
 	_minValue(65535), _maxValue(0),
 	_packets_per_frame(60)
 {
+	memcpy(_image, BMPHeader, BITMAP_HEADER_SIZE);
 }
 
 LeptonTask::~LeptonTask()
@@ -56,8 +81,6 @@ LeptonTask::~LeptonTask()
 
 void LeptonTask::OnStart()
 {
-	LEP_SYS_FLIR_SERIAL_NUMBER_T sysSerialNumberBuf;
-
 	_spi.format(8, 3/*?*/);
 	//_spi.frequency(20000000);
 	_spi.frequency(16000000);
@@ -76,6 +99,7 @@ void LeptonTask::OnStart()
 		return;
 	}
 
+	LEP_SYS_FLIR_SERIAL_NUMBER_T sysSerialNumberBuf;
 	printf("SYS FLiR Serial Number\n");
 	ret = LEP_GetSysFlirSerialNumber(&_port, &sysSerialNumberBuf);
 	if (ret != LEP_OK) {
@@ -84,19 +108,65 @@ void LeptonTask::OnStart()
 	else {
 		printf("  %llu\n", sysSerialNumberBuf);
 	}
-#if 0
-	printf("SYS Telemetry Location\n");
-	ret = LEP_SetSysTelemetryLocation(&_port, LEP_TELEMETRY_LOCATION_HEADER);
-	if (ret != LEP_OK) {
-		printf("  error %d\n", ret);
+
+	LEP_OEM_SW_VERSION_T oemSoftwareVersion;
+	ret = LEP_GetOemSoftwareVersion(&_port, &oemSoftwareVersion);
+	if (ret == LEP_OK) {
+		printf("FLiR OEM software version GPP:%u.%u.%03u DSP:%u.%u.%03u\n",
+				oemSoftwareVersion.gpp_major,
+				oemSoftwareVersion.gpp_minor,
+				oemSoftwareVersion.gpp_build,
+				oemSoftwareVersion.dsp_major,
+				oemSoftwareVersion.dsp_minor,
+				oemSoftwareVersion.dsp_build);
 	}
 
-	printf("SYS Telemetry Enable\n");
-	ret = LEP_SetSysTelemetryEnableState(&_port, LEP_TELEMETRY_ENABLED);
+	LEP_RAD_RADIOMETRY_FILTER_T radRadiometryFilter;
+	ret = LEP_SetRadRadometryFilter(&_port, _config->radiometry ? LEP_RAD_ENABLE : LEP_RAD_DISABLE);
+	if (ret != LEP_OK) {
+		printf("Radiometry filter set error %d\n", ret);
+	}
+	ret = LEP_GetRadRadometryFilter(&_port, &radRadiometryFilter);
+	if (ret == LEP_OK) {
+		printf("Radiometry filter %s\n", radRadiometryFilter == LEP_RAD_ENABLE ? "enabled" : "disabled");
+	}
+	if (_config->radiometry) {
+		LEP_RAD_ENABLE_E tLinear;
+		ret = LEP_SetRadTLinearEnableState(&_port, LEP_RAD_ENABLE);
+		if (ret != LEP_OK) {
+			printf("TLinear enable error %d\n", ret);
+		}
+		ret = LEP_GetRadTLinearEnableState(&_port, &tLinear);
+		if (ret == LEP_OK) {
+			printf("TLinear enable %s\n", tLinear == LEP_RAD_ENABLE ? "enabled" : "disabled");
+		}
+	}
+	if (_config->ffcnorm) {
+		ret = LEP_RunSysFFCNormalization(&_port);
+		if (ret != LEP_OK) {
+			printf("Flat-Field Correction normalization error %d\n", ret);
+		}
+	}
+	if (_config->telemetry) {
+		printf("SYS Telemetry Location");
+		ret = LEP_SetSysTelemetryLocation(&_port, LEP_TELEMETRY_LOCATION_FOOTER);
 	if (ret != LEP_OK) {
 		printf("  error %d\n", ret);
 	}
-#endif
+		else {
+			printf(" Footer\n");
+		}
+	}
+
+	printf("SYS Telemetry");
+	ret = LEP_SetSysTelemetryEnableState(&_port, _config->telemetry ? LEP_TELEMETRY_ENABLED : LEP_TELEMETRY_DISABLED);
+	if (ret != LEP_OK) {
+		printf("  error %d\n", ret);
+	}
+	else {
+		printf(" Enable\n");
+	}
+
 	LEP_SYS_TELEMETRY_ENABLE_STATE_E telemetory = LEP_TELEMETRY_DISABLED;
 	LEP_GetSysTelemetryEnableState(&_port, &telemetory);
 	if (telemetory != 0) {
@@ -127,7 +197,7 @@ void LeptonTask::Process()
 	uint8_t *result = _frame_packet;
 	uint16_t *frameBuffer;
 	uint16_t value, minValue, maxValue;
-	//float diff, scale;
+	float diff, scale;
 	int packet_id;
 	uint16_t *values;
 
@@ -168,15 +238,15 @@ void LeptonTask::Process()
 			}
 
 			if ((packet_id == -1) && ((id & 0x0FFF) != 0x7FF)) {
-				int r = 2 * (id & 0x003F);
-				if (r >= PACKETS_PER_FRAME)
+				int r = 2 * (id & 0x00FF);
+				if (r >= _packets_per_frame)
 					continue;
 				row = r;
 			}
 			packet_id = id;
 
 			if (row < PACKETS_PER_FRAME) {
-				uint16_t *pixel = &_image[PIXEL_PER_LINE * row];
+				uint16_t *pixel = &_image[BITMAP_HEADER_SIZE/2 + PIXEL_PER_LINE * (PACKETS_PER_FRAME - 1 - row)];
 				frameBuffer = (uint16_t *)result;
 				//skip the first 2 uint16_t's of every packet, they're 4 header bytes
 				for (int i = 2; i < PACKET_SIZE_UINT16; i++) {
@@ -194,6 +264,20 @@ void LeptonTask::Process()
 					*pixel++ = value;
 				}
 			}
+			else switch (row - PACKETS_PER_FRAME) {
+			case 0:
+				frameBuffer = (uint16_t *)result;
+				memcpy(&_telemetryA, frameBuffer, sizeof(_telemetryA));
+				break;
+			case 1:
+				frameBuffer = (uint16_t *)result;
+				memcpy(&_telemetryB, frameBuffer, sizeof(_telemetryB));
+				break;
+			case 2:
+				frameBuffer = (uint16_t *)result;
+				memcpy(&_telemetryC, frameBuffer, sizeof(_telemetryC));
+				break;
+			}
 
 			row++;
 		}
@@ -208,49 +292,93 @@ void LeptonTask::Process()
 		_minValue = minValue;
 
 		resets++;
+		_state = State::UpdateParam;
+		_timer = 0;
+		break;
+	case State::UpdateParam:
+		LEP_GetSysFpaTemperatureKelvin(&_port, &_fpaTemperature);
 		_state = State::Viewing;
 		_timer = 0;
 		break;
 	case State::Viewing:
 		//lets emit the signal for update
-		//minValue = _minValue;
-		//diff = _maxValue - minValue;
-		//scale = 255.9 / diff;
-		values = _image;
+		maxValue = _maxValue;
+		minValue = _minValue;
+		diff = maxValue - minValue;
+		if (diff < 256) {
+			diff = 256;
+			minValue = (maxValue + minValue) / 2 - 128;
+		}
+		scale = 255.9 / diff;
+
+		values = &_image[BITMAP_HEADER_SIZE/2];
 		for (int row = 0; row < PACKETS_PER_FRAME; row++) {
-			uint16_t *pixel = &((uint16_t *)&user_frame_buffer_result)[(LCD_PIXEL_WIDTH - PIXEL_PER_LINE) + (LCD_PIXEL_HEIGHT - PACKETS_PER_FRAME + row) * LCD_PIXEL_WIDTH];
+			uint16_t *pixel = &((uint16_t *)&user_frame_buffer_result)[(LCD_PIXEL_WIDTH - 1 - PIXEL_PER_LINE) + (LCD_PIXEL_HEIGHT - 1 - row) * LCD_PIXEL_WIDTH];
 			for (int column = 0; column < PIXEL_PER_LINE; column++) {
-				//uint8_t index = (*values - minValue) * scale;
-				//uint8_t index = *values;
-#if 0
-				uint8_t index = (uint8_t)(*values >> 1);
-				const uint8_t *colormap = &colormap_rainbow[3 * index];
-#else
+				uint8_t index;
 				int colormap[3];
-				float s = (float)(*values / (511 * 3)) / ((float)(1 << 14) / (float)(511 * 3));
-				int h = *values % (511 * 3);
+
+				switch (_config->color) {
+				case 0:
+					index = (*values - minValue) * scale;
+					colormap[0] = colormap_rainbow[3 * index];
+					colormap[1] = colormap_rainbow[3 * index + 1];
+					colormap[2] = colormap_rainbow[3 * index + 2];
+					break;
+				case 1:
+					index = (*values - minValue) * scale;
+					colormap[0] = colormap_grayscale[3 * index];
+					colormap[1] = colormap_grayscale[3 * index + 1];
+					colormap[2] = colormap_grayscale[3 * index + 2];
+					break;
+				case 2:
+					index = (*values - minValue) * scale;
+					colormap[0] = colormap_ironblack[3 * index];
+					colormap[1] = colormap_ironblack[3 * index + 1];
+					colormap[2] = colormap_ironblack[3 * index + 2];
+					break;
+				default: {
+					float s = (float)(*values / (255 * 6)) / ((float)(1 << 14) / (float)(255 * 6));
+					int h = *values % (255 * 6);
 				int b = (int)(256 * (1.0 - s));
-				switch (h / 511) {
+					switch (h / 255) {
 				case 0:
 					colormap[0] = b;
 					colormap[1] = (int)(s * h) + b;
-					colormap[2] = (int)(s * (511 - h)) + b;
+						colormap[2] = (int)(s * 255) + b;
 					break;
 				case 1:
-					colormap[0] = (int)(s * (h - 511)) + b;
-					colormap[1] = (int)(s * ((2 * 511) - h)) + b;
+						colormap[0] = b;
+						colormap[1] = (int)(s * 255) + b;
+						colormap[2] = (int)(s * ((2 * 255) - h)) + b;
+						break;
+					case 2:
+						colormap[0] = (int)(s * (h - (2 * 255))) + b;
+						colormap[1] = (int)(s * 255) + b;
+						colormap[2] = b;
+						break;
+					case 3:
+						colormap[0] = (int)(s * 255) + b;
+						colormap[1] = (int)(s * ((4 * 255) - h)) + b;
 					colormap[2] = b;
 					break;
+					case 4:
+						colormap[0] = (int)(s * 255) + b;
+						colormap[1] = b;
+						colormap[2] = (int)(s * (h - (4 * 255))) + b;
+						break;
 				default:
-					colormap[0] = (int)(s * ((3 * 511) - h)) + b;
+						colormap[0] = (int)(s * ((6 * 255) - h)) + b;
 					colormap[1] = b;
-					colormap[2] = (int)(s * (h - (2 * 511))) + b;
+						colormap[2] = (int)(s * 255) + b;
 					break;
 				}
 				if (colormap[0] > 255) colormap[0] = 255;
 				if (colormap[1] > 255) colormap[1] = 255;
 				if (colormap[2] > 255) colormap[2] = 255;
-#endif
+					break;
+				}
+				}
 				// ARGB4444
 				*pixel++ = 0xF000 | ((colormap[0] >> 4) << 8) | ((colormap[1] >> 4) << 4) | ((colormap[2] >> 4) << 0);
 				values++;

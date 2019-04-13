@@ -90,7 +90,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -129,7 +129,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -187,11 +187,6 @@
     <ClInclude Include="gr_libs\face_detector.hpp" />
     <ClInclude Include="gr_libs\JPEG_Converter.h" />
     <ClInclude Include="gr_libs\LcdCfg_4_3inch.h" />
-    <ClInclude Include="gr_libs\LEPTON_ErrorCodes.h" />
-    <ClInclude Include="gr_libs\LEPTON_OEM.h" />
-    <ClInclude Include="gr_libs\LEPTON_SDK.h" />
-    <ClInclude Include="gr_libs\LEPTON_SYS.h" />
-    <ClInclude Include="gr_libs\LEPTON_Types.h" />
     <ClInclude Include="gr_libs\SdUsbConnect.h" />
     <ClInclude Include="gr_libs\TLV320_RBSP.h" />
     <ClInclude Include="gr_libs\TouchKey_4_3inch.h" />
@@ -323,6 +318,9 @@
     </ProjectReference>
     <ProjectReference Include="..\libexpat\libexpat.vcxproj">
       <Project>{a783f856-4d65-4672-a60a-afaeae21a49b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\liblepton\liblepton.vcxproj">
+      <Project>{aee4c17f-5e62-4b9e-a402-a10606a4efa2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\libwolfssl\libwolfssl.vcxproj">
       <Project>{42950f28-7c79-4ed4-a762-f03c0f71fc88}</Project>
