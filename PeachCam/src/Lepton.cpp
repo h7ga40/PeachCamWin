@@ -1,28 +1,3 @@
-/*
-Copyright (c) 2014, Pure Engineering LLC
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
 #include <mbed.h>
 #include <string>
 #include "Lepton.h"
@@ -40,25 +15,25 @@ extern uint8_t user_frame_buffer_result[RESULT_BUFFER_STRIDE * RESULT_BUFFER_HEI
 
 const unsigned char BMPHeader[BITMAP_HEADER_SIZE] = {
 	0x42, 0x4D,					// "BM"
-	0xC6, 0x25, 0x00, 0x00,		// ƒtƒ@ƒCƒ‹ƒTƒCƒY[byte]
-	0x00, 0x00,					// —\–ñ—Ìˆæ‚P
-	0x00, 0x00,					// —\–ñ—Ìˆæ‚Q
-	0x46, 0x00, 0x00, 0x00,		// ƒtƒ@ƒCƒ‹æ“ª‚©‚ç‰æ‘œƒf[ƒ^‚Ü‚Å‚ÌƒIƒtƒZƒbƒg[byte]
-	0x38, 0x00, 0x00, 0x00,		// î•ñƒwƒbƒ_ƒTƒCƒY[byte]
-	0x50, 0x00, 0x00, 0x00,		// ‰æ‘œ‚Ì•[ƒsƒNƒZƒ‹]
-	0x3C, 0x00, 0x00, 0x00,		// ‰æ‘œ‚Ì‚‚³[ƒsƒNƒZƒ‹]
-	0x01, 0x00,					// ƒvƒŒ[ƒ“”
-	0x10, 0x00,					// Fƒrƒbƒg”[bit]
-	0x03, 0x00, 0x00, 0x00,		// ˆ³kŒ`®
-	0x80, 0x25, 0x00, 0x00,		// ‰æ‘œƒf[ƒ^ƒTƒCƒY[byte]
-	0x13, 0x0B, 0x00, 0x00,		// …•½‰ğ‘œ“x[dot/m]
-	0x13, 0x0B, 0x00, 0x00,		// ‚’¼‰ğ‘œ“x[dot/m]
-	0x00, 0x00, 0x00, 0x00,		// Ši”[ƒpƒŒƒbƒg”[g—pF”]
-	0x00, 0x00, 0x00, 0x00,		// d—vF”
-	0x00, 0xF8, 0x00, 0x00,		// Ô¬•ª‚ÌƒJƒ‰[ƒ}ƒXƒN
-	0xE0, 0x07, 0x00, 0x00,		// —Î¬•ª‚ÌƒJƒ‰[ƒ}ƒXƒN
-	0x1F, 0x00, 0x00, 0x00,		// Â¬•ª‚ÌƒJƒ‰[ƒ}ƒXƒN
-	0x00, 0x00, 0x00, 0x00		// ƒ¿¬•ª‚ÌƒJƒ‰[ƒ}ƒXƒN
+	0xC6, 0x25, 0x00, 0x00,		// ãƒ•ã‚¡ã‚¤ãƒ«ã‚µã‚¤ã‚º[byte]
+	0x00, 0x00,					// äºˆç´„é ˜åŸŸï¼‘
+	0x00, 0x00,					// äºˆç´„é ˜åŸŸï¼’
+	0x46, 0x00, 0x00, 0x00,		// ãƒ•ã‚¡ã‚¤ãƒ«å…ˆé ­ã‹ã‚‰ç”»åƒãƒ‡ãƒ¼ã‚¿ã¾ã§ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ[byte]
+	0x38, 0x00, 0x00, 0x00,		// æƒ…å ±ãƒ˜ãƒƒãƒ€ã‚µã‚¤ã‚º[byte]
+	0x50, 0x00, 0x00, 0x00,		// ç”»åƒã®å¹…[ãƒ”ã‚¯ã‚»ãƒ«]
+	0x3C, 0x00, 0x00, 0x00,		// ç”»åƒã®é«˜ã•[ãƒ”ã‚¯ã‚»ãƒ«]
+	0x01, 0x00,					// ãƒ—ãƒ¬ãƒ¼ãƒ³æ•°
+	0x10, 0x00,					// è‰²ãƒ“ãƒƒãƒˆæ•°[bit]
+	0x03, 0x00, 0x00, 0x00,		// åœ§ç¸®å½¢å¼
+	0x80, 0x25, 0x00, 0x00,		// ç”»åƒãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º[byte]
+	0x13, 0x0B, 0x00, 0x00,		// æ°´å¹³è§£åƒåº¦[dot/m]
+	0x13, 0x0B, 0x00, 0x00,		// å‚ç›´è§£åƒåº¦[dot/m]
+	0x00, 0x00, 0x00, 0x00,		// æ ¼ç´ãƒ‘ãƒ¬ãƒƒãƒˆæ•°[ä½¿ç”¨è‰²æ•°]
+	0x00, 0x00, 0x00, 0x00,		// é‡è¦è‰²æ•°
+	0x00, 0xF8, 0x00, 0x00,		// èµ¤æˆåˆ†ã®ã‚«ãƒ©ãƒ¼ãƒã‚¹ã‚¯
+	0xE0, 0x07, 0x00, 0x00,		// ç·‘æˆåˆ†ã®ã‚«ãƒ©ãƒ¼ãƒã‚¹ã‚¯
+	0x1F, 0x00, 0x00, 0x00,		// é’æˆåˆ†ã®ã‚«ãƒ©ãƒ¼ãƒã‚¹ã‚¯
+	0x00, 0x00, 0x00, 0x00		// Î±æˆåˆ†ã®ã‚«ãƒ©ãƒ¼ãƒã‚¹ã‚¯
 };
 
 LeptonTask::LeptonTask(TaskThread *taskThread) :
@@ -70,13 +45,105 @@ LeptonTask::LeptonTask(TaskThread *taskThread) :
 	_ss(P4_5),
 	resets(0),
 	_minValue(65535), _maxValue(0),
-	_packets_per_frame(60)
+	_packets_per_frame(60),
+	_frame_packet(),
+	_telemetryA(),
+	_telemetryB(),
+	_telemetryC(),
+	_fpaTemperature(0),
+	_auxTemperature(0),
+	_radiometryReq(0),
+	_runFFCNormReq(0),
+	_telemetryReq(0),
+	_spotmeterReq(0),
+	_spotmeterRoi()
 {
 	memcpy(_image, BMPHeader, BITMAP_HEADER_SIZE);
 }
 
 LeptonTask::~LeptonTask()
 {
+}
+
+const char *GetLeptonErrorString(LEP_RESULT result)
+{
+	switch (result) {
+	case LEP_ERROR:
+		return "Camera general error";
+	case LEP_NOT_READY:
+		return "Camera not ready error";
+	case LEP_RANGE_ERROR:
+		return "Camera range error";
+	case LEP_CHECKSUM_ERROR:
+		return "Camera checksum error";
+	case LEP_BAD_ARG_POINTER_ERROR:
+		return "Camera Bad argument  error";
+	case LEP_DATA_SIZE_ERROR:
+		return "Camera byte count error";
+	case LEP_UNDEFINED_FUNCTION_ERROR:
+		return "Camera undefined function error";
+	case LEP_FUNCTION_NOT_SUPPORTED:
+		return "Camera function not yet supported error";
+	case LEP_DATA_OUT_OF_RANGE_ERROR:
+		return "Camera input DATA is out of valid range error";
+	case LEP_COMMAND_NOT_ALLOWED:
+		return "Camera unable to execute command due to current camera state";
+	/* OTP access errors */
+	case LEP_OTP_WRITE_ERROR:
+		return "Camera OTP write error";
+	case LEP_OTP_READ_ERROR:
+		return "double bit error detected (uncorrectible)";
+	case LEP_OTP_NOT_PROGRAMMED_ERROR:
+		return "Flag read as non-zero";
+	/* I2C Errors */
+	case LEP_ERROR_I2C_BUS_NOT_READY:
+		return "I2C Bus Error - Bus Not Avaialble";
+	case LEP_ERROR_I2C_BUFFER_OVERFLOW:
+		return "I2C Bus Error - Buffer Overflow";
+	case LEP_ERROR_I2C_ARBITRATION_LOST:
+		return "I2C Bus Error - Bus Arbitration Lost";
+	case LEP_ERROR_I2C_BUS_ERROR:
+		return "I2C Bus Error - General Bus Error";
+	case LEP_ERROR_I2C_NACK_RECEIVED:
+		return "I2C Bus Error - NACK Received";
+	case LEP_ERROR_I2C_FAIL:
+		return "I2C Bus Error - General Failure";
+	/* Processing Errors */
+	case LEP_DIV_ZERO_ERROR:
+		return "Attempted div by zero";
+	/* Comm Errors */
+	case LEP_COMM_PORT_NOT_OPEN:
+		return "Comm port not open";
+	case LEP_COMM_INVALID_PORT_ERROR:
+		return "Comm port no such port error";
+	case LEP_COMM_RANGE_ERROR:
+		return "Comm port range error";
+	case LEP_ERROR_CREATING_COMM:
+		return "Error creating comm";
+	case LEP_ERROR_STARTING_COMM:
+		return "Error starting comm";
+	case LEP_ERROR_CLOSING_COMM:
+		return "Error closing comm";
+	case LEP_COMM_CHECKSUM_ERROR:
+		return "Comm checksum error";
+	case LEP_COMM_NO_DEV:
+		return "No comm device";
+	case LEP_TIMEOUT_ERROR:
+		return "Comm timeout error";
+	case LEP_COMM_ERROR_WRITING_COMM:
+		return "Error writing comm";
+	case LEP_COMM_ERROR_READING_COMM:
+		return "Error reading comm";
+	case LEP_COMM_COUNT_ERROR:
+		return "Comm byte count error";
+	/* Other Errors */
+	case LEP_OPERATION_CANCELED:
+		return "Camera operation canceled";
+	case LEP_UNDEFINED_ERROR_CODE:
+		return "Undefined error";
+	default:
+		return "Unknown error";
+	}
 }
 
 void LeptonTask::OnStart()
@@ -95,76 +162,165 @@ void LeptonTask::OnStart()
 
 	LEP_RESULT ret = LEP_OpenPort(&_wire, LEP_CCI_TWI, 400, &_port);
 	if (ret != LEP_OK) {
-		printf("  error %d\n", ret);
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
 		return;
 	}
 
-	LEP_SYS_FLIR_SERIAL_NUMBER_T sysSerialNumberBuf;
-	printf("SYS FLiR Serial Number\n");
-	ret = LEP_GetSysFlirSerialNumber(&_port, &sysSerialNumberBuf);
-	if (ret != LEP_OK) {
-		printf("  error %d\n", ret);
+	LEP_SDK_VERSION_T version;
+	printf("SDK version");
+	ret = LEP_GetSDKVersion(&_port, &version);
+	if (ret == LEP_OK) {
+		printf(" %u.%u.%u\n", version.major, version.minor, version.build);
 	}
 	else {
-		printf("  %llu\n", sysSerialNumberBuf);
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+
+	LEP_SYS_CUST_SERIAL_NUMBER_T cutSerialNumber;
+	printf("SYS Customer Serial Number");
+	ret = LEP_GetSysCustSerialNumber(&_port, &cutSerialNumber);
+	if (ret == LEP_OK) {
+		for (int i = 0; i < LEP_SYS_MAX_SERIAL_NUMBER_CHAR_SIZE; i++)
+			printf(" %02x", *(uint8_t *)&cutSerialNumber.value[i]);
+		printf("\n");
+	}
+	else {
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+
+	LEP_SYS_FLIR_SERIAL_NUMBER_T flirSerialNumber;
+	printf("SYS FLiR Serial Number");
+	ret = LEP_GetSysFlirSerialNumber(&_port, &flirSerialNumber);
+	if (ret == LEP_OK) {
+		printf(" %llu\n", flirSerialNumber);
+	}
+	else {
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+
+	LEP_SYS_UPTIME_NUMBER_T uptime;
+	ret = LEP_GetSysCameraUpTime(&_port, &uptime);
+	printf("SYS camera uptime");
+	if (ret == LEP_OK) {
+		printf(" %lu\n", uptime);
+	}
+	else {
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
 	}
 
 	LEP_OEM_SW_VERSION_T oemSoftwareVersion;
 	ret = LEP_GetOemSoftwareVersion(&_port, &oemSoftwareVersion);
 	if (ret == LEP_OK) {
 		printf("FLiR OEM software version GPP:%u.%u.%03u DSP:%u.%u.%03u\n",
-				oemSoftwareVersion.gpp_major,
-				oemSoftwareVersion.gpp_minor,
-				oemSoftwareVersion.gpp_build,
-				oemSoftwareVersion.dsp_major,
-				oemSoftwareVersion.dsp_minor,
-				oemSoftwareVersion.dsp_build);
+			oemSoftwareVersion.gpp_major,
+			oemSoftwareVersion.gpp_minor,
+			oemSoftwareVersion.gpp_build,
+			oemSoftwareVersion.dsp_major,
+			oemSoftwareVersion.dsp_minor,
+			oemSoftwareVersion.dsp_build);
 	}
 
+	LEP_OEM_PART_NUMBER_T partNumber;
+	ret = LEP_GetOemFlirPartNumber(&_port, &partNumber);
+	if (ret == LEP_OK) {
+		printf("FLiR OEM part number %s", partNumber.value);
+		if (strcmp(partNumber.value, "500-0643-00") == 0)
+			printf("50 deg (l2)\n");
+		else if (strcmp(partNumber.value, "500-0659-01") == 0)
+			printf("shuttered 50 deg (l2)\n");
+		else if (strcmp(partNumber.value, "500-0690-00") == 0)
+			printf("25 deg (l2)\n");
+		else if (strcmp(partNumber.value, "500-0763-01") == 0)
+			printf("shuttered 50 deg + radiometric (l2.5)\n");
+		else if (strcmp(partNumber.value, "500-0726-01") == 0)
+			printf("shuttered 50 deg (l3)\n");
+		else
+			printf("unknown\n\n");
+	}
+
+	ret = LEP_GetRadSpotmeterRoi(&_port, &_spotmeterRoi);
+	if (ret == LEP_OK) {
+		printf("Spotmeter ROI (%d, %d) - (%d, %d)\n", _spotmeterRoi.startCol,
+			_spotmeterRoi.startRow, _spotmeterRoi.endCol, _spotmeterRoi.endRow);
+	}
+	else {
+		printf("Get spotmeter ROI %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+
+	LowPower();
+
+	EnableRadiometry(_config->radiometry);
+
+	if (_config->ffcnorm) {
+		RunFFCNormalization();
+	}
+
+	EnableTelemetry(_config->telemetry);
+
+	PowerOn();
+}
+
+void LeptonTask::EnableRadiometry(bool enable)
+{
 	LEP_RAD_RADIOMETRY_FILTER_T radRadiometryFilter;
-	ret = LEP_SetRadRadometryFilter(&_port, _config->radiometry ? LEP_RAD_ENABLE : LEP_RAD_DISABLE);
+	LEP_RESULT ret = LEP_SetRadRadometryFilter(&_port, enable ? LEP_RAD_ENABLE : LEP_RAD_DISABLE);
 	if (ret != LEP_OK) {
-		printf("Radiometry filter set error %d\n", ret);
+		printf("Radiometry filter set %s %d\n", GetLeptonErrorString(ret), ret);
 	}
 	ret = LEP_GetRadRadometryFilter(&_port, &radRadiometryFilter);
 	if (ret == LEP_OK) {
 		printf("Radiometry filter %s\n", radRadiometryFilter == LEP_RAD_ENABLE ? "enabled" : "disabled");
 	}
-	if (_config->radiometry) {
+	if (enable) {
 		LEP_RAD_ENABLE_E tLinear;
 		ret = LEP_SetRadTLinearEnableState(&_port, LEP_RAD_ENABLE);
 		if (ret != LEP_OK) {
-			printf("TLinear enable error %d\n", ret);
+			printf("TLinear enable %s %d\n", GetLeptonErrorString(ret), ret);
 		}
 		ret = LEP_GetRadTLinearEnableState(&_port, &tLinear);
 		if (ret == LEP_OK) {
 			printf("TLinear enable %s\n", tLinear == LEP_RAD_ENABLE ? "enabled" : "disabled");
 		}
 	}
-	if (_config->ffcnorm) {
-		ret = LEP_RunSysFFCNormalization(&_port);
-		if (ret != LEP_OK) {
-			printf("Flat-Field Correction normalization error %d\n", ret);
-		}
+}
+
+void LeptonTask::RunFFCNormalization()
+{
+	printf("Flat-Field Correction normalization");
+	LEP_RESULT ret = LEP_RunSysFFCNormalization(&_port);
+	if (ret != LEP_OK) {
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
 	}
-	if (_config->telemetry) {
+	else {
+		printf("\n");
+	}
+}
+
+void LeptonTask::EnableTelemetry(bool enable)
+{
+	LEP_RESULT ret;
+
+	if (enable) {
 		printf("SYS Telemetry Location");
 		ret = LEP_SetSysTelemetryLocation(&_port, LEP_TELEMETRY_LOCATION_FOOTER);
-	if (ret != LEP_OK) {
-		printf("  error %d\n", ret);
-	}
+		if (ret != LEP_OK) {
+			printf(" %s %d\n", GetLeptonErrorString(ret), ret);
+		}
 		else {
 			printf(" Footer\n");
 		}
 	}
 
 	printf("SYS Telemetry");
-	ret = LEP_SetSysTelemetryEnableState(&_port, _config->telemetry ? LEP_TELEMETRY_ENABLED : LEP_TELEMETRY_DISABLED);
+	ret = LEP_SetSysTelemetryEnableState(&_port, enable ? LEP_TELEMETRY_ENABLED : LEP_TELEMETRY_DISABLED);
 	if (ret != LEP_OK) {
-		printf("  error %d\n", ret);
+		printf(" %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+	else if (enable) {
+		printf(" Enable\n");
 	}
 	else {
-		printf(" Enable\n");
+		printf(" Disable\n");
 	}
 
 	LEP_SYS_TELEMETRY_ENABLE_STATE_E telemetory = LEP_TELEMETRY_DISABLED;
@@ -177,6 +333,63 @@ void LeptonTask::OnStart()
 	}
 
 	printf("Packet Per Frame %d\n", _packets_per_frame);
+}
+
+void LeptonTask::GetSpotmeterObj()
+{
+	LEP_RESULT ret;
+	LEP_RAD_SPOTMETER_OBJ_KELVIN_T spotmeterObj;
+
+	ret = LEP_GetRadSpotmeterObjInKelvinX100(&_port, &spotmeterObj);
+	if (ret == LEP_OK) {
+		int temp1 = spotmeterObj.radSpotmeterMaxValue - 27315;
+		int temp2 = spotmeterObj.radSpotmeterMinValue - 27315;
+		printf("Spotmeter max:%d.%02u min:%d.%02u\n",
+			temp1 / 100, (temp1 > 0) ? (temp1 % 100) : (100 - temp1 % 100),
+			temp2 / 100, (temp2 > 0) ? (temp2 % 100) : (100 - temp2 % 100));
+
+		temp1 = spotmeterObj.radSpotmeterPopulation - 27315;
+		temp2 = spotmeterObj.radSpotmeterValue - 27315;
+		printf("Spotmeter pop:%d.%02u val:%d.%02u\n",
+			temp1 / 100, (temp1 > 0) ? (temp1 % 100) : (100 - temp1 % 100),
+			temp2 / 100, (temp2 > 0) ? (temp2 % 100) : (100 - temp2 % 100));
+	}
+	else {
+		printf("Get spotmeter value %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+}
+
+void LeptonTask::SetSpotmeterRoi(LEP_RAD_ROI_T newRoi)
+{
+	LEP_RESULT ret;
+
+	ret = LEP_SetRadSpotmeterRoi(&_port, newRoi);
+	if (ret == LEP_OK) {
+		_spotmeterRoi = newRoi;
+	}
+	else {
+		printf("Set spotmeter ROI %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+}
+
+void LeptonTask::LowPower()
+{
+	LEP_RESULT ret;
+
+	ret = LEP_RunOemLowPowerMode2(&_port);
+	if (ret != LEP_OK) {
+		printf("Set low power mode 2 %s %d\n", GetLeptonErrorString(ret), ret);
+	}
+}
+
+void LeptonTask::PowerOn()
+{
+	LEP_RESULT ret;
+
+	ret = LEP_RunOemPowerOn(&_port);
+	if (ret != LEP_OK) {
+		printf("Set power on %s %d\n", GetLeptonErrorString(ret), ret);
+	}
 }
 
 void LeptonTask::ProcessEvent(InterTaskSignals::T signals)
@@ -217,7 +430,6 @@ void LeptonTask::Process()
 		for (int row = 0; row < _packets_per_frame; ) {
 			_spi.lock();
 			_ss = 0;
-			//read data packets from lepton over SPI
 			_spi.write(NULL, 0, (char *)result, PACKET_SIZE);
 			_ss = 1;
 			_spi.unlock();
@@ -246,11 +458,9 @@ void LeptonTask::Process()
 			packet_id = id;
 
 			if (row < PACKETS_PER_FRAME) {
-				uint16_t *pixel = &_image[BITMAP_HEADER_SIZE/2 + PIXEL_PER_LINE * (PACKETS_PER_FRAME - 1 - row)];
+				uint16_t *pixel = &_image[BITMAP_HEADER_SIZE / 2 + PIXEL_PER_LINE * (PACKETS_PER_FRAME - 1 - row)];
 				frameBuffer = (uint16_t *)result;
-				//skip the first 2 uint16_t's of every packet, they're 4 header bytes
 				for (int i = 2; i < PACKET_SIZE_UINT16; i++) {
-					//flip the MSB and LSB at the last second
 					value = frameBuffer[i];
 					value = (value >> 8) | (value << 8);
 					//frameBuffer[i] = value;
@@ -297,11 +507,45 @@ void LeptonTask::Process()
 		break;
 	case State::UpdateParam:
 		LEP_GetSysFpaTemperatureKelvin(&_port, &_fpaTemperature);
+		LEP_GetSysAuxTemperatureKelvin(&_port, &_auxTemperature);
+		switch (_radiometryReq) {
+		case 1:
+			_radiometryReq = 0;
+			EnableRadiometry(false);
+			break;
+		case 2:
+			_radiometryReq = 0;
+			EnableRadiometry(true);
+			break;
+		}
+		if (_runFFCNormReq) {
+			_runFFCNormReq = 0;
+			RunFFCNormalization();
+		}
+		switch (_telemetryReq) {
+		case 1:
+			_telemetryReq = 0;
+			EnableTelemetry(false);
+			break;
+		case 2:
+			_telemetryReq = 0;
+			EnableTelemetry(true);
+			break;
+		}
+		switch (_spotmeterReq) {
+		case 1:
+			_spotmeterReq = 0;
+			GetSpotmeterObj();
+			break;
+		case 2:
+			_spotmeterReq = 0;
+			SetSpotmeterRoi(_reqSpotmeterRoi);
+			break;
+		}
 		_state = State::Viewing;
 		_timer = 0;
 		break;
 	case State::Viewing:
-		//lets emit the signal for update
 		maxValue = _maxValue;
 		minValue = _minValue;
 		diff = maxValue - minValue;
@@ -311,71 +555,87 @@ void LeptonTask::Process()
 		}
 		scale = 255.9 / diff;
 
-		values = &_image[BITMAP_HEADER_SIZE/2];
+		values = &_image[BITMAP_HEADER_SIZE / 2];
 		for (int row = 0; row < PACKETS_PER_FRAME; row++) {
 			uint16_t *pixel = &((uint16_t *)&user_frame_buffer_result)[(LCD_PIXEL_WIDTH - 1 - PIXEL_PER_LINE) + (LCD_PIXEL_HEIGHT - 1 - row) * LCD_PIXEL_WIDTH];
 			for (int column = 0; column < PIXEL_PER_LINE; column++) {
+				uint16_t value = *values;
 				uint8_t index;
 				int colormap[3];
 
 				switch (_config->color) {
 				case 0:
-					index = (*values - minValue) * scale;
+					index = (value - minValue) * scale;
 					colormap[0] = colormap_rainbow[3 * index];
 					colormap[1] = colormap_rainbow[3 * index + 1];
 					colormap[2] = colormap_rainbow[3 * index + 2];
 					break;
 				case 1:
-					index = (*values - minValue) * scale;
+					index = (value - minValue) * scale;
 					colormap[0] = colormap_grayscale[3 * index];
 					colormap[1] = colormap_grayscale[3 * index + 1];
 					colormap[2] = colormap_grayscale[3 * index + 2];
 					break;
 				case 2:
-					index = (*values - minValue) * scale;
+					index = (value - minValue) * scale;
 					colormap[0] = colormap_ironblack[3 * index];
 					colormap[1] = colormap_ironblack[3 * index + 1];
 					colormap[2] = colormap_ironblack[3 * index + 2];
 					break;
-				default: {
-					float s = (float)(*values / (255 * 6)) / ((float)(1 << 14) / (float)(255 * 6));
-					int h = *values % (255 * 6);
-				int b = (int)(256 * (1.0 - s));
-					switch (h / 255) {
-				case 0:
-					colormap[0] = b;
-					colormap[1] = (int)(s * h) + b;
-						colormap[2] = (int)(s * 255) + b;
-					break;
-				case 1:
+				default:
+				{
+					int span = 256;
+					int max = span - 1;
+					int h = value % (max * 6);
+					int s;
+					int b;
+					if (value < (1 << 13)) {
+						s = (span * value) / (1 << 13);
+						b = 0;
+					}
+					else {
+						value -= (1 << 13);
+						b = (span * value) / (1 << 13);
+						s = span - b;
+					}
+
+					int p = (h / max) % 6;
+					h %= span;
+					switch (p) {
+					case 0:
 						colormap[0] = b;
-						colormap[1] = (int)(s * 255) + b;
-						colormap[2] = (int)(s * ((2 * 255) - h)) + b;
+						colormap[1] = ((s * h) / span) + b;
+						colormap[2] = ((s * max) / span) + b;
+						break;
+					case 1:
+						colormap[0] = b;
+						colormap[1] = ((s * max) / span) + b;
+						colormap[2] = ((s * (max - h)) / span) + b;
 						break;
 					case 2:
-						colormap[0] = (int)(s * (h - (2 * 255))) + b;
-						colormap[1] = (int)(s * 255) + b;
+						colormap[0] = ((s * h) / span) + b;
+						colormap[1] = ((s * max) / span) + b;
 						colormap[2] = b;
 						break;
 					case 3:
-						colormap[0] = (int)(s * 255) + b;
-						colormap[1] = (int)(s * ((4 * 255) - h)) + b;
-					colormap[2] = b;
-					break;
-					case 4:
-						colormap[0] = (int)(s * 255) + b;
-						colormap[1] = b;
-						colormap[2] = (int)(s * (h - (4 * 255))) + b;
+						colormap[0] = ((s * max) / span) + b;
+						colormap[1] = ((s * (max - h)) / span) + b;
+						colormap[2] = b;
 						break;
-				default:
-						colormap[0] = (int)(s * ((6 * 255) - h)) + b;
-					colormap[1] = b;
-						colormap[2] = (int)(s * 255) + b;
-					break;
-				}
-				if (colormap[0] > 255) colormap[0] = 255;
-				if (colormap[1] > 255) colormap[1] = 255;
-				if (colormap[2] > 255) colormap[2] = 255;
+					case 4:
+						colormap[0] = ((s * max) / span) + b;
+						colormap[1] = b;
+						colormap[2] = ((s * h) / span) + b;
+						break;
+					default:
+						colormap[0] = ((s * (max - h)) / span) + b;
+						colormap[1] = b;
+						colormap[2] = ((s * max) / span) + b;
+						break;
+					}
+					colormap[0] = 256 * colormap[0] / span;
+					colormap[1] = 256 * colormap[1] / span;
+					colormap[2] = 256 * colormap[2] / span;
 					break;
 				}
 				}
@@ -385,8 +645,7 @@ void LeptonTask::Process()
 			}
 		}
 
-		//Note: we've selected 750 resets as an arbitrary limit, since there should never be 750 "null" packets between two valid transmissions at the current poll rate
-		//By polling faster, developers may easily exceed this count, and the down period between frames may then be flagged as a loss of sync
+		// https://lepton.flir.com/application-notes/lepton-with-radiometry/
 		if (resets == 750) {
 			resets = 0;
 			_ss = 0;
@@ -405,170 +664,179 @@ void LeptonTask::Process()
 	}
 }
 
+void LeptonTask::SaveImage(const char *filename)
+{
+	FILE *fp = fopen(filename, "wb");
+	if (fp == NULL)
+		return;
+	fwrite(_image, sizeof(uint16_t), IMAGE_SIZE, fp);
+	fclose(fp);
+}
+
 extern "C" {
 
-LEP_RESULT LEP_I2C_MasterOpen(LEP_PORTID portID,
-	LEP_UINT16 *portBaudRate)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
+	LEP_RESULT LEP_I2C_MasterOpen(LEP_PORTID portID,
+		LEP_UINT16 *portBaudRate)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
 
-	wire->frequency(*portBaudRate * 1000);
+		wire->frequency(*portBaudRate * 1000);
 
-	return result;
-}
-
-LEP_RESULT LEP_I2C_MasterClose(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
-{
-	mbed::I2C *wire = (mbed::I2C *)portDescPtr->portID;
-	LEP_RESULT result = LEP_OK;
-
-	(void)wire;
-
-	return result;
-}
-
-LEP_RESULT LEP_I2C_MasterReset(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
-{
-	mbed::I2C *wire = (mbed::I2C *)portDescPtr->portID;
-	LEP_RESULT result = LEP_OK;
-
-	(void)wire;
-
-	return result;
-}
-
-LEP_RESULT LEP_I2C_MasterReadData(LEP_PORTID portID,
-	LEP_UINT8  deviceAddress,
-	LEP_UINT16 subAddress,
-	LEP_UINT16 *dataPtr,
-	LEP_UINT16 dataLength)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
-	int error;
-	LEP_UINT8 *data, *pos;
-
-	pos = data = (LEP_UINT8 *)dataPtr;
-	*pos++ = (LEP_UINT8)(subAddress >> 8);
-	*pos++ = (LEP_UINT8)subAddress;
-
-	error = wire->write(deviceAddress << 1, (char *)data, sizeof(subAddress));
-	if (error != 0)
-		return LEP_ERROR_I2C_FAIL;
-
-	error = wire->read(deviceAddress << 1, (char *)dataPtr, sizeof(LEP_UINT16) * dataLength);
-	if (error != 0)
-		return LEP_ERROR_I2C_FAIL;
-
-	for (int i = 0; i < dataLength; i++) {
-		LEP_UINT16 temp = dataPtr[i];
-		dataPtr[i] = (temp >> 8) | (temp << 8);
+		return result;
 	}
 
-	return result;
-}
+	LEP_RESULT LEP_I2C_MasterClose(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portDescPtr->portID;
+		LEP_RESULT result = LEP_OK;
 
-LEP_RESULT LEP_I2C_MasterWriteData(LEP_PORTID portID,
-	LEP_UINT8  deviceAddress,
-	LEP_UINT16 subAddress,
-	LEP_UINT16 *dataPtr,
-	LEP_UINT16 dataLength)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
-	int error;
-	int len = sizeof(subAddress) + sizeof(LEP_UINT16) * dataLength;
-	LEP_UINT8 *data = (LEP_UINT8 *)malloc(len);
-	LEP_UINT8 *pos;
+		(void)wire;
 
-	if (data == NULL)
-		return LEP_ERROR;
-
-	pos = data;
-	*pos++ = (LEP_UINT8)(subAddress >> 8);
-	*pos++ = (LEP_UINT8)subAddress;
-
-	for (int i = 0; i < dataLength; i++) {
-		LEP_UINT16 temp = dataPtr[i];
-		*pos++ = (LEP_UINT8)(temp >> 8);
-		*pos++ = (LEP_UINT8)temp;
+		return result;
 	}
 
-	error = wire->write(deviceAddress << 1, (char *)data, len);
-	if (error != 0)
-		result = LEP_ERROR_I2C_FAIL;
+	LEP_RESULT LEP_I2C_MasterReset(LEP_CAMERA_PORT_DESC_T_PTR portDescPtr)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portDescPtr->portID;
+		LEP_RESULT result = LEP_OK;
 
-	free(data);
+		(void)wire;
 
-	return result;
-}
+		return result;
+	}
 
-LEP_RESULT LEP_I2C_MasterReadRegister(LEP_PORTID portID,
-	LEP_UINT8  deviceAddress,
-	LEP_UINT16 regAddress,
-	LEP_UINT16 *regValue)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
-	int error;
-	LEP_UINT8 data[2], *pos;
+	LEP_RESULT LEP_I2C_MasterReadData(LEP_PORTID portID,
+		LEP_UINT8  deviceAddress,
+		LEP_UINT16 subAddress,
+		LEP_UINT16 *dataPtr,
+		LEP_UINT16 dataLength)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
+		int error;
+		LEP_UINT8 *data, *pos;
 
-	pos = data;
-	*pos++ = (LEP_UINT8)(regAddress >> 8);
-	*pos++ = (LEP_UINT8)regAddress;
+		pos = data = (LEP_UINT8 *)dataPtr;
+		*pos++ = (LEP_UINT8)(subAddress >> 8);
+		*pos++ = (LEP_UINT8)subAddress;
 
-	error = wire->write(deviceAddress << 1, (char *)data, sizeof(regAddress));
-	if (error != 0)
-		return LEP_ERROR_I2C_FAIL;
+		error = wire->write(deviceAddress << 1, (char *)data, sizeof(subAddress));
+		if (error != 0)
+			return LEP_ERROR_I2C_FAIL;
 
-	error = wire->read(deviceAddress << 1, (char *)data, sizeof(*regValue));
-	if (error != 0)
-		return LEP_ERROR_I2C_FAIL;
+		error = wire->read(deviceAddress << 1, (char *)dataPtr, sizeof(LEP_UINT16) * dataLength);
+		if (error != 0)
+			return LEP_ERROR_I2C_FAIL;
 
-	*regValue = (data[0] << 8) | data[1];
+		for (int i = 0; i < dataLength; i++) {
+			LEP_UINT16 temp = dataPtr[i];
+			dataPtr[i] = (temp >> 8) | (temp << 8);
+		}
 
-	return result;
-}
+		return result;
+	}
 
-LEP_RESULT LEP_I2C_MasterWriteRegister(LEP_PORTID portID,
-	LEP_UINT8  deviceAddress,
-	LEP_UINT16 regAddress,
-	LEP_UINT16 regValue)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
-	int error;
-	LEP_UINT8 data[sizeof(regAddress) + sizeof(regValue)];
-	LEP_UINT8 *pos;
+	LEP_RESULT LEP_I2C_MasterWriteData(LEP_PORTID portID,
+		LEP_UINT8  deviceAddress,
+		LEP_UINT16 subAddress,
+		LEP_UINT16 *dataPtr,
+		LEP_UINT16 dataLength)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
+		int error;
+		int len = sizeof(subAddress) + sizeof(LEP_UINT16) * dataLength;
+		LEP_UINT8 *data = (LEP_UINT8 *)malloc(len);
+		LEP_UINT8 *pos;
 
-	if (data == NULL)
-		return LEP_ERROR;
+		if (data == NULL)
+			return LEP_ERROR;
 
-	pos = data;
-	*pos++ = (LEP_UINT8)(regAddress >> 8);
-	*pos++ = (LEP_UINT8)regAddress;
+		pos = data;
+		*pos++ = (LEP_UINT8)(subAddress >> 8);
+		*pos++ = (LEP_UINT8)subAddress;
 
-	*pos++ = (LEP_UINT8)(regValue >> 8);
-	*pos++ = (LEP_UINT8)regValue;
+		for (int i = 0; i < dataLength; i++) {
+			LEP_UINT16 temp = dataPtr[i];
+			*pos++ = (LEP_UINT8)(temp >> 8);
+			*pos++ = (LEP_UINT8)temp;
+		}
 
-	error = wire->write(deviceAddress << 1, (char *)data, sizeof(data));
-	if (error != 0)
-		result = LEP_ERROR_I2C_FAIL;
+		error = wire->write(deviceAddress << 1, (char *)data, len);
+		if (error != 0)
+			result = LEP_ERROR_I2C_FAIL;
 
-	return result;
-}
+		free(data);
 
-LEP_RESULT LEP_I2C_MasterStatus(LEP_PORTID portID,
-	LEP_UINT16 *portStatus)
-{
-	mbed::I2C *wire = (mbed::I2C *)portID;
-	LEP_RESULT result = LEP_OK;
+		return result;
+	}
 
-	(void)wire;
-	*portStatus = 0;
+	LEP_RESULT LEP_I2C_MasterReadRegister(LEP_PORTID portID,
+		LEP_UINT8  deviceAddress,
+		LEP_UINT16 regAddress,
+		LEP_UINT16 *regValue)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
+		int error;
+		LEP_UINT8 data[2], *pos;
 
-	return result;
-}
+		pos = data;
+		*pos++ = (LEP_UINT8)(regAddress >> 8);
+		*pos++ = (LEP_UINT8)regAddress;
+
+		error = wire->write(deviceAddress << 1, (char *)data, sizeof(regAddress));
+		if (error != 0)
+			return LEP_ERROR_I2C_FAIL;
+
+		error = wire->read(deviceAddress << 1, (char *)data, sizeof(*regValue));
+		if (error != 0)
+			return LEP_ERROR_I2C_FAIL;
+
+		*regValue = (data[0] << 8) | data[1];
+
+		return result;
+	}
+
+	LEP_RESULT LEP_I2C_MasterWriteRegister(LEP_PORTID portID,
+		LEP_UINT8  deviceAddress,
+		LEP_UINT16 regAddress,
+		LEP_UINT16 regValue)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
+		int error;
+		LEP_UINT8 data[sizeof(regAddress) + sizeof(regValue)];
+		LEP_UINT8 *pos;
+
+		if (data == NULL)
+			return LEP_ERROR;
+
+		pos = data;
+		*pos++ = (LEP_UINT8)(regAddress >> 8);
+		*pos++ = (LEP_UINT8)regAddress;
+
+		*pos++ = (LEP_UINT8)(regValue >> 8);
+		*pos++ = (LEP_UINT8)regValue;
+
+		error = wire->write(deviceAddress << 1, (char *)data, sizeof(data));
+		if (error != 0)
+			result = LEP_ERROR_I2C_FAIL;
+
+		return result;
+	}
+
+	LEP_RESULT LEP_I2C_MasterStatus(LEP_PORTID portID,
+		LEP_UINT16 *portStatus)
+	{
+		mbed::I2C *wire = (mbed::I2C *)portID;
+		LEP_RESULT result = LEP_OK;
+
+		(void)wire;
+		*portStatus = 0;
+
+		return result;
+	}
 
 }

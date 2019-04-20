@@ -1,8 +1,5 @@
 #include "mbed.h"
 #include <curl/curl.h>
-#include <wolfssl/wolfcrypt/wc_port.h>
-//#include <wolfssl/ssl.h>
-//#include <sys/socket.h>
 #include <string.h>
 #include "GoogleDrive.h"
 #include "jsonsl.h"

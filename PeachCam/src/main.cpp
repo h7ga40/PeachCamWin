@@ -299,15 +299,15 @@ text(void *data, const XML_Char *s, int len)
 		}
 		break;
 	case psLeptonRadiometry:
-		if (*s != '\0')
+		if ((*s != '0') || (len != 1))
 			cd->lepton.radiometry = 1;
 		break;
 	case psLeptonFFCNorm:
-		if (*s != '\0')
+		if ((*s != '0') || (len != 1))
 			cd->lepton.ffcnorm = 1;
 		break;
 	case psLeptonTelemetry:
-		if (*s != '\0')
+		if ((*s != '0') || (len != 1))
 			cd->lepton.telemetry = 1;
 		break;
 	case psLeptonOffset:
@@ -371,14 +371,55 @@ bool ReadIniFile(std::string filename)
 	return true;
 }
 
+LeptonTask *lepton;
+
 extern "C" int usrcmd_lpt(int argc, char **argv)
 {
+	if (argc < 2) {
+		printf("lpt [s] \n");
+		return 0;
+	}
+
+	if (strcmp(argv[1], "s") == 0) {
+		globalState.MakeFilePath();
+		auto file = globalState.GetFilePath() + ".bmp";
+		lepton->SaveImage(file.c_str());
+	}
+	else if ((strcmp(argv[1], "r") == 0) && (argc > 2)) {
+		lepton->ReqRadiometry(strcmp(argv[2], "0") == 0);
+	}
+	else if (strcmp(argv[1], "r0") == 0) {
+		lepton->ReqRadiometry(false);
+	}
+	else if (strcmp(argv[1], "r1") == 0) {
+		lepton->ReqRadiometry(true);
+	}
+	else if (strcmp(argv[1], "n") == 0) {
+		lepton->ReqFFCNormalization();
+	}
+	else if ((strcmp(argv[1], "t") == 0) && (argc > 2)) {
+		lepton->ReqTelemetry(strcmp(argv[2], "0") == 0);
+	}
+	else if (strcmp(argv[1], "t0") == 0) {
+		lepton->ReqTelemetry(false);
+	}
+	else if (strcmp(argv[1], "t1") == 0) {
+		lepton->ReqTelemetry(true);
+	}
+	else if (strcmp(argv[1], "p") == 0) {
+		lepton->ReqGetSpotmeterObj();
+	}
+	else if ((strcmp(argv[1], "b") == 0) && (argc > 5)) {
+		lepton->ReqSetSpotmeterRoi(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+	}
+
 	return 0;
 }
 
 int main()
 {
 	char textbuf[80];
+
 	globalState.storage = &sdUsbConnect;
 	globalState.wifi = &wifi;
 	globalState.netTask = &netTask;
@@ -401,7 +442,8 @@ int main()
 	netTask.Init(config.wifi.ssid, config.wifi.password, config.wifi.host_name,
 		config.upload.server, config.upload.storage);
 	faceDetectTask.Init(FACE_DETECTOR_MODEL);
-	leptonTask.SetConfig(&config.lepton);
+	lepton = leptonTask.GetLeptonTask();
+	lepton->SetConfig(&config.lepton);
 
 	netTask.Start();
 	sensorTask.Start();
@@ -435,28 +477,32 @@ int main()
 			temp = std::string(ctime(&tm));
 			lcd_drawString(temp.c_str(), 330, 0, 0xFCCC, 0x0000);
 #if 0
-			uint16_t *data = leptonTask.GetTelemetryA();
+			uint16_t *data = lepton->GetTelemetryA();
 			snprintf(textbuf, sizeof(textbuf), "TmA:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
 			lcd_drawString(textbuf, 72, 148, 0xFCCC, 0x0000);
 
-			data = leptonTask.GetTelemetryB();
+			data = lepton->GetTelemetryB();
 			snprintf(textbuf, sizeof(textbuf), "TmB:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
 			lcd_drawString(textbuf, 72, 160, 0xFCCC, 0x0000);
 
-			data = leptonTask.GetTelemetryC();
+			data = lepton->GetTelemetryC();
 			snprintf(textbuf, sizeof(textbuf), "TmC:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
 			lcd_drawString(textbuf, 72, 172, 0xFCCC, 0x0000);
 #endif
-			int fpatem = leptonTask.GetFpaTemperature() - 27315;
-			snprintf(textbuf, sizeof(textbuf), "FPA:%4d.%02uŽ", fpatem / 100, (fpatem > 0) ? (fpatem % 100) : (100 - fpatem % 100));
+			int auxtemp = lepton->GetFpaTemperature() - 27315;
+			snprintf(textbuf, sizeof(textbuf), "FPA:%4d.%02uâ„ƒ", auxtemp / 100, (auxtemp > 0) ? (auxtemp % 100) : (100 - auxtemp % 100));
+			lcd_drawString(textbuf, 400, 160, 0xFCCC, 0x0000);
+
+			int fpatemp = lepton->GetAuxTemperature() - 27315;
+			snprintf(textbuf, sizeof(textbuf), "AUX:%4d.%02uâ„ƒ", fpatemp / 100, (fpatemp > 0) ? (fpatemp % 100) : (100 - fpatemp % 100));
 			lcd_drawString(textbuf, 400, 172, 0xFCCC, 0x0000);
 
-			int minValue = (int)(2.6 * (leptonTask.GetMinValue() - 8192)) + config.lepton.offset - 27315;
-			snprintf(textbuf, sizeof(textbuf), "min:%4d.%02uŽ", minValue / 100, (minValue > 0) ? (minValue % 100) : (100 + minValue % 100));
+			int minValue = (int)(2.6 * (lepton->GetMinValue() - 8192)) + config.lepton.offset - 27315;
+			snprintf(textbuf, sizeof(textbuf), "min:%4d.%02uâ„ƒ", minValue / 100, (minValue > 0) ? (minValue % 100) : (100 + minValue % 100));
 			lcd_drawString(textbuf, 400, 184, 0xFCCC, 0x0000);
 
-			int maxValue = (int)(2.6 * (leptonTask.GetMaxValue() - 8192)) + config.lepton.offset - 27315;
-			snprintf(textbuf, sizeof(textbuf), "max:%4d.%02uŽ", maxValue / 100, (maxValue > 0) ? (maxValue % 100) : (100 + maxValue % 100));
+			int maxValue = (int)(2.6 * (lepton->GetMaxValue() - 8192)) + config.lepton.offset - 27315;
+			snprintf(textbuf, sizeof(textbuf), "max:%4d.%02uâ„ƒ", maxValue / 100, (maxValue > 0) ? (maxValue % 100) : (100 + maxValue % 100));
 			lcd_drawString(textbuf, 400, 196, 0xFCCC, 0x0000);
 		}
 		/* Get coordinates */
