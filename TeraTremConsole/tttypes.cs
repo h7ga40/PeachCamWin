@@ -513,10 +513,8 @@ namespace TeraTrem
 		public string HostName;
 
 		public Point VTPos;
-		public string VTFont;
-		public Point VTFontSize;
-		public byte VTFontCharSet;
-		public int FontDW, FontDH, FontDX, FontDY;
+		public Font VTFont;
+		public int FontDW = 0, FontDH = 0, FontDX = 0, FontDY = 0;
 		public char[] PrnFont = new char[LF_FACESIZE];
 		public Point PrnFontSize;
 		public int PrnFontCharSet;
@@ -751,8 +749,6 @@ namespace TeraTrem
 			dest.KeyCnfFN = KeyCnfFN;
 			dest.VTPos = VTPos;
 			dest.VTFont = VTFont;
-			dest.VTFontSize = VTFontSize;
-			dest.VTFontCharSet = VTFontCharSet;
 			System.Buffer.BlockCopy(PrnFont, 0, dest.PrnFont, 0, PrnFont.Length);
 			System.Buffer.BlockCopy(PrnMargin, 0, dest.PrnMargin, 0, PrnMargin.Length);
 			System.Buffer.BlockCopy(PrnDev, 0, dest.PrnDev, 0, PrnDev.Length);

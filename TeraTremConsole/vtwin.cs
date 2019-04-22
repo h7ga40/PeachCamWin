@@ -38,7 +38,7 @@ using System.Runtime.InteropServices;
 
 namespace TeraTrem
 {
-	public class VTWindow : Control
+	public class VTWindow : ScrollableControl
 	{
 		ttwinman ttwinman;
 		teraprn teraprn;
@@ -99,6 +99,7 @@ namespace TeraTrem
 
 			ttcmn.StartTeraTerm(ts);
 
+			ts.VTFont = Font;
 			ts.SetupFName = "TERATERM.INI";
 			ts.KeyCnfFN = "KEYBOARD.CNF";
 
@@ -130,30 +131,11 @@ namespace TeraTrem
 			VTDisp.InitDisp();
 		}
 
-		const int WS_VSCROLL = 0x00200000;
-		const int WS_HSCROLL = 0x00100000;
-		const int CS_VREDRAW = 0x0001;
-		const int CS_HREDRAW = 0x0002;
-		const int CS_DBLCLKS = 0x0008;
-
-		protected override CreateParams CreateParams {
-			get {
-				CreateParams cp = base.CreateParams;
-
-				cp.Style |= WS_VSCROLL | WS_HSCROLL;
-				cp.ClassStyle = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW;
-
-				return cp;
-			}
-		}
-
 		protected override bool IsInputKey(Keys keyData)
 		{
 			return true;// base.IsInputKey(keyData);
 		}
 
-		public const int WM_CREATE = 0x0001;
-		public const int WM_MOVE = 0x0003;
 		public const int WM_SIZE = 0x0005;
 		public const int WM_ACTIVATE = 0x0006;
 
@@ -177,8 +159,6 @@ namespace TeraTrem
 		public const int WM_IME_NOTIFY = 0x0282;
 
 		public const int WM_TIMER = 0x0113;
-		public const int WM_HSCROLL = 0x114;
-		public const int WM_VSCROLL = 0x115;
 
 		public const int WM_MOUSEMOVE = 0x0200;
 		public const int WM_LBUTTONDOWN = 0x0201;
@@ -198,99 +178,57 @@ namespace TeraTrem
 		protected override void WndProc(ref Message m)
 		{
 			switch (m.Msg) {
-			case WM_CREATE:
-				OnCreate();
-				break;
-			case WM_MOVE:
-				OnMove(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_SIZE:
-				OnSize((uint)m.WParam.ToInt32(), m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_ACTIVATE:
-				OnActivate((uint)(m.WParam.ToInt32() & 0xFFFF), m.LParam, (((uint)m.WParam.ToInt32()) >> 16) != 0);
-				break;
-			case WM_SETFOCUS:
-				OnSetFocus(m.WParam);
-				break;
-			case WM_KILLFOCUS:
-				OnKillFocus(m.WParam);
-				break;
-			case WM_MOUSEACTIVATE:
-				OnMouseActivate(m.WParam, m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_INPUTLANGCHANGE:
-				OnIMEInputChange((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
-				break;
-			case WM_KEYDOWN:
-				OnKeyDown((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_KEYUP:
-				OnKeyUp((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_CHAR:
-				OnChar((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-				break;
-			case WM_IME_COMPOSITION:
-				OnIMEComposition((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32());
-				break;
-			case WM_IME_NOTIFY:
-				OnIMENotify((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
-				break;
-			case WM_TIMER:
-				OnTimer((TimerId)m.WParam.ToInt32());
-				break;
-			case WM_HSCROLL:
-				OnHScroll((int)(((uint)m.LParam.ToInt32()) >> 16), m.WParam.ToInt32() & 0xFFFF);
-				break;
-			case WM_VSCROLL:
-				OnVScroll((int)(((uint)m.LParam.ToInt32()) >> 16), m.WParam.ToInt32() & 0xFFFF);
-				break;
-			case WM_MOUSEMOVE:
-				OnMouseMove((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_LBUTTONDOWN:
-				OnLButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_LBUTTONUP:
-				OnLButtonUp((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_LBUTTONDBLCLK:
-				OnLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_RBUTTONDOWN:
-				OnRButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_RBUTTONUP:
-				OnRButtonUp((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_MBUTTONDOWN:
-				OnMButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_MBUTTONUP:
-				OnMButtonUp((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_MOUSEWHEEL:
-				OnMouseWheel((uint)(m.WParam.ToInt32() & 0xFFFF), (short)(((uint)m.WParam.ToInt32()) >> 16), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_NCLBUTTONDBLCLK:
-				OnNcLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
-			case WM_NCRBUTTONDBLCLK:
-				OnNcRButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-				break;
+				case WM_SIZE:
+					OnSize((uint)m.WParam.ToInt32(), m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
+					break;
+				case WM_ACTIVATE:
+					OnActivate((uint)(m.WParam.ToInt32() & 0xFFFF), m.LParam, (((uint)m.WParam.ToInt32()) >> 16) != 0);
+					break;
+				case WM_MOUSEACTIVATE:
+					OnMouseActivate(m.WParam, m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
+					break;
+				case WM_INPUTLANGCHANGE:
+					OnIMEInputChange((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
+					break;
+				case WM_KEYDOWN:
+					OnKeyDown((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+					break;
+				case WM_KEYUP:
+					OnKeyUp((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+					break;
+				case WM_CHAR:
+					OnChar((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+					break;
+				case WM_IME_COMPOSITION:
+					OnIMEComposition((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32());
+					break;
+				case WM_IME_NOTIFY:
+					OnIMENotify((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
+					break;
+				case WM_TIMER:
+					OnTimer((TimerId)m.WParam.ToInt32());
+					break;
+				case WM_LBUTTONDBLCLK:
+					OnLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+					break;
+				case WM_NCLBUTTONDBLCLK:
+					OnNcLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+					break;
+				case WM_NCRBUTTONDBLCLK:
+					OnNcRButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+					break;
 			}
 
 			base.WndProc(ref m);
 
 			switch (m.Msg) {
-			case WM_KILLFOCUS:
-				OnKillFocus2(m.WParam);
-				break;
+				case WM_KILLFOCUS:
+					OnKillFocus2(m.WParam);
+					break;
 			}
 		}
 
-		protected void OnCreate()
+		protected override void OnHandleCreated(EventArgs e)
 		{
 #if ALPHABLEND_TYPE2
 //<!--by AKASI
@@ -475,53 +413,62 @@ namespace TeraTrem
 				}
 
 				switch (LMR) {
-				case TeraTrem.MouseButtons.IdRightButton:
-					RButton = true;
-					break;
-				case TeraTrem.MouseButtons.IdMiddleButton:
-					MButton = true;
-					break;
-				case TeraTrem.MouseButtons.IdLeftButton:
-					LButton = true;
-					break;
+					case TeraTrem.MouseButtons.IdRightButton:
+						RButton = true;
+						break;
+					case TeraTrem.MouseButtons.IdMiddleButton:
+						MButton = true;
+						break;
+					case TeraTrem.MouseButtons.IdLeftButton:
+						LButton = true;
+						break;
 				}
 			}
 		}
 
-		void OnHScroll(int nSBCode, int nPos)
+		protected override void OnScroll(ScrollEventArgs se)
 		{
-			ScrollType Func;
+			ScrollType Func = 0;
 
-			switch (nSBCode) {
-			case SB_BOTTOM:
-				Func = ScrollType.SCROLL_BOTTOM;
-				break;
-			case SB_ENDSCROLL:
-				return;
-			case SB_LINEDOWN:
-				Func = ScrollType.SCROLL_LINEDOWN;
-				break;
-			case SB_LINEUP:
-				Func = ScrollType.SCROLL_LINEUP;
-				break;
-			case SB_PAGEDOWN:
-				Func = ScrollType.SCROLL_PAGEDOWN;
-				break;
-			case SB_PAGEUP:
-				Func = ScrollType.SCROLL_PAGEUP;
-				break;
-			case SB_THUMBPOSITION:
-			case SB_THUMBTRACK:
-				Func = ScrollType.SCROLL_POS;
-				break;
-			case SB_TOP:
-				Func = ScrollType.SCROLL_TOP;
-				break;
-			default:
-				return;
+			switch (se.Type) {
+				case ScrollEventType.Last:
+					Func = ScrollType.SCROLL_BOTTOM;
+					break;
+				case ScrollEventType.EndScroll:
+					break;
+				case ScrollEventType.SmallIncrement:
+					Func = ScrollType.SCROLL_LINEDOWN;
+					break;
+				case ScrollEventType.SmallDecrement:
+					Func = ScrollType.SCROLL_LINEUP;
+					break;
+				case ScrollEventType.LargeIncrement:
+					Func = ScrollType.SCROLL_PAGEDOWN;
+					break;
+				case ScrollEventType.LargeDecrement:
+					Func = ScrollType.SCROLL_PAGEUP;
+					break;
+				case ScrollEventType.ThumbPosition:
+				case ScrollEventType.ThumbTrack:
+					Func = ScrollType.SCROLL_POS;
+					break;
+				case ScrollEventType.First:
+					Func = ScrollType.SCROLL_TOP;
+					break;
+				default:
+					break;
 			}
 
-			VTDisp.DispHScroll(Func, nPos);
+			if (Func != 0) {
+				if (se.ScrollOrientation == ScrollOrientation.HorizontalScroll) {
+					VTDisp.DispHScroll(Func, se.NewValue);
+				}
+				else {
+					VTDisp.DispVScroll(Func, se.NewValue);
+				}
+			}
+
+			base.OnScroll(se);
 		}
 
 		void OnKeyDown(uint nChar, uint nRepCnt, uint nFlags)
@@ -530,19 +477,18 @@ namespace TeraTrem
 			MSG M;
 
 			switch (keyboard.KeyDown(this, (Keys)nChar, (ushort)nRepCnt, (ushort)(nFlags & 0x1ff))) {
-			case KeyDownReturnType.KEYDOWN_OTHER:
-				break;
-			case KeyDownReturnType.KEYDOWN_CONTROL:
-				return;
-			case KeyDownReturnType.KEYDOWN_COMMOUT:
-				/* 最下行でだけ自動スクロールする設定の場合
-				   リモートへのキー入力送信でスクロールさせる */
-				if (ts.AutoScrollOnlyInBottomLine != 0 && VTDisp.WinOrgY != 0) {
-					VTDisp.DispVScroll(ScrollType.SCROLL_BOTTOM, 0);
-				}
-				return;
+				case KeyDownReturnType.KEYDOWN_OTHER:
+					break;
+				case KeyDownReturnType.KEYDOWN_CONTROL:
+					return;
+				case KeyDownReturnType.KEYDOWN_COMMOUT:
+					/* 最下行でだけ自動スクロールする設定の場合
+					   リモートへのキー入力送信でスクロールさせる */
+					if (ts.AutoScrollOnlyInBottomLine != 0 && VTDisp.WinOrgY != 0) {
+						VTDisp.DispVScroll(ScrollType.SCROLL_BOTTOM, 0);
+					}
+					return;
 			}
-
 
 			if ((ts.MetaKey > 0) && ((nFlags & 0x2000) != 0)) {
 				/* for Ctrl+Alt+Key combination */
@@ -571,7 +517,6 @@ namespace TeraTrem
 				}
 #endif
 			}
-
 		}
 
 		void OnKeyUp(uint nChar, uint nRepCnt, uint nFlags)
@@ -579,10 +524,11 @@ namespace TeraTrem
 			keyboard.KeyUp((Keys)nChar);
 		}
 
-		void OnKillFocus(IntPtr pNewWnd)
+		protected override void OnLostFocus(EventArgs e)
 		{
 			VTDisp.DispDestroyCaret();
 			VTTerm.FocusReport(false);
+			base.OnLostFocus(e);
 		}
 
 		void OnKillFocus2(IntPtr pNewWnd)
@@ -621,44 +567,58 @@ namespace TeraTrem
 			SetTimer(Handle, (int)TimerId.IdScrollTimer, 100, IntPtr.Zero);
 		}
 
-		void OnLButtonDown(uint nFlags, Point point)
+		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			ButtonDown(point, TeraTrem.MouseButtons.IdLeftButton);
+			if (e.Button == System.Windows.Forms.MouseButtons.Left) {
+				ButtonDown(e.Location, TeraTrem.MouseButtons.IdLeftButton);
+			}
+			else if (e.Button == System.Windows.Forms.MouseButtons.Middle) {
+				ButtonDown(e.Location, TeraTrem.MouseButtons.IdMiddleButton);
+			}
+			else if (e.Button == System.Windows.Forms.MouseButtons.Right) {
+				ButtonDown(e.Location, TeraTrem.MouseButtons.IdRightButton);
+			}
+			base.OnMouseDown(e);
 		}
 
-		void OnLButtonUp(uint nFlags, Point point)
+		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdLeftButton, point.X, point.Y);
+			if (e.Button == System.Windows.Forms.MouseButtons.Left) {
+				VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdLeftButton, e.Location.X, e.Location.Y);
 
-			if (!LButton) {
-				return;
+				if (LButton)
+					ButtonUp(false);
+			}
+			else if (e.Button == System.Windows.Forms.MouseButtons.Middle) {
+				bool mousereport;
+
+				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdMiddleButton, e.Location.X, e.Location.Y);
+
+				if (MButton) {
+					// added DisablePasteMouseMButton (2008.3.2 maya)
+					if (ts.DisablePasteMouseMButton || mousereport) {
+						ButtonUp(false);
+					}
+					else {
+						ButtonUp(true);
+					}
+				}
+			}
+			else if (e.Button == System.Windows.Forms.MouseButtons.Right) {
+				bool mousereport;
+
+				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdRightButton, e.Location.X, e.Location.Y);
+
+				if (RButton) {
+					// 右ボタン押下でのペーストを禁止する (2005.3.16 yutaka)
+					if (ts.DisablePasteMouseRButton || mousereport)
+						ButtonUp(false);
+					else
+						ButtonUp(true);
+				}
 			}
 
-			ButtonUp(false);
-		}
-
-		void OnMButtonDown(uint nFlags, Point point)
-		{
-			ButtonDown(point, TeraTrem.MouseButtons.IdMiddleButton);
-		}
-
-		void OnMButtonUp(uint nFlags, Point point)
-		{
-			bool mousereport;
-
-			mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdMiddleButton, point.X, point.Y);
-
-			if (!MButton) {
-				return;
-			}
-
-			// added DisablePasteMouseMButton (2008.3.2 maya)
-			if (ts.DisablePasteMouseMButton || mousereport) {
-				ButtonUp(false);
-			}
-			else {
-				ButtonUp(true);
-			}
+			base.OnMouseUp(e);
 		}
 
 		const int HTCLIENT = 1;
@@ -678,86 +638,79 @@ namespace TeraTrem
 				return MA_ACTIVATE;
 		}
 
-		void OnMouseMove(uint nFlags, Point point)
+		protected override void OnMouseMove(MouseEventArgs e)
 		{
 			int i;
 			bool mousereport;
 
-			mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventMove, 0, point.X, point.Y);
+			mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventMove, 0, e.Location.X, e.Location.Y);
 
 			if (!(LButton || MButton || RButton)) {
 				// マウスカーソル直下にURL文字列があるかを走査する (2005.4.2 yutaka)
-				Buffer.BuffChangeSelect(point.X, point.Y, 0);
+				Buffer.BuffChangeSelect(e.Location.X, e.Location.Y, 0);
 				return;
 			}
 
-			if (mousereport)
-				return;
+			if (!mousereport) {
+				if (DblClk)
+					i = 2;
+				else if (TplClk)
+					i = 3;
+				else
+					i = 1;
 
-			if (DblClk)
-				i = 2;
-			else if (TplClk)
-				i = 3;
-			else
-				i = 1;
-
-			if (!ts.SelectOnlyByLButton ||
-				(ts.SelectOnlyByLButton && LButton)) {
-				// SelectOnlyByLButton == true のときは、左ボタンダウン時のみ選択する (2007.11.21 maya)
-				Buffer.BuffChangeSelect(point.X, point.Y, i);
+				if (!ts.SelectOnlyByLButton ||
+					(ts.SelectOnlyByLButton && LButton)) {
+					// SelectOnlyByLButton == true のときは、左ボタンダウン時のみ選択する (2007.11.21 maya)
+					Buffer.BuffChangeSelect(e.Location.X, e.Location.Y, i);
+				}
 			}
+
+			base.OnMouseMove(e);
 		}
 
-		void OnMove(int x, int y)
+		protected override void OnMove(EventArgs e)
 		{
 			VTDisp.DispSetWinPos();
+			base.OnMove(e);
 		}
 
 		const int WHEEL_DELTA = 120;
 
-		/// <summary>
-		/// マウスホイールの回転
-		/// </summary>
-		/// <param name="nFlags">仮想キー</param>
-		/// <param name="zDelta">回転距離</param>
-		/// <param name="pt">カーソル位置</param>
-		/// <returns></returns>
-		bool OnMouseWheel(uint nFlags, short zDelta, Point pt)
+		protected override void OnMouseWheel(MouseEventArgs e)
 		{
 			int line, i;
+			Point pt = PointToClient(e.Location);
 
-			pt = PointToClient(pt);
-
-			line = Math.Abs(zDelta) / WHEEL_DELTA; // ライン数
+			line = Math.Abs(e.Delta) / WHEEL_DELTA; // ライン数
 			if (line < 1) line = 1;
 
 			// 一スクロールあたりの行数に変換する (2008.4.6 yutaka)
 			if (line == 1 && ts.MouseWheelScrollLine > 0)
 				line *= ts.MouseWheelScrollLine;
 
-			if (VTTerm.MouseReport(MouseEvent.IdMouseEventWheel, zDelta < 0 ? TeraTrem.MouseButtons.IdMiddleButton : TeraTrem.MouseButtons.IdLeftButton, pt.X, pt.Y))
-				return true;
-
-			if (VTTerm.WheelToCursorMode()) {
-				if (zDelta < 0) {
-					keyboard.KeyDown(this, Keys.Down, (ushort)line, (ushort)((int)keyboard.MapVirtualKey((ushort)Keys.Down, 0) | 0x100));
-					keyboard.KeyUp(Keys.Down);
+			if (!VTTerm.MouseReport(MouseEvent.IdMouseEventWheel, e.Delta < 0 ? TeraTrem.MouseButtons.IdMiddleButton : TeraTrem.MouseButtons.IdLeftButton, pt.X, pt.Y)) {
+				if (VTTerm.WheelToCursorMode()) {
+					if (e.Delta < 0) {
+						keyboard.KeyDown(this, Keys.Down, (ushort)line, (ushort)((int)keyboard.MapVirtualKey((ushort)Keys.Down, 0) | 0x100));
+						keyboard.KeyUp(Keys.Down);
+					}
+					else {
+						keyboard.KeyDown(this, Keys.Up, (ushort)line, (ushort)((int)keyboard.MapVirtualKey((ushort)Keys.Up, 0) | 0x100));
+						keyboard.KeyUp(Keys.Up);
+					}
 				}
 				else {
-					keyboard.KeyDown(this, Keys.Up, (ushort)line, (ushort)((int)keyboard.MapVirtualKey((ushort)Keys.Up, 0) | 0x100));
-					keyboard.KeyUp(Keys.Up);
-				}
-			}
-			else {
-				for (i = 0; i < line; i++) {
-					if (zDelta < 0)
-						OnVScroll(SB_LINEDOWN, 0);
-					else
-						OnVScroll(SB_LINEUP, 0);
+					for (i = 0; i < line; i++) {
+						if (e.Delta < 0)
+							VTDisp.DispVScroll(ScrollType.SCROLL_LINEDOWN, VerticalScroll.Value);
+						else
+							VTDisp.DispVScroll(ScrollType.SCROLL_LINEUP, VerticalScroll.Value);
+					}
 				}
 			}
 
-			return (true);
+			base.OnMouseWheel(e);
 		}
 
 		void OnNcLButtonDblClk(uint nHitTest, Point point)
@@ -796,32 +749,11 @@ namespace TeraTrem
 			}
 		}
 
-		void OnRButtonDown(uint nFlags, Point point)
-		{
-			ButtonDown(point, TeraTrem.MouseButtons.IdRightButton);
-		}
-
-		void OnRButtonUp(uint nFlags, Point point)
-		{
-			bool mousereport;
-
-			mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdRightButton, point.X, point.Y);
-
-			if (!RButton)
-				return;
-
-			// 右ボタン押下でのペーストを禁止する (2005.3.16 yutaka)
-			if (ts.DisablePasteMouseRButton || mousereport)
-				ButtonUp(false);
-			else
-				ButtonUp(true);
-		}
-
-		void OnSetFocus(IntPtr pOldWnd)
+		protected override void OnGotFocus(EventArgs e)
 		{
 			VTDisp.ChangeCaret();
 			VTTerm.FocusReport(true);
-			//CFrameWnd.OnSetFocus(pOldWnd);
+			base.OnGotFocus(e);
 		}
 
 		const int SIZE_MINIMIZED = 1;
@@ -865,16 +797,16 @@ namespace TeraTrem
 						NewFontWidth = ts.FontDW + 3;
 					}
 					if (NewFontWidth != VTDisp.FontWidth) {
-						ts.VTFontSize.X = ts.FontDW - NewFontWidth;
+						//ts.VTFont = new Font(ts.VTFont.FontFamily, NewFontWidth - ts.FontDW);
 						VTDisp.FontWidth = NewFontWidth;
-						FontChanged = true;
+						//FontChanged = true;
 					}
 
 					if (NewFontHeight - ts.FontDH < 3) {
 						NewFontHeight = ts.FontDH + 3;
 					}
 					if (NewFontHeight != VTDisp.FontHeight) {
-						ts.VTFontSize.Y = ts.FontDH - NewFontHeight;
+						ts.VTFont = new Font(ts.VTFont.FontFamily, NewFontHeight - ts.FontDH);
 						VTDisp.FontHeight = NewFontHeight;
 						FontChanged = true;
 					}
@@ -900,6 +832,13 @@ namespace TeraTrem
 				VTDisp.AdjustSize = false;
 			}
 #endif
+		}
+
+		protected override void OnFontChanged(EventArgs e)
+		{
+			ts.VTFont = Font;
+			VTDisp.ChangeFont();
+			base.OnFontChanged(e);
 		}
 
 		const int MK_LBUTTON = 0x0001;
@@ -943,101 +882,53 @@ namespace TeraTrem
 			KillTimer(Handle, (int)nIDEvent);
 
 			switch (nIDEvent) {
-			case TimerId.IdDelayTimer:
-				cv.CanSend = true;
-				break;
-			case TimerId.IdProtoTimer:
-				filesys.ProtoDlgTimeOut();
-				goto case TimerId.IdDblClkTimer;
-			case TimerId.IdDblClkTimer:
-				AfterDblClk = false;
-				break;
-			case TimerId.IdComEndTimer:
-				if (!commlib.CommCanClose(cv)) {
-					// wait if received data remains
-					SetTimer(Handle, (int)TimerId.IdComEndTimer, 1, IntPtr.Zero);
+				case TimerId.IdDelayTimer:
+					cv.CanSend = true;
 					break;
-				}
-				cv.Ready = false;
-				if (cv.TelFlag) {
-					telnet.EndTelnet();
-				}
-				PortType = cv.PortType;
-				commlib.CommClose(cv);
-				//SetDdeComReady(0);
-				if ((PortType == PortTypeId.IdTCPIP) &&
-					((ts.PortFlag & PortFlags.PF_BEEPONCONNECT) != 0)) {
-					VTTerm.MessageBeep(0);
-				}
-				if ((PortType == PortTypeId.IdTCPIP) &&
-					(ts.AutoWinClose > 0) &&
-					Enabled /*&&
-						((HTEKWin == null) || IsWindowEnabled(HTEKWin))*/
-																	 ) {
-					// OnClose();
-				}
-				else {
-					ttwinman.ChangeTitle();
-					if (ts.ClearScreenOnCloseConnection) {
-						OnEditClearScreen();
+				case TimerId.IdProtoTimer:
+					filesys.ProtoDlgTimeOut();
+					goto case TimerId.IdDblClkTimer;
+				case TimerId.IdDblClkTimer:
+					AfterDblClk = false;
+					break;
+				case TimerId.IdComEndTimer:
+					if (!commlib.CommCanClose(cv)) {
+						// wait if received data remains
+						SetTimer(Handle, (int)TimerId.IdComEndTimer, 1, IntPtr.Zero);
+						break;
 					}
-				}
-				break;
-			case TimerId.IdPrnStartTimer:
-				teraprn.PrnFileStart();
-				break;
-			case TimerId.IdPrnProcTimer:
-				teraprn.PrnFileDirectProc();
-				break;
+					cv.Ready = false;
+					if (cv.TelFlag) {
+						telnet.EndTelnet();
+					}
+					PortType = cv.PortType;
+					commlib.CommClose(cv);
+					//SetDdeComReady(0);
+					if ((PortType == PortTypeId.IdTCPIP) &&
+						((ts.PortFlag & PortFlags.PF_BEEPONCONNECT) != 0)) {
+						VTTerm.MessageBeep(0);
+					}
+					if ((PortType == PortTypeId.IdTCPIP) &&
+						(ts.AutoWinClose > 0) &&
+						Enabled /*&&
+						((HTEKWin == null) || IsWindowEnabled(HTEKWin))*/
+																		 ) {
+						// OnClose();
+					}
+					else {
+						ttwinman.ChangeTitle();
+						if (ts.ClearScreenOnCloseConnection) {
+							OnEditClearScreen();
+						}
+					}
+					break;
+				case TimerId.IdPrnStartTimer:
+					teraprn.PrnFileStart();
+					break;
+				case TimerId.IdPrnProcTimer:
+					teraprn.PrnFileDirectProc();
+					break;
 			}
-		}
-
-		const int SB_HORZ = 0;
-		const int SB_VERT = 1;
-
-		void OnVScroll(int nSBCode, int nPos)
-		{
-			ScrollType Func;
-			SCROLLINFO si;
-
-			switch (nSBCode) {
-			case SB_BOTTOM:
-				Func = ScrollType.SCROLL_BOTTOM;
-				break;
-			case SB_ENDSCROLL:
-				return;
-			case SB_LINEDOWN:
-				Func = ScrollType.SCROLL_LINEDOWN;
-				break;
-			case SB_LINEUP:
-				Func = ScrollType.SCROLL_LINEUP;
-				break;
-			case SB_PAGEDOWN:
-				Func = ScrollType.SCROLL_PAGEDOWN;
-				break;
-			case SB_PAGEUP:
-				Func = ScrollType.SCROLL_PAGEUP;
-				break;
-			case SB_THUMBPOSITION:
-			case SB_THUMBTRACK:
-				Func = ScrollType.SCROLL_POS;
-				break;
-			case SB_TOP:
-				Func = ScrollType.SCROLL_TOP;
-				break;
-			default:
-				return;
-			}
-
-			// スクロールレンジを 16bit から 32bit へ拡張した (2005.10.4 yutaka)
-			si = new SCROLLINFO();
-			si.cbSize = Marshal.SizeOf(typeof(SCROLLINFO));
-			si.fMask = SIF_TRACKPOS;
-			if (GetScrollInfo(Handle, SB_VERT, ref si)) { // success
-				nPos = si.nTrackPos;
-			}
-
-			VTDisp.DispVScroll(Func, nPos);
 		}
 
 		void OnIMEComposition(uint wParam, uint lParam)
@@ -1062,16 +953,16 @@ namespace TeraTrem
 				Len = strlen(mbstr);
 				if (Len == 1) {
 					switch (mbstr[0]) {
-					case 0x20:
-						if (keyboard.ControlKey()) {
-							mbstr[0] = 0; /* Ctrl-Space */
-						}
-						break;
-					case 0x5c: // Ctrl-\ support for NEC-PC98
-						if (keyboard.ControlKey()) {
-							mbstr[0] = 0x1c;
-						}
-						break;
+						case 0x20:
+							if (keyboard.ControlKey()) {
+								mbstr[0] = 0; /* Ctrl-Space */
+							}
+							break;
+						case 0x5c: // Ctrl-\ support for NEC-PC98
+							if (keyboard.ControlKey()) {
+								mbstr[0] = 0x1c;
+							}
+							break;
 					}
 				}
 				if (ts.LocalEcho) {

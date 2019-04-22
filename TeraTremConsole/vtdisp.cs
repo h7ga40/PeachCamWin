@@ -105,7 +105,7 @@ namespace TeraTrem
 		public int WinWidth, WinHeight;
 		static bool Active = false;
 		static bool CompletelyVisible;
-		Font[] VTFont = new Font[(int)AttributeBitMasks.AttrFontMask + 1];
+		Font VTFont;
 		public int FontHeight, FontWidth, ScreenWidth, ScreenHeight;
 		public bool AdjustSize;
 		public bool DontChangeSize = false;
@@ -123,7 +123,6 @@ namespace TeraTrem
 		public int PageStart, BuffEnd;
 
 		bool CursorOnDBCS = false;
-		Font VTlf;
 		bool SaveWinSize = false;
 		int WinWidthOld, WinHeightOld;
 		IntPtr Background;
@@ -1624,12 +1623,7 @@ namespace TeraTrem
 			if (VTDC != IntPtr.Zero) DispReleaseDC();
 
 			/* Delete fonts */
-			for (i = 0; i <= (int)AttributeBitMasks.AttrFontMask; i++) {
-				for (j = i + 1; j <= (int)AttributeBitMasks.AttrFontMask; j++)
-					if (VTFont[j] == VTFont[i])
-						VTFont[j] = null;
-				if (VTFont[i] != null) VTFont[i].Dispose();
-			}
+			VTFont.Dispose();
 
 			if (Background != IntPtr.Zero) {
 				DeleteObject(Background);
@@ -1685,10 +1679,7 @@ namespace TeraTrem
 
 		void SetLogFont()
 		{
-			if (ts.VTFontSize.Y < 0)
-				VTlf = new Font(ts.VTFont, -ts.VTFontSize.Y, FontStyle.Regular, GraphicsUnit.Pixel, ts.VTFontCharSet);
-			else
-				VTlf = new Font(ts.VTFont, ts.VTFontSize.Y, FontStyle.Regular, GraphicsUnit.Point, ts.VTFontCharSet);
+			VTFont = new Font(ts.VTFont, FontStyle.Regular);
 		}
 
 		public void ChangeFont()
@@ -1698,25 +1689,19 @@ namespace TeraTrem
 			Graphics TmpDC;
 
 			/* Delete Old Fonts */
-			for (i = 0; i <= (int)AttributeBitMasks.AttrFontMask; i++) {
-				for (j = i + 1; j <= (int)AttributeBitMasks.AttrFontMask; j++)
-					if (VTFont[j] == VTFont[i])
-						VTFont[j] = null;
-				if (VTFont[i] != null)
-					VTFont[i].Dispose();
-			}
+			if (VTFont != null)
+				VTFont.Dispose();
 
 			/* Normal Font */
 			SetLogFont();
-			VTFont[0] = VTlf;
 
 			/* set IME font */
-			ttime.SetConversionLogFont(VTlf);
+			ttime.SetConversionLogFont(VTFont);
 
 			TmpDC = Graphics.FromHwnd(ttwinman.HVTWin.Handle);
 			IntPtr hdc = TmpDC.GetHdc();
 			try {
-				SelectObject(hdc, VTFont[0].ToHfont());
+				SelectObject(hdc, VTFont.ToHfont());
 				GetTextMetrics(hdc, out Metrics);
 
 				FontWidth = Metrics.tmAveCharWidth + ts.FontDW;
@@ -1726,28 +1711,6 @@ namespace TeraTrem
 				TmpDC.ReleaseHdc();
 				TmpDC.Dispose();
 			}
-
-			/* Underline */
-			VTFont[(int)AttributeBitMasks.AttrUnder] = new Font(VTlf, FontStyle.Underline);
-
-			if ((ts.FontFlag & FontFlags.FF_BOLD) != 0) {
-				/* Bold */
-				VTFont[(int)AttributeBitMasks.AttrBold] = new Font(VTlf, FontStyle.Bold);
-				/* Bold + Underline */
-				VTFont[(int)(AttributeBitMasks.AttrBold | AttributeBitMasks.AttrUnder)] = new Font(VTlf, FontStyle.Bold | FontStyle.Underline);
-			}
-			else {
-				VTFont[(int)AttributeBitMasks.AttrBold] = VTFont[(int)AttributeBitMasks.AttrDefault];
-				VTFont[(int)(AttributeBitMasks.AttrBold | AttributeBitMasks.AttrUnder)] = VTFont[(int)AttributeBitMasks.AttrUnder];
-			}
-
-			/* Special font */
-			VTFont[(int)AttributeBitMasks.AttrSpecial] = new Font("Tera Special", FontHeight, FontStyle.Regular, GraphicsUnit.Point, 2/*SYMBOL_CHARSET*/);
-			VTFont[(int)(AttributeBitMasks.AttrSpecial | AttributeBitMasks.AttrBold)] = VTFont[(int)AttributeBitMasks.AttrSpecial];
-			VTFont[(int)(AttributeBitMasks.AttrSpecial | AttributeBitMasks.AttrUnder)] = VTFont[(int)AttributeBitMasks.AttrSpecial];
-			VTFont[(int)(AttributeBitMasks.AttrSpecial | AttributeBitMasks.AttrBold | AttributeBitMasks.AttrUnder)] = VTFont[(int)AttributeBitMasks.AttrSpecial];
-
-			SetLogFont();
 
 			for (i = 0; i < tttypes.TermWidthMax; i++)
 				Dx[i] = FontWidth;
@@ -1768,7 +1731,7 @@ namespace TeraTrem
 
 				if (ts.UseIME) {
 					if (ts.IMEInline)
-						ttime.SetConversionLogFont(VTlf);
+						ttime.SetConversionLogFont(VTFont);
 					else
 						ttime.SetConversionWindow(ttwinman.HVTWin, -1, 0);
 				}
@@ -2115,7 +2078,7 @@ namespace TeraTrem
 			if (VTDC != IntPtr.Zero)
 				DispReleaseDC();
 			VTDC = PaintDC;
-			DCPrevFont = SelectObject(VTDC, VTFont[0].ToHfont());
+			DCPrevFont = SelectObject(VTDC, VTFont.ToHfont());
 			DispInitDC();
 
 #if ALPHABLEND_TYPE2
@@ -2228,11 +2191,11 @@ namespace TeraTrem
 		{
 			if (VTDC == IntPtr.Zero) {
 				VTDC = Graphics.FromHwnd(ttwinman.HVTWin.Handle).GetHdc();
-				if (VTFont[0] != null)
-					DCPrevFont = SelectObject(VTDC, VTFont[0].ToHfont());
+				if (VTFont != null)
+					DCPrevFont = SelectObject(VTDC, VTFont.ToHfont());
 			}
 			else
-				SelectObject(VTDC, VTFont[0].ToHfont());
+				SelectObject(VTDC, VTFont.ToHfont());
 #if ALPHABLEND_TYPE2
 			SetTextColor(VTDC, BGVTColor[0]);
 			SetBkColor(VTDC, BGVTColor[1]);
@@ -2285,7 +2248,17 @@ namespace TeraTrem
 			DCAttr = Attr;
 			DCReverse = Reverse;
 
-			SelectObject(VTDC, VTFont[(int)(Attr.Attr & AttributeBitMasks.AttrFontMask) | (isURLUnderlined(Attr) ? (int)AttributeBitMasks.AttrUnder : 0)].ToHfont());
+			FontStyle fontStyle = 0;
+			if ((Attr.Attr & AttributeBitMasks.AttrBold) != 0)
+				fontStyle |= FontStyle.Bold;
+			if (((Attr.Attr & AttributeBitMasks.AttrUnder) != 0) || isURLUnderlined(Attr))
+				fontStyle |= FontStyle.Underline;
+			if ((Attr.Attr & AttributeBitMasks.AttrSpecial) != 0)
+				fontStyle |= FontStyle.Italic;
+
+			Font font = new Font(VTFont, fontStyle);
+
+			SelectObject(VTDC, VTFont.ToHfont());
 
 			if ((ts.ColorFlag & ColorFlags.CF_FULLCOLOR) == 0) {
 				if (isBlinkColored(Attr)) {
@@ -3020,15 +2993,11 @@ namespace TeraTrem
 
 			ts.VTFlag = 1;
 			if (!ttdialog.LoadTTDLG()) return;
-			SetLogFont();
-			Ok = ttdialog.ChooseFontDlg(ttwinman.HVTWin, VTlf, ts);
+			Ok = ttdialog.ChooseFontDlg(ttwinman.HVTWin, VTFont, ts);
 			ttdialog.FreeTTDLG();
 			if (!Ok) return;
 
-			ts.VTFont = VTlf.FontFamily.Name;
-			//ts.VTFontSize.X = VTlf.Width;
-			ts.VTFontSize.Y = VTlf.Height;
-			ts.VTFontCharSet = VTlf.GdiCharSet;
+			ts.VTFont = new Font(VTFont, FontStyle.Regular);
 
 			ChangeFont();
 

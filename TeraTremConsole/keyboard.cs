@@ -654,7 +654,6 @@ namespace TeraTrem
 			int CodeLength;
 			byte[] Code = new byte[tttypes.MAXPATHLEN];
 			keyTypeIds CodeType;
-			ushort wId;
 			ushort ModStat;
 
 			if (VKey == Keys.ProcessKey) return KeyDownReturnType.KEYDOWN_CONTROL;
@@ -667,7 +666,6 @@ namespace TeraTrem
 			if ((ts.Debug > 0) && (VKey == Keys.Escape) && ShiftKey()) {
 				VTTerm.MessageBeep(0);
 				DebugFlag = (KeyboardDebugFlag)((int)(DebugFlag + 1) % (int)KeyboardDebugFlag.DEBUG_FLAG_MAXD);
-				CodeCount = 0;
 				PeekMessage(ref M, HWin.Handle, VTWindow.WM_CHAR, VTWindow.WM_CHAR, PM_REMOVE);
 				return KeyDownReturnType.KEYDOWN_CONTROL;
 			}

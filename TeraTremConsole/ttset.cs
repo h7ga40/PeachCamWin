@@ -150,9 +150,7 @@ namespace TeraTrem
 			ts.ColorFlag |= ColorFlags.CF_ANSICOLOR;
 
 			/* VT Font */
-			ts.VTFont = "Terminal";
-			ts.VTFontSize = new System.Drawing.Point(0, -13);
-			ts.VTFontCharSet = 1;
+			//ts.VTFont = new Font("Terminal", 10);
 
 			/* Bold font flag */
 			ts.FontFlag |= FontFlags.FF_BOLD;
