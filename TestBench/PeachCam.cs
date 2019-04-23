@@ -74,6 +74,9 @@ namespace TestBench
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		private delegate bool TVideoCapture_Capture(IntPtr ptr, IntPtr dst, int width, int height);
 		static TVideoCapture_Capture m_VideoCapture_Capture;
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		private delegate void TStdin([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] data, int length);
+		static TStdin m_Stdin;
 
 		public PeachCam()
 		{
@@ -116,6 +119,7 @@ namespace TestBench
 			m_videoio_VideoCapture_release = DllImport.GetFunction<Tvideoio_VideoCapture_release>(m_Module, "videoio_VideoCapture_release");
 			m_videoio_VideoCapture_delete = DllImport.GetFunction<Tvideoio_VideoCapture_delete>(m_Module, "videoio_VideoCapture_delete");
 			m_VideoCapture_Capture = DllImport.GetFunction<TVideoCapture_Capture>(m_Module, "VideoCapture_Capture");
+			m_Stdin = DllImport.GetFunction<TStdin>(m_Module, "Stdin");
 
 			if (m_Start == null) {
 				var module = m_Module;
@@ -168,6 +172,11 @@ namespace TestBench
 		public static bool VideoCapture_Capture(IntPtr ptr, IntPtr dst, int width, int height)
 		{
 			return m_VideoCapture_Capture(ptr, dst, width, height);
+		}
+
+		internal static void Stdin(byte[] data)
+		{
+			m_Stdin(data, data.Length);
 		}
 	}
 }

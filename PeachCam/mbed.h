@@ -52,6 +52,9 @@ typedef uint64_t us_timestamp_t;
 const ticker_data_t *get_us_ticker_data(void);
 us_timestamp_t ticker_read_us(const ticker_data_t *const ticker);
 
+#define printf testbench_printf
+int printf(const char *format, ...);
+
 #include "mbed_config.h"
 
 #include "platform/mbed_toolchain.h"

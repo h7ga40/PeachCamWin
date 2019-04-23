@@ -9,6 +9,11 @@ namespace TestBench
 		string InterfaceName { get; }
 	}
 
+	public interface IStdio
+	{
+		void Stdout(byte[] text);
+	}
+
 	public class TestBench : ITestBench
 	{
 		private Dictionary<int, IUnitInterface> interfaces = new Dictionary<int, IUnitInterface>();
@@ -17,6 +22,14 @@ namespace TestBench
 		public IEnumerable<IUnitInterface> Interfaces => interfaces.Values;
 		public List<Tuple<int, string, string>> VideoDevices { get; } = new List<Tuple<int, string, string>>();
 		public List<Tuple<int, string, string>> AudioDevices { get; } = new List<Tuple<int, string, string>>();
+
+		private Graphics graphics;
+		private IStdio stdio;
+
+		public TestBench(IStdio stdio)
+		{
+			this.stdio = stdio;
+		}
 
 		private IUnitInterface CreateGpio(ref gpio_t obj, PinName pin)
 		{
@@ -461,32 +474,32 @@ namespace TestBench
 		}
 
 		public int i2c_read(ref i2c_t obj, int address,
-			byte[] data, int length, int stop)
+			byte[] data, int length, int repeated)
 		{
 			if (!interfaces.TryGetValue(obj.id, out var uif)) {
 				throw new ArgumentException();
 			}
 
-			return ((I2C)uif).Read(address, data, length, stop);
+			return ((I2C)uif).Read(address, data, length, repeated);
 		}
 
 		public int i2c_write(ref i2c_t obj, int address,
-			byte[] data, int length, int stop)
+			byte[] data, int length, int repeated)
 		{
 			if (!interfaces.TryGetValue(obj.id, out var uif)) {
 				throw new ArgumentException();
 			}
 
-			return ((I2C)uif).Write(address, data, length, stop);
+			return ((I2C)uif).Write(address, data, length, repeated);
 		}
 
-		public int i2c_byte_read(ref i2c_t obj, int last)
+		public int i2c_byte_read(ref i2c_t obj, int ack)
 		{
 			if (!interfaces.TryGetValue(obj.id, out var uif)) {
 				throw new ArgumentException();
 			}
 
-			return ((I2C)uif).ByteRead(last);
+			return ((I2C)uif).ByteRead(ack);
 		}
 
 		public int i2c_byte_write(ref i2c_t obj, int data)
@@ -576,8 +589,6 @@ namespace TestBench
 		{
 			return new ESP32Driver(en, io0, tx, rx, debug, rts, cts, baudrate);
 		}
-
-		private Graphics graphics;
 
 		public void graphics_create()
 		{
@@ -690,6 +701,16 @@ namespace TestBench
 			VideoDevices.Clear();
 			AudioDevices.Clear();
 			PeachCam.enumerate_capture_devices();
+		}
+
+		public void ConsoleWrite(byte[] text, int len)
+		{
+			stdio.Stdout(text);
+		}
+
+		public void Stdin(byte[] data)
+		{
+			PeachCam.Stdin(data);
 		}
 	}
 }

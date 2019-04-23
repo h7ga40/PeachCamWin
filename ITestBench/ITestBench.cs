@@ -388,10 +388,10 @@ namespace TestBench
 		int i2c_start([In]ref i2c_t obj);
 		int i2c_stop([In]ref i2c_t obj);
 		int i2c_read([In]ref i2c_t obj, int address,
-			[Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]byte[] data, int length, int stop);
+			[Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]byte[] data, int length, int repeated);
 		int i2c_write([In]ref i2c_t obj, int address,
-			[In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]byte[] data, int length, int stop);
-		int i2c_byte_read([In]ref i2c_t obj, int last);
+			[In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]byte[] data, int length, int repeated);
+		int i2c_byte_read([In]ref i2c_t obj, int ack);
 		int i2c_byte_write([In]ref i2c_t obj, int data);
 
 		void spi_init(ref spi_t obj, PinName mosi, PinName miso, PinName sclk, PinName ssel);
@@ -444,5 +444,7 @@ namespace TestBench
 			[In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] p_data, int data_size, IntPtr p_notify_func, IntPtr p_app_data);
 
 		void AddDevice(bool video, int index, [MarshalAs(UnmanagedType.BStr)]string description, [MarshalAs(UnmanagedType.BStr)]string friendlyName);
+
+		void ConsoleWrite([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] text, int len);
 	}
 }

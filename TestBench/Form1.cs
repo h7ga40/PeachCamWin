@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPSSELight;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,7 +12,7 @@ using System.Windows.Forms;
 
 namespace TestBench
 {
-	public partial class Form1 : Form
+	public partial class Form1 : Form, IStdio
 	{
 		TestBench testBench;
 		PeachCam peachCam;
@@ -24,7 +25,7 @@ namespace TestBench
 		{
 			InitializeComponent();
 
-			testBench = new TestBench();
+			testBench = new TestBench(this);
 
 			peachCam = new PeachCam();
 			peachCam.SetTestBench(testBench);
@@ -152,6 +153,18 @@ namespace TestBench
 		private void button1_Click(object sender, EventArgs e)
 		{
 
+		}
+
+		public void Stdout(byte[] text)
+		{
+			BeginInvoke(new MethodInvoker(() => { 
+				vtWindow1.Parse(text);
+			}));
+		}
+
+		private void vtWindow1_DataReceive(object sender, byte[] data)
+		{
+			testBench.Stdin(data);
 		}
 	}
 

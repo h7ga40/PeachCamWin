@@ -535,3 +535,41 @@ extern "C" __declspec(dllexport) bool AudioCapture_Stop()
 
 	return true;
 }
+
+extern "C" __declspec(dllexport) void Stdin(uint8_t *data, int len)
+{
+}
+
+int printf(const char *format, ...)
+{
+	int ret;
+	char text[1024];
+	va_list args;
+
+	va_start(args, format);
+	ret = vsnprintf(text, sizeof(text), format, args);
+	va_end(args);
+
+	if (ret > 0) {
+		for (char *pos = text; *pos != '\0'; pos++) {
+			if (*pos == '\n')
+				ret++;
+		}
+
+		char *text2 = (char *)malloc(ret + 1), *dst = text2;
+
+		for (char *src = text; *src != '\0'; src++) {
+			if (*src == '\n') {
+				*dst++ = '\r';
+			}
+			*dst++ = *src;
+		}
+		*dst = '\0';
+
+		TestBench->ConsoleWrite((uint8_t *)text2, ret);
+
+		free(text2);
+	}
+
+	return ret;
+}
