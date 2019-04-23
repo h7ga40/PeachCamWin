@@ -74,9 +74,6 @@ namespace TeraTrem
 		TTTSet ts;
 		TComVar cv;
 
-		[DllImport("user32.dll")]
-		public extern static int MessageBeep(int p);
-
 		static bool Accept8BitCtrl(int VTlevel, TTTSet ts) { return (VTlevel >= 2) && ((ts.TermFlag & TerminalFlags.TF_ACCEPT8BITCTRL) != 0); }
 
 		const int NParamMax = 16;
@@ -126,9 +123,6 @@ namespace TeraTrem
 		TStatusBuff SBuff1 = new TStatusBuff(), SBuff2 = new TStatusBuff(), SBuff3 = new TStatusBuff();
 
 		bool ESCFlag, JustAfterESC;
-		bool KanjiIn;
-		bool EUCkanaIn, EUCsupIn;
-		int EUCcount;
 		bool Special;
 
 		int[] Param = new int[NParamMax + 1];
@@ -162,8 +156,6 @@ namespace TeraTrem
 		/* single shift 2/3 flag */
 		bool SSflag;
 		/* JIS -> SJIS conversion flag */
-		bool ConvJIS;
-		char Kanji;
 		bool Fallbacked;
 
 		// variables for status line mode
@@ -223,25 +215,12 @@ namespace TeraTrem
 			sbuff.CursorX = 0;
 			sbuff.CursorY = 0;
 			sbuff.Attr = VTDisp.DefCharAttr;
-			if (ts.Language == Language.IdJapanese) {
-				sbuff.Gn[0] = CharacterSets.IdASCII;
-				sbuff.Gn[1] = CharacterSets.IdKatakana;
-				sbuff.Gn[2] = CharacterSets.IdKatakana;
-				sbuff.Gn[3] = CharacterSets.IdKanji;
-				sbuff.Glr[0] = 0;
-				if ((ts.KanjiCode == KanjiCodeId.IdJIS) && !ts.JIS7Katakana)
-					sbuff.Glr[1] = 2;  // 8-bit katakana
-				else
-					sbuff.Glr[1] = 3;
-			}
-			else {
-				sbuff.Gn[0] = CharacterSets.IdASCII;
-				sbuff.Gn[1] = CharacterSets.IdSpecial;
-				sbuff.Gn[2] = CharacterSets.IdASCII;
-				sbuff.Gn[3] = CharacterSets.IdASCII;
-				sbuff.Glr[0] = 0;
-				sbuff.Glr[1] = 0;
-			}
+			sbuff.Gn[0] = CharacterSets.IdASCII;
+			sbuff.Gn[1] = CharacterSets.IdSpecial;
+			sbuff.Gn[2] = CharacterSets.IdASCII;
+			sbuff.Gn[3] = CharacterSets.IdASCII;
+			sbuff.Glr[0] = 0;
+			sbuff.Glr[1] = 0;
 			sbuff.AutoWrapMode = true;
 			sbuff.RelativeOrgMode = false;
 		}
@@ -344,45 +323,17 @@ namespace TeraTrem
 
 		void ResetCharSet()
 		{
-			if (ts.Language == Language.IdJapanese) {
-				Gn[0] = CharacterSets.IdASCII;
-				Gn[1] = CharacterSets.IdKatakana;
-				Gn[2] = CharacterSets.IdKatakana;
-				Gn[3] = CharacterSets.IdKanji;
-				Glr[0] = 0;
-				if ((ts.KanjiCode == KanjiCodeId.IdJIS) && !ts.JIS7Katakana)
-					Glr[1] = 2;  // 8-bit katakana
-				else
-					Glr[1] = 3;
-			}
-			else {
-				Gn[0] = CharacterSets.IdASCII;
-				Gn[1] = CharacterSets.IdSpecial;
-				Gn[2] = CharacterSets.IdASCII;
-				Gn[3] = CharacterSets.IdASCII;
-				Glr[0] = 0;
-				Glr[1] = 0;
-				cv.SendCode = CharacterSets.IdASCII;
-				cv.SendKanjiFlag = false;
-				cv.EchoCode = CharacterSets.IdASCII;
-				cv.EchoKanjiFlag = false;
-			}
+			Gn[0] = CharacterSets.IdASCII;
+			Gn[1] = CharacterSets.IdSpecial;
+			Gn[2] = CharacterSets.IdASCII;
+			Gn[3] = CharacterSets.IdASCII;
+			Glr[0] = 0;
+			Glr[1] = 0;
 			/* Kanji flag */
-			KanjiIn = false;
-			EUCkanaIn = false;
-			EUCsupIn = false;
 			SSflag = false;
-			ConvJIS = false;
 			Fallbacked = false;
 
-			cv.Language = ts.Language;
 			cv.CRSend = ts.CRSend;
-			cv.KanjiCodeEcho = ts.KanjiCode;
-			cv.JIS7KatakanaEcho = ts.JIS7Katakana;
-			cv.KanjiCodeSend = ts.KanjiCodeSend;
-			cv.JIS7KatakanaSend = ts.JIS7KatakanaSend;
-			cv.KanjiIn = ts.KanjiIn;
-			cv.KanjiOut = ts.KanjiOut;
 		}
 
 		void ResetKeypadMode(bool DisabledModeOnly)
@@ -553,7 +504,7 @@ namespace TeraTrem
 			/* for auto print mode */
 			if ((AutoPrintMode) &&
 				(b >= (byte)ControlCharacters.LF) && (b <= (byte)ControlCharacters.FF))
-				Buffer.BuffDumpCurrentLine(b);
+				Buffer.BuffDumpCurrentLine((char)b);
 
 			if (!ts.EnableContinuedLineCopy || logFlag)
 				if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte((byte)ControlCharacters.LF);
@@ -587,7 +538,7 @@ namespace TeraTrem
 			if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte((byte)ControlCharacters.HT);
 		}
 
-		void PutChar(byte b)
+		void PutChar(char b)
 		{
 			bool SpecialNew;
 			TCharAttr CharAttrTmp;
@@ -612,11 +563,11 @@ namespace TeraTrem
 					// ASCII文字で、非表示な文字はログ採取しない。
 				}
 				else {
-					if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte(b);
+					if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte((byte)b);
 				}
 			}
 			else {
-				if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte(b);
+				if (cv.HLogBuf != IntPtr.Zero) filesys.Log1Byte((byte)b);
 			}
 
 			Buffer.Wrap = false;
@@ -641,13 +592,13 @@ namespace TeraTrem
 			}
 
 			if (Special) {
-				b = (byte)(b & 0x7F);
+				b = (char)(b & 0x7F);
 				CharAttrTmp.Attr |= AttributeBitMasks.AttrSpecial;
 			}
 			else
 				CharAttrTmp.Attr |= CharAttr.Attr;
 
-			Buffer.BuffPutChar(b, CharAttrTmp, InsertMode);
+			Buffer.BuffPutChar((char)b, CharAttrTmp, InsertMode);
 
 			if (VTDisp.CursorX == Buffer.CursorRightM || VTDisp.CursorX >= VTDisp.NumOfColumns - 1) {
 				Buffer.UpdateStr();
@@ -658,12 +609,12 @@ namespace TeraTrem
 			}
 		}
 
-		private static bool __isascii(byte b)
+		private static bool __isascii(char b)
 		{
 			return b <= 0x7F;
 		}
 
-		private static bool isprint(byte b)
+		private static bool isprint(char b)
 		{
 			return (b >= 0x20) && (b <= 0x7E);
 		}
@@ -675,7 +626,7 @@ namespace TeraTrem
 			CharAttrTmp = CharAttr;
 
 			if (PrinterMode) { // printer mode
-				teraprn.WriteToPrnFile(b, true);
+				teraprn.WriteToPrnFile((char)b, true);
 				return;
 			}
 
@@ -702,7 +653,7 @@ namespace TeraTrem
 			}
 
 			CharAttrTmp.Attr |= AttributeBitMasks.AttrSpecial;
-			Buffer.BuffPutChar(b, CharAttrTmp, InsertMode);
+			Buffer.BuffPutChar((char)b, CharAttrTmp, InsertMode);
 
 			if (VTDisp.CursorX == Buffer.CursorRightM || VTDisp.CursorX >= VTDisp.NumOfColumns - 1) {
 				Buffer.UpdateStr();
@@ -713,26 +664,24 @@ namespace TeraTrem
 			}
 		}
 
-		void PutKanji(byte b)
+		void PutKanji(char Kanji)
 		{
 			int LineEnd;
 			TCharAttr CharAttrTmp;
 			CharAttrTmp = CharAttr;
 
-			Kanji = (char)(Kanji + b);
-
 			if (PrinterMode && DirectPrn) {
-				teraprn.WriteToPrnFile((byte)(Kanji >> 8), false);
-				teraprn.WriteToPrnFile((byte)(Kanji & 0xFF), true);
+				//teraprn.WriteToPrnFile((char)(Kanji >> 8), false);
+				//teraprn.WriteToPrnFile((char)(Kanji & 0xFF), true);
+				teraprn.WriteToPrnFile(Kanji, true);
 				return;
 			}
 
-			if (ConvJIS)
-				Kanji = language.JIS2SJIS((char)(Kanji & 0x7f7f));
-
-			if (PrinterMode) { // printer mode
-				teraprn.WriteToPrnFile((byte)(Kanji >> 8), false);
-				teraprn.WriteToPrnFile((byte)(Kanji & 0xFF), true);
+			// printer mode
+			if (PrinterMode) {
+				//teraprn.WriteToPrnFile((char)(Kanji >> 8), false);
+				//teraprn.WriteToPrnFile((char)(Kanji & 0xFF), true);
+				teraprn.WriteToPrnFile(Kanji, true);
 				return;
 			}
 
@@ -752,7 +701,7 @@ namespace TeraTrem
 					if (ts.EnableContinuedLineCopy) {
 						CharAttrTmp.Attr |= AttributeBitMasks.AttrLineContinued;
 						if (VTDisp.CursorX == LineEnd)
-							Buffer.BuffPutChar(0x20, CharAttr, false);
+							Buffer.BuffPutChar(' ', CharAttr, false);
 					}
 					CarriageReturn(false);
 					LineFeed((byte)ControlCharacters.LF, false);
@@ -808,8 +757,8 @@ namespace TeraTrem
 					string buff = String.Format("{0:2X}", (uint)b);
 
 					for (i = 0; i < 2; i++)
-						PutChar((byte)buff[i]);
-					PutChar((byte)' ');
+						PutChar(buff[i]);
+					PutChar(' ');
 				}
 				else if (keyboard.DebugFlag == KeyboardDebugFlag.DEBUG_FLAG_NORM) {
 
@@ -820,18 +769,18 @@ namespace TeraTrem
 					}
 
 					if (b <= (byte)ControlCharacters.US) {
-						PutChar((byte)'^');
-						PutChar((byte)(b + 0x40));
+						PutChar('^');
+						PutChar((char)(b + 0x40));
 					}
 					else if (b == (byte)ControlCharacters.DEL) {
-						PutChar((byte)'<');
-						PutChar((byte)'D');
-						PutChar((byte)'E');
-						PutChar((byte)'L');
-						PutChar((byte)'>');
+						PutChar('<');
+						PutChar('D');
+						PutChar('E');
+						PutChar('L');
+						PutChar('>');
 					}
 					else
-						PutChar(b);
+						PutChar((char)b);
 				}
 
 				if (CharAttr.Attr != svCharAttr) {
@@ -850,12 +799,6 @@ namespace TeraTrem
 				return;
 			case (byte)ControlCharacters.SO:
 				if ((ts.ISO2022Flag & ISO2022ShiftFlags.ISO2022_SO) != 0 && !DirectPrn) {
-					if ((ts.Language == Language.IdJapanese) &&
-						(ts.KanjiCode == KanjiCodeId.IdJIS) &&
-						(ts.JIS7Katakana) &&
-						((ts.TermFlag & TerminalFlags.TF_FIXEDJIS) != 0)) {
-						Gn[1] = CharacterSets.IdKatakana;
-					}
 					Glr[0] = 1; /* LS1 */
 					return;
 				}
@@ -873,22 +816,22 @@ namespace TeraTrem
 				ICount = 0;
 				JustAfterESC = true;
 				ParseMode = ParsingMode.ModeESC;
-				teraprn.WriteToPrnFile(0, true); // flush prn buff
+				teraprn.WriteToPrnFile('\0', true); // flush prn buff
 				return;
 			case (byte)ControlCharacters.CSI:
 				if (!Accept8BitCtrl(VTlevel, ts)) {
-					PutChar(b); /* Disp C1 char in VT100 mode */
+					PutChar((char)b); /* Disp C1 char in VT100 mode */
 					return;
 				}
 				ClearParams();
 				FirstPrm = true;
 				ParseMode = ParsingMode.ModeCSI;
-				teraprn.WriteToPrnFile(0, true); // flush prn buff
-				teraprn.WriteToPrnFile(b, false);
+				teraprn.WriteToPrnFile((char)0, true); // flush prn buff
+				teraprn.WriteToPrnFile((char)b, false);
 				return;
 			}
 			/* send the uninterpreted character to printer */
-			teraprn.WriteToPrnFile(b, true);
+			teraprn.WriteToPrnFile((char)b, true);
 		}
 
 		void ParseControl(byte b)
@@ -901,9 +844,9 @@ namespace TeraTrem
 			if (b >= 0x80) /* C1 char */
 			{
 				/* English mode */
-				if (ts.Language == Language.IdEnglish) {
+				if (true) {
 					if (!Accept8BitCtrl(VTlevel, ts)) {
-						PutChar(b); /* Disp C1 char in VT100 mode */
+						PutChar((char)b); /* Disp C1 char in VT100 mode */
 						return;
 					}
 				}
@@ -992,13 +935,6 @@ namespace TeraTrem
 				break;
 			case ControlCharacters.SO: /* LS1 */
 				if ((ts.ISO2022Flag & ISO2022ShiftFlags.ISO2022_SO) != 0) {
-					if ((ts.Language == Language.IdJapanese) &&
-						(ts.KanjiCode == KanjiCodeId.IdJIS) &&
-						(ts.JIS7Katakana) &&
-						((ts.TermFlag & TerminalFlags.TF_FIXEDJIS) != 0)) {
-						Gn[1] = CharacterSets.IdKatakana;
-					}
-
 					Glr[0] = 1;
 				}
 				break;
@@ -1230,35 +1166,7 @@ namespace TeraTrem
 		}
 
 		/* select double byte code set */
-		void ESCDBCSSelect(byte b)
-		{
-			int Dist;
-
-			if (ts.Language != Language.IdJapanese) return;
-
-			switch (ICount) {
-			case 1:
-				if ((b == '@') || (b == 'B')) {
-					Gn[0] = CharacterSets.IdKanji; /* Kanji -> G0 */
-					if ((ts.TermFlag & TerminalFlags.TF_AUTOINVOKE) != 0)
-						Glr[0] = 0; /* G0.GL */
-				}
-				break;
-			case 2:
-				/* Second intermediate char must be
-			   '(' or ')' or '*' or '+'. */
-				Dist = (IntChar[2] - '(') & 3; /* G0 - G3 */
-				if ((b == '1') || (b == '3') ||
-				(b == '@') || (b == 'B')) {
-					Gn[Dist] = CharacterSets.IdKanji; /* Kanji -> G0-3 */
-					if (((ts.TermFlag & TerminalFlags.TF_AUTOINVOKE) != 0) &&
-						(Dist == 0))
-						Glr[0] = 0; /* G0.GL */
-				}
-				break;
-			}
-		}
-
+		void ESCDBCSSelect(byte b) { }
 		void ESCSelectCode(byte b)
 		{
 			switch ((char)b) {
@@ -1284,10 +1192,7 @@ namespace TeraTrem
 			case 'A': Gn[Dist] = CharacterSets.IdASCII; break;
 			case 'B': Gn[Dist] = CharacterSets.IdASCII; break;
 			case 'H': Gn[Dist] = CharacterSets.IdASCII; break;
-			case 'I':
-				if (ts.Language == Language.IdJapanese)
-					Gn[Dist] = CharacterSets.IdKatakana;
-				break;
+			case 'I': break;
 			case 'J': Gn[Dist] = CharacterSets.IdASCII; break;
 			}
 
@@ -1307,8 +1212,8 @@ namespace TeraTrem
 				case '[': /* CSI */
 					ClearParams();
 					FirstPrm = true;
-					teraprn.WriteToPrnFile((byte)ControlCharacters.ESC, false);
-					teraprn.WriteToPrnFile((byte)'[', false);
+					teraprn.WriteToPrnFile((char)ControlCharacters.ESC, false);
+					teraprn.WriteToPrnFile((char)'[', false);
 					ParseMode = ParsingMode.ModeCSI;
 					return;
 				} /* end of case Icount=0 */
@@ -1345,10 +1250,10 @@ namespace TeraTrem
 				break;
 			}
 			// send the uninterpreted sequence to printer
-			teraprn.WriteToPrnFile((byte)ControlCharacters.ESC, false);
+			teraprn.WriteToPrnFile((char)ControlCharacters.ESC, false);
 			for (i = 1; i <= ICount; i++)
-				teraprn.WriteToPrnFile(IntChar[i], false);
-			teraprn.WriteToPrnFile(b, true);
+				teraprn.WriteToPrnFile((char)IntChar[i], false);
+			teraprn.WriteToPrnFile((char)b, true);
 		}
 
 		void ParseEscape(byte b) /* b is the final char */
@@ -2835,19 +2740,6 @@ namespace TeraTrem
 					}
 					break;
 				case 59:
-					if (ts.Language == Language.IdJapanese) {
-						/* kanji terminal */
-						Gn[0] = CharacterSets.IdASCII;
-						Gn[1] = CharacterSets.IdKatakana;
-						Gn[2] = CharacterSets.IdKatakana;
-						Gn[3] = CharacterSets.IdKanji;
-						Glr[0] = 0;
-						if ((ts.KanjiCode == KanjiCodeId.IdJIS) &&
-							!ts.JIS7Katakana)
-							Glr[1] = 2;  // 8-bit katakana
-						else
-							Glr[1] = 3;
-					}
 					break;
 				case 66: keyboard.AppliKeyMode = true; break;       // DECNKM
 				case 67: ts.BSKey = DelId.IdBS; break;      // DECBKM
@@ -2936,7 +2828,7 @@ namespace TeraTrem
 			case 1:
 				if ((ts.TermFlag & TerminalFlags.TF_PRINTERCTRL) != 0) {
 					teraprn.OpenPrnFile();
-					Buffer.BuffDumpCurrentLine((byte)ControlCharacters.LF);
+					Buffer.BuffDumpCurrentLine((char)ControlCharacters.LF);
 					if (!AutoPrintMode)
 						teraprn.ClosePrnFile();
 				}
@@ -2998,19 +2890,6 @@ namespace TeraTrem
 					}
 					break;
 				case 59:
-					if (ts.Language == Language.IdJapanese) {
-						/* katakana terminal */
-						Gn[0] = CharacterSets.IdASCII;
-						Gn[1] = CharacterSets.IdKatakana;
-						Gn[2] = CharacterSets.IdKatakana;
-						Gn[3] = CharacterSets.IdKanji;
-						Glr[0] = 0;
-						if ((ts.KanjiCode == KanjiCodeId.IdJIS) &&
-							!ts.JIS7Katakana)
-							Glr[1] = 2;  // 8-bit katakana
-						else
-							Glr[1] = 3;
-					}
 					break;
 				case 66: keyboard.AppliKeyMode = false; break;      // DECNKM
 				case 67: ts.BSKey = DelId.IdDEL; break;     // DECBKM
@@ -3318,12 +3197,7 @@ namespace TeraTrem
 						resp = 2;
 					break;
 				case 59:    // DECKKDM
-					if (ts.Language != Language.IdJapanese)
-						resp = 0;
-					else if ((ts.KanjiCode == KanjiCodeId.IdJIS) && (!ts.JIS7Katakana))
-						resp = 4;
-					else
-						resp = 3;
+					resp = 0;
 					break;
 				case 66:    // DECNKM
 					if (keyboard.AppliKeyMode)
@@ -3609,7 +3483,7 @@ namespace TeraTrem
 					// TODO: 左右マージンのチェックを行う。
 				}
 
-				Buffer.BuffFillBox((byte)Param[1], Param[3] - 1, Param[2] - 1, Param[5] - 1, Param[4] - 1);
+				Buffer.BuffFillBox((char)Param[1], Param[3] - 1, Param[2] - 1, Param[5] - 1, Param[4] - 1);
 				break;
 
 			case (byte)'z': // DECERA
@@ -3854,7 +3728,7 @@ namespace TeraTrem
 						if (Param[1] == 4) {
 							PrinterMode = false;
 							// clear prn buff
-							teraprn.WriteToPrnFile(0, false);
+							teraprn.WriteToPrnFile('\0', false);
 							if (!AutoPrintMode)
 								teraprn.ClosePrnFile();
 							return;
@@ -3868,7 +3742,7 @@ namespace TeraTrem
 			case 1: break;
 			} /* of case Icount */
 
-			teraprn.WriteToPrnFile(b, true);
+			teraprn.WriteToPrnFile((char)b, true);
 		}
 
 		void ParseCS(byte b) /* b is the final char */
@@ -3996,7 +3870,7 @@ namespace TeraTrem
 				ParseCS(b); /* terminate char */
 			else {
 				if (PrinterMode)
-					teraprn.WriteToPrnFile(b, false);
+					teraprn.WriteToPrnFile((char)b, false);
 
 				if ((b >= 0x20) && (b <= 0x2F)) { /* intermediate char */
 					if (ICount < IntCharMax) ICount++;
@@ -4036,27 +3910,25 @@ namespace TeraTrem
 
 		int CheckUTF8Seq(byte b, int utf8_stat)
 		{
-			if (ts.Language == Language.IdUtf8 || (ts.Language == Language.IdJapanese && (ts.KanjiCode == KanjiCodeId.IdUTF8 || ts.KanjiCode == KanjiCodeId.IdUTF8m))) {
-				if (utf8_stat > 0) {
-					if (b >= 0x80 && b < 0xc0) {
-						utf8_stat -= 1;
-					}
-					else { // Invalid UTF-8 sequence
-						utf8_stat = 0;
-					}
+			if (utf8_stat > 0) {
+				if (b >= 0x80 && b < 0xc0) {
+					utf8_stat -= 1;
 				}
-				else if (b < 0xc0) {
-					; // nothing to do
+				else { // Invalid UTF-8 sequence
+					utf8_stat = 0;
 				}
-				else if (b < 0xe0) { // 2byte sequence
-					utf8_stat = 1;
-				}
-				else if (b < 0xf0) { // 3byte sequence
-					utf8_stat = 2;
-				}
-				else if (b < 0xf8) { // 4byte sequence
-					utf8_stat = 3;
-				}
+			}
+			else if (b < 0xc0) {
+				; // nothing to do
+			}
+			else if (b < 0xe0) { // 2byte sequence
+				utf8_stat = 1;
+			}
+			else if (b < 0xf0) { // 3byte sequence
+				utf8_stat = 2;
+			}
+			else if (b < 0xf8) { // 4byte sequence
+				utf8_stat = 3;
 			}
 			return utf8_stat;
 		}
@@ -4067,7 +3939,7 @@ namespace TeraTrem
 		{
 			if ((ESCFlag && (b == '\\')) ||
 				(b <= (byte)ControlCharacters.US && b != (byte)ControlCharacters.ESC && b != (byte)ControlCharacters.HT) ||
-				(b == (byte)ControlCharacters.ST && ts.KanjiCode != KanjiCodeId.IdSJIS && utf8_stat == 0)) {
+				(b == (byte)ControlCharacters.ST && utf8_stat == 0)) {
 				ParseMode = ParsingMode.ModeFirst;
 			}
 
@@ -4437,7 +4309,7 @@ namespace TeraTrem
 
 		void DeviceControl(byte b)
 		{
-			if ((ESCFlag && (b == '\\')) || (b == (byte)ControlCharacters.ST && ts.KanjiCode != KanjiCodeId.IdSJIS && DeviceControl_utf8_stat == 0)) {
+			if ((ESCFlag && (b == '\\')) || (b == (byte)ControlCharacters.ST && DeviceControl_utf8_stat == 0)) {
 				if (DcsParseMode == ModeDcsString) {
 					StrBuff[StrLen] = 0;
 					ParseDCS(Cmd, StrBuff, StrLen);
@@ -4516,7 +4388,7 @@ namespace TeraTrem
 
 		void DCUserKey(byte b)
 		{
-			if (ESCFlag && (b == '\\') || (b == (byte)ControlCharacters.ST && ts.KanjiCode != KanjiCodeId.IdSJIS && DCUserKey_utf8_stat == 0)) {
+			if (ESCFlag && (b == '\\') || (b == (byte)ControlCharacters.ST && DCUserKey_utf8_stat == 0)) {
 				if (!WaitKeyId) keyboard.DefineUserKey(NewKeyId, NewKeyStr, NewKeyLen);
 				ESCFlag = false;
 				ParseMode = ParsingMode.ModeFirst;
@@ -4920,7 +4792,7 @@ namespace TeraTrem
 			else if (b == (char)ControlCharacters.BEL) {
 				TermChar = (char)ControlCharacters.BEL;
 			}
-			else if (b == (char)ControlCharacters.ST && Accept8BitCtrl(VTlevel, ts) && !(ts.Language == Language.IdJapanese && ts.KanjiCode == KanjiCodeId.IdSJIS) && XSequence_utf8_stat == 0) {
+			else if (b == (char)ControlCharacters.ST && Accept8BitCtrl(VTlevel, ts) && XSequence_utf8_stat == 0) {
 				TermChar = (char)ControlCharacters.ST;
 			}
 
@@ -5170,274 +5042,10 @@ namespace TeraTrem
 			}
 		}
 
-		bool CheckKanji(byte b)
-		{
-			bool Check;
-
-			if (ts.Language != Language.IdJapanese)
-				return false;
-
-			ConvJIS = false;
-
-			if (ts.KanjiCode == KanjiCodeId.IdSJIS ||
-				(ts.FallbackToCP932 && (ts.KanjiCode == KanjiCodeId.IdUTF8 || ts.KanjiCode == KanjiCodeId.IdUTF8m))) {
-				if ((0x80 < b) && (b < 0xa0) || (0xdf < b) && (b < 0xfd)) {
-					Fallbacked = true;
-					return true; // SJIS kanji
-				}
-				if ((0xa1 <= b) && (b <= 0xdf)) {
-					return false; // SJIS katakana
-				}
-			}
-
-			if ((b >= 0x21) && (b <= 0x7e)) {
-				Check = (Gn[Glr[0]] == CharacterSets.IdKanji);
-				ConvJIS = Check;
-			}
-			else if ((b >= 0xA1) && (b <= 0xFE)) {
-				Check = (Gn[Glr[1]] == CharacterSets.IdKanji);
-				if (ts.KanjiCode == KanjiCodeId.IdEUC) {
-					Check = true;
-				}
-				else if (ts.KanjiCode == KanjiCodeId.IdJIS && ((ts.TermFlag & TerminalFlags.TF_FIXEDJIS) != 0) && !ts.JIS7Katakana) {
-					Check = false; // 8-bit katakana
-				}
-				ConvJIS = Check;
-			}
-			else {
-				Check = false;
-			}
-
-			return Check;
-		}
-
-		bool CheckKorean(byte b)
-		{
-			bool Check = true;
-
-			if (ts.Language != Language.IdKorean)
-				return false;
-
-			if (ts.KanjiCode == KanjiCodeId.IdSJIS) {
-				if ((0xA1 <= b) && (b <= 0xFE)) {
-					Check = true;
-				}
-				else {
-					Check = false;
-				}
-			}
-
-			return Check;
-		}
-
-		bool ParseFirstJP(byte b)
-		// returns true if b is processed
-		//  (actually allways returns true)
-		{
-			if (KanjiIn) {
-				if ((!ConvJIS) && (0x3F < b) && (b < 0xFD) ||
-					  ConvJIS && ((0x20 < b) && (b < 0x7f) ||
-								   (0xa0 < b) && (b < 0xff))) {
-					PutKanji(b);
-					KanjiIn = false;
-					return true;
-				}
-				else if ((ts.TermFlag & TerminalFlags.TF_CTRLINKANJI) == 0) {
-					KanjiIn = false;
-				}
-				else if ((b == (byte)ControlCharacters.CR) && Buffer.Wrap) {
-					CarriageReturn(false);
-					LineFeed((byte)ControlCharacters.LF, false);
-					Buffer.Wrap = false;
-				}
-			}
-
-			if (SSflag) {
-				if (Gn[GLtmp] == CharacterSets.IdKanji) {
-					Kanji = (char)(b << 8);
-					KanjiIn = true;
-					SSflag = false;
-					return true;
-				}
-				else if (Gn[GLtmp] == CharacterSets.IdKatakana) {
-					b = (byte)(b | 0x80);
-				}
-
-				PutChar(b);
-				SSflag = false;
-				return true;
-			}
-
-			if ((!EUCsupIn) && (!EUCkanaIn) && (!KanjiIn) && CheckKanji(b)) {
-				Kanji = (char)(b << 8);
-				KanjiIn = true;
-				return true;
-			}
-
-			if (b <= (byte)ControlCharacters.US) {
-				ParseControl(b);
-			}
-			else if (b == 0x20) {
-				PutChar(b);
-			}
-			else if ((b >= 0x21) && (b <= 0x7E)) {
-				if (EUCsupIn) {
-					EUCcount--;
-					EUCsupIn = (EUCcount == 0);
-					return true;
-				}
-
-				if ((Gn[Glr[0]] == CharacterSets.IdKatakana) || EUCkanaIn) {
-					b = (byte)(b | 0x80);
-					EUCkanaIn = false;
-				}
-				PutChar(b);
-			}
-			else if (b == 0x7f) {
-				return true;
-			}
-			else if ((b >= 0x80) && (b <= 0x8D)) {
-				ParseControl(b);
-			}
-			else if (b == 0x8E) { // SS2
-				switch (ts.KanjiCode) {
-				case KanjiCodeId.IdEUC:
-					if ((ts.ISO2022Flag & ISO2022ShiftFlags.ISO2022_SS2) != 0) {
-						EUCkanaIn = true;
-					}
-					break;
-				case KanjiCodeId.IdUTF8:
-				case KanjiCodeId.IdUTF8m:
-					PutChar((byte)'?');
-					break;
-				default:
-					ParseControl(b);
-					break;
-				}
-			}
-			else if (b == 0x8F) { // SS3
-				switch (ts.KanjiCode) {
-				case KanjiCodeId.IdEUC:
-					if ((ts.ISO2022Flag & ISO2022ShiftFlags.ISO2022_SS3) != 0) {
-						EUCcount = 2;
-						EUCsupIn = true;
-					}
-					break;
-				case KanjiCodeId.IdUTF8:
-				case KanjiCodeId.IdUTF8m:
-					PutChar((byte)'?');
-					break;
-				default:
-					ParseControl(b);
-					break;
-				}
-			}
-			else if ((b >= 0x90) && (b <= 0x9F)) {
-				ParseControl(b);
-			}
-			else if (b == 0xA0) {
-				PutChar(0x20);
-			}
-			else if ((b >= 0xA1) && (b <= 0xFE)) {
-				if (EUCsupIn) {
-					EUCcount--;
-					EUCsupIn = (EUCcount == 0);
-					return true;
-				}
-
-				if ((Gn[Glr[1]] != CharacterSets.IdASCII) ||
-					(ts.KanjiCode == KanjiCodeId.IdEUC) && EUCkanaIn ||
-					(ts.KanjiCode == KanjiCodeId.IdSJIS) ||
-					(ts.KanjiCode == KanjiCodeId.IdJIS) &&
-					!ts.JIS7Katakana &&
-					((ts.TermFlag & TerminalFlags.TF_FIXEDJIS) != 0))
-					PutChar(b); // katakana
-				else {
-					if (Gn[Glr[1]] == CharacterSets.IdASCII) {
-						b = (byte)(b & 0x7f);
-					}
-					PutChar(b);
-				}
-				EUCkanaIn = false;
-			}
-			else {
-				PutChar(b);
-			}
-
-			return true;
-		}
-
-		bool ParseFirstKR(byte b)
-		// returns true if b is processed
-		//  (actually allways returns true)
-		{
-			if (KanjiIn) {
-				if ((0x41 <= b) && (b <= 0x5A) ||
-					(0x61 <= b) && (b <= 0x7A) ||
-					(0x81 <= b) && (b <= 0xFE)) {
-					PutKanji(b);
-					KanjiIn = false;
-					return true;
-				}
-				else if ((ts.TermFlag & TerminalFlags.TF_CTRLINKANJI) == 0) {
-					KanjiIn = false;
-				}
-				else if ((b == (byte)ControlCharacters.CR) && Buffer.Wrap) {
-					CarriageReturn(false);
-					LineFeed((byte)ControlCharacters.LF, false);
-					Buffer.Wrap = false;
-				}
-			}
-
-			if ((!KanjiIn) && CheckKorean(b)) {
-				Kanji = (char)(b << 8);
-				KanjiIn = true;
-				return true;
-			}
-
-			if (b <= (byte)ControlCharacters.US) {
-				ParseControl(b);
-			}
-			else if (b == 0x20) {
-				PutChar(b);
-			}
-			else if ((b >= 0x21) && (b <= 0x7E)) {
-				//		if (Gn[Glr[0]] == CharacterSets.IdKatakana) {
-				//			b = b | 0x80;
-				//		}
-				PutChar(b);
-			}
-			else if (b == 0x7f) {
-				return true;
-			}
-			else if ((0x80 <= b) && (b <= 0x9F)) {
-				ParseControl(b);
-			}
-			else if (b == 0xA0) {
-				PutChar(0x20);
-			}
-			else if ((b >= 0xA1) && (b <= 0xFE)) {
-				if (Gn[Glr[1]] == CharacterSets.IdASCII) {
-					b = (byte)(b & 0x7f);
-				}
-				PutChar(b);
-			}
-			else {
-				PutChar(b);
-			}
-
-			return true;
-		}
-
 		void ParseASCII(byte b)
 		{
-			if (ts.Language == Language.IdJapanese) {
-				ParseFirstJP(b);
-				return;
-			}
-
 			if (SSflag) {
-				PutChar(b);
+				PutChar((char)b);
 				SSflag = false;
 				return;
 			}
@@ -5446,20 +5054,16 @@ namespace TeraTrem
 				ParseControl(b);
 			}
 			else if ((b >= 0x20) && (b <= 0x7E)) {
-				//Kanji = 0;
-				//PutKanji(b);
-				PutChar(b);
+				PutChar((char)b);
 			}
 			else if ((b == 0x8E) || (b == 0x8F)) {
-				PutChar((byte)'?');
+				PutChar('?');
 			}
 			else if ((b >= 0x80) && (b <= 0x9F)) {
 				ParseControl(b);
 			}
 			else if (b >= 0xA0) {
-				//Kanji = 0;
-				//PutKanji(b);
-				PutChar(b);
+				PutChar((char)b);
 			}
 		}
 
@@ -5515,8 +5119,7 @@ namespace TeraTrem
 			return (index);
 		}
 
-
-		void UnicodeToCP932(char code)
+		void PutUTF8(char code)
 		{
 			int ret;
 			byte[] mbchar = new byte[32];
@@ -5534,32 +5137,30 @@ namespace TeraTrem
 			}
 			else {
 				// Unicode -> CP932
-				ret = Encoding.ASCII.GetBytes(wchar, 0, wchar.Length, mbchar, 0);
+				ret = Encoding.GetEncoding(932).GetBytes(wchar, 0, wchar.Length, mbchar, 0);
 				switch (ret) {
 				case -1:
 					//if (_stricmp(ts.Locale, DEFAULT_LOCALE) == 0)
 					//{
 					// U+301Cなどは変換できない。Unicode -> Shift_JISへ変換してみる。
-					cset = language.ConvertUnicode((char)code, codemap.mapUnicodeToSJIS, codemap.mapUnicodeToSJIS.Length);
+					cset = language.ConvertUnicode(code, codemap.mapUnicodeToSJIS, codemap.mapUnicodeToSJIS.Length);
 					if (cset != 0) {
-						Kanji = (char)(cset & 0xff00);
-						PutKanji((byte)(cset & 0x00ff));
+						PutKanji(cset);
 					}
 					//}
 
 					if (cset == 0) {
-						PutChar((byte)'?');
+						PutChar(code);
 						if (ts.UnknownUnicodeCharaAsWide) {
-							PutChar((byte)'?');
+							PutChar('\0');
 						}
 					}
 					break;
 				case 1:
-					PutChar(mbchar[0]);
+					PutChar(code);
 					break;
 				default:
-					Kanji = (char)(mbchar[0] << 8);
-					PutKanji(mbchar[1]);
+					PutKanji(code);
 					break;
 				}
 			}
@@ -5572,7 +5173,7 @@ namespace TeraTrem
 		static int ParseFirstUTF8_first_code_index;
 
 		// UTF-8で受信データを処理する
-		bool ParseFirstUTF8(byte b, int proc_combining)
+		bool ParseFirst(byte b)
 		// returns true if b is processed
 		//  (actually allways returns true)
 		{
@@ -5580,16 +5181,12 @@ namespace TeraTrem
 			char[] mbchar = new char[32];
 			char cset;
 
-			if (ts.FallbackToCP932 && Fallbacked) {
-				return ParseFirstJP(b);
-			}
-
 			if ((b & 0x80) != 0x80 || ((b & 0xe0) == 0x80 && ParseFirstUTF8_count == 0)) {
 				// 1バイト目および2バイト目がASCIIの場合は、すべてASCII出力とする。
 				// 1バイト目がC1制御文字(0x80-0x9f)の場合も同様。
 				if (ParseFirstUTF8_count == 0 || ParseFirstUTF8_count == 1) {
-					if (proc_combining == 1 && ParseFirstUTF8_can_combining == 1) {
-						UnicodeToCP932(ParseFirstUTF8_first_code);
+					if (ParseFirstUTF8_can_combining == 1) {
+						PutUTF8(ParseFirstUTF8_first_code);
 						ParseFirstUTF8_can_combining = 0;
 					}
 
@@ -5612,15 +5209,15 @@ namespace TeraTrem
 			if ((ParseFirstUTF8_buf[0] & 0xe0) == 0xc0) {
 				if ((ParseFirstUTF8_buf[1] & 0xc0) == 0x80) {
 
-					if (proc_combining == 1 && ParseFirstUTF8_can_combining == 1) {
-						UnicodeToCP932(ParseFirstUTF8_first_code);
+					if (ParseFirstUTF8_can_combining == 1) {
+						PutUTF8(ParseFirstUTF8_first_code);
 						ParseFirstUTF8_can_combining = 0;
 					}
 
 					code = (char)((ParseFirstUTF8_buf[0] & 0x1fu) << 6);
 					code |= (char)((ParseFirstUTF8_buf[1] & 0x3fu));
 
-					UnicodeToCP932(code);
+					PutUTF8(code);
 				}
 				else {
 					ParseASCII(ParseFirstUTF8_buf[0]);
@@ -5647,144 +5244,58 @@ namespace TeraTrem
 				code |= (char)((ParseFirstUTF8_buf[1] & 0x3fu) << 6);
 				code |= (char)((ParseFirstUTF8_buf[2] & 0x3fu));
 
-				if (proc_combining == 1) {
-					if (ParseFirstUTF8_can_combining == 0) {
+				if (ParseFirstUTF8_can_combining == 0) {
+					if ((ParseFirstUTF8_first_code_index = GetIndexOfCombiningFirstCode(
+							code, combining_map_t.mapCombiningToPrecomposed, combining_map_t.mapCombiningToPrecomposed.Length
+							)) != -1) {
+						ParseFirstUTF8_can_combining = 1;
+						ParseFirstUTF8_first_code = code;
+						ParseFirstUTF8_count = 0;
+						return (true);
+					}
+				}
+				else {
+					ParseFirstUTF8_can_combining = 0;
+					cset = GetPrecomposedChar(ParseFirstUTF8_first_code_index, ParseFirstUTF8_first_code, code, combining_map_t.mapCombiningToPrecomposed, combining_map_t.mapCombiningToPrecomposed.Length);
+					if (cset != 0) { // success
+						code = cset;
+
+					}
+					else { // error
+						   // 2つめの文字が半濁点の1文字目に相当する場合は、再度検索を続ける。(2005.10.15 yutaka)
 						if ((ParseFirstUTF8_first_code_index = GetIndexOfCombiningFirstCode(
 								code, combining_map_t.mapCombiningToPrecomposed, combining_map_t.mapCombiningToPrecomposed.Length
 								)) != -1) {
+
+							// 1つめの文字はそのまま出力する
+							PutUTF8(ParseFirstUTF8_first_code);
+
 							ParseFirstUTF8_can_combining = 1;
 							ParseFirstUTF8_first_code = code;
 							ParseFirstUTF8_count = 0;
 							return (true);
 						}
-					}
-					else {
-						ParseFirstUTF8_can_combining = 0;
-						cset = GetPrecomposedChar(ParseFirstUTF8_first_code_index, ParseFirstUTF8_first_code, code, combining_map_t.mapCombiningToPrecomposed, combining_map_t.mapCombiningToPrecomposed.Length);
-						if (cset != 0) { // success
-							code = cset;
 
-						}
-						else { // error
-							   // 2つめの文字が半濁点の1文字目に相当する場合は、再度検索を続ける。(2005.10.15 yutaka)
-							if ((ParseFirstUTF8_first_code_index = GetIndexOfCombiningFirstCode(
-									code, combining_map_t.mapCombiningToPrecomposed, combining_map_t.mapCombiningToPrecomposed.Length
-									)) != -1) {
-
-								// 1つめの文字はそのまま出力する
-								UnicodeToCP932(ParseFirstUTF8_first_code);
-
-								ParseFirstUTF8_can_combining = 1;
-								ParseFirstUTF8_first_code = code;
-								ParseFirstUTF8_count = 0;
-								return (true);
-							}
-
-							UnicodeToCP932(ParseFirstUTF8_first_code);
-							UnicodeToCP932(code);
-							ParseFirstUTF8_count = 0;
-							return (true);
-						}
+						PutUTF8(ParseFirstUTF8_first_code);
+						PutUTF8(code);
+						ParseFirstUTF8_count = 0;
+						return (true);
 					}
 				}
 
-				UnicodeToCP932(code);
+				PutUTF8(code);
 
 			skip:
 				ParseFirstUTF8_count = 0;
-
 			}
 			else {
 				ParseASCII(ParseFirstUTF8_buf[0]);
 				ParseASCII(ParseFirstUTF8_buf[1]);
 				ParseASCII(ParseFirstUTF8_buf[2]);
 				ParseFirstUTF8_count = 0;
-
 			}
 
 			return true;
-		}
-
-
-		bool ParseFirstRus(byte b)
-		// returns if b is processed
-		{
-			if (b >= 128) {
-				b = language.RussConv(ts.RussHost, ts.RussClient, b);
-				PutChar(b);
-				return true;
-			}
-			return false;
-		}
-
-		void ParseFirst(byte b)
-		{
-			switch (ts.Language) {
-			case Language.IdUtf8:
-				ParseFirstUTF8(b, (ts.KanjiCode == KanjiCodeId.IdUTF8m) ? 1 : 0);
-				return;
-
-			case Language.IdJapanese:
-				switch (ts.KanjiCode) {
-				case KanjiCodeId.IdUTF8:
-					if (ParseFirstUTF8(b, 0)) {
-						return;
-					}
-					break;
-				case KanjiCodeId.IdUTF8m:
-					if (ParseFirstUTF8(b, 1)) {
-						return;
-					}
-					break;
-				default:
-					if (ParseFirstJP(b)) {
-						return;
-					}
-					break;
-				}
-				break;
-
-			case Language.IdKorean:
-				switch (ts.KanjiCode) {
-				case KanjiCodeId.IdUTF8:
-					if (ParseFirstUTF8(b, 0)) {
-						return;
-					}
-					break;
-				case KanjiCodeId.IdUTF8m:
-					if (ParseFirstUTF8(b, 1)) {
-						return;
-					}
-					break;
-				default:
-					if (ParseFirstKR(b)) {
-						return;
-					}
-					break;
-				}
-				break;
-
-			case Language.IdRussian:
-				if (ParseFirstRus(b)) {
-					return;
-				}
-				break;
-			}
-
-			if (SSflag) {
-				PutChar(b);
-				SSflag = false;
-				return;
-			}
-
-			if (b <= (byte)ControlCharacters.US)
-				ParseControl(b);
-			else if ((b >= 0x20) && (b <= 0x7E))
-				PutChar(b);
-			else if ((b >= 0x80) && (b <= 0x9F))
-				ParseControl(b);
-			else if (b >= 0xA0)
-				PutChar(b);
 		}
 
 		WindowId VTParse()
@@ -6156,7 +5667,7 @@ namespace TeraTrem
 					/* nothing to do */
 					break;
 				case BeepType.IdBeepOn:
-					MessageBeep(0);
+					Console.Beep();
 					break;
 				case BeepType.IdBeepVisual:
 					VisualBell();
@@ -6165,7 +5676,7 @@ namespace TeraTrem
 			}
 		}
 
-		void EndTerm()
+		public void EndTerm()
 		{
 		}
 

@@ -37,25 +37,6 @@ using System.Windows.Forms;
 
 namespace TeraTrem
 {
-	struct addrinfo
-	{
-	}
-
-	enum TimerId
-	{
-		IdBreakTimer = 1,
-		IdDelayTimer = 2,
-		IdProtoTimer = 3,
-		IdDblClkTimer = 4,
-		IdScrollTimer = 5,
-		IdComEndTimer = 6,
-		IdCaretTimer = 7,
-		IdPrnStartTimer = 8,
-		IdPrnProcTimer = 9,
-		IdCancelConnectTimer = 10,  // add (2007.1.10 yutaka)
-		IdPasteDelayTimer = 11,
-	}
-
 	/* Window Id */
 	enum WindowId
 	{
@@ -82,7 +63,7 @@ namespace TeraTrem
 	}
 
 	/* Character attribute bit masks */
-	enum AttributeBitMasks
+	enum AttributeBitMasks : byte
 	{
 		AttrDefault = 0x00,
 		AttrDefaultFG = 0x00,
@@ -124,7 +105,7 @@ namespace TeraTrem
 	}
 
 	/* Color codes */
-	enum ColorCodes
+	enum ColorCodes : byte
 	{
 		IdBack = 0,
 		IdRed = 1,
@@ -160,29 +141,6 @@ namespace TeraTrem
 		CS_ALL = CS_UNSPEC,
 	}
 
-	/* Kermit function id */
-	enum KermitFunctionId
-	{
-		IdKmtReceive = 1,
-		IdKmtGet = 2,
-		IdKmtSend = 3,
-		IdKmtFinish = 4,
-	}
-
-	/* XMODEM function id */
-	enum XmodemFunctionId
-	{
-		IdXReceive = 1,
-		IdXSend = 2,
-	}
-
-	/* YMODEM function id */
-	enum YmodemFunctionId
-	{
-		IdYReceive = 1,
-		IdYSend = 2,
-	}
-
 	/* ZMODEM function id */
 	enum ZMODEMFunctionId
 	{
@@ -199,14 +157,6 @@ namespace TeraTrem
 		IdBPSend = 2,
 		IdBPAuto = 3,
 	}
-
-	/* Quick-VAN function id */
-	enum QuickVanFunctionId
-	{
-		IdQVReceive = 1,
-		IdQVSend = 2,
-	}
-
 	/* port type ID */
 	enum PortTypeId
 	{
@@ -214,82 +164,6 @@ namespace TeraTrem
 		IdSerial = 2,
 		IdFile = 3,
 		IdNamedPipe = 4,
-	}
-
-	/* XMODEM option */
-	enum XmodemOption
-	{
-		XoptCheck = 1,
-		XoptCRC = 2,
-		Xopt1kCRC = 3,
-		Xopt1kCksum = 4,
-	}
-
-	/* YMODEM option */
-	enum YmodemOption
-	{
-		Yopt1K = 1,
-		YoptG = 2,
-		YoptSingle = 3,
-	}
-
-	/* KERMIT option */
-	enum KERMITOption
-	{
-		KmtOptLongPacket = 1,
-		KmtOptFileAttr = 2,
-		KmtOptSlideWin = 4,
-	}
-
-	/* Language */
-	enum Language
-	{
-		IdEnglish = 1,
-		IdJapanese = 2,
-		IdRussian = 3,
-		IdKorean = 4, //HKS
-		IdUtf8 = 5,
-		IdLangMax = IdUtf8,
-	}
-
-	// LogDialog Option
-	enum LogDialogOption
-	{
-		LOGDLG_BINARY = 1,
-		LOGDLG_APPEND = (1 << 1),
-		LOGDLG_PLAINTEXT = (1 << 2),
-		LOGDLG_TIMESTAMP = (1 << 3),
-		LOGDLG_HIDEDIALOG = (1 << 4),
-		LOGDLG_INCSCRBUFF = (1 << 5),
-		LOGDLG_UTC = (1 << 6),
-		LOGDLG_ELAPSED = (1 << 7),
-		/*
-		 * ELAPSED TIME の時は LOGDLG_UTC を経過時間の基準を表すフラグとする
-		 * LOGDLG_ELAPSEDCON == 0 => ログ開始から
-		 * LOGDLG_ELAPSEDCON == 1 => 接続開始から
-		 */
-		LOGDLG_ELAPSEDCON = LOGDLG_UTC,
-	}
-
-	// Log Timestamp Type
-	enum LogTimestampType
-	{
-		TIMESTAMP_LOCAL,
-		TIMESTAMP_UTC,
-		TIMESTAMP_ELAPSED_LOGSTART,
-		TIMESTAMP_ELAPSED_CONNECTED
-	};
-
-	// log flags (used in ts.LogFlag) 
-	enum LogFlags
-	{
-		LOG_TEL = 1,
-		LOG_KMT = 2,
-		LOG_X = 4,
-		LOG_Z = 8,
-		LOG_BP = 16,
-		LOG_QV = 32,
-		LOG_Y = 64,
 	}
 
 	// file transfer flags (used in ts.FTFlag)
@@ -300,15 +174,6 @@ namespace TeraTrem
 		FT_BPESCCTL = 4,
 		FT_BPAUTO = 8,
 		FT_RENAME = 16,
-	}
-
-	// menu flags (used in ts.MenuFlag)
-	enum MenuFlags
-	{
-		MF_NOSHOWMENU = 1,
-		MF_NOPOPUP = 2,
-		MF_NOLANGUAGE = 4,
-		MF_SHOWWINMENU = 8,
 	}
 
 	// Terminal flags (used in ts.TermFlag)
@@ -480,18 +345,6 @@ namespace TeraTrem
 		IdMeta8BitText = 2,
 	}
 
-	// Eterm lookfeel alphablend structure
-	class eterm_lookfeel_t
-	{
-		int BGEnable;
-		int BGUseAlphaBlendAPI;
-		char[] BGSPIPath = new char[tttypes.MAX_PATH];
-		int BGFastSizeMove;
-		int BGNoCopyBits;
-		int BGNoFrame;
-		char[] BGThemeFile = new char[tttypes.MAX_PATH];
-	};
-
 	/* TTTSet */
 	//
 	// NOTE: 下記のエラーがでることがある
@@ -535,7 +388,6 @@ namespace TeraTrem
 		public int QVWinSize;
 		public char[] FileDir = new char[tttypes.MAXPATHLEN];
 		public char[] FileSendFilter = new char[128];
-		public Language Language;
 		public char[] DelimList = new char[52];
 		public short DelimDBCS;
 		public short Minimize;
@@ -559,15 +411,6 @@ namespace TeraTrem
 		public bool LocalEcho;
 		public char[] Answerback = new char[32];
 		public int AnswerbackLen;
-		public KanjiCodeId KanjiCode;
-		public KanjiCodeId KanjiCodeSend;
-		public bool JIS7Katakana;
-		public bool JIS7KatakanaSend;
-		public KanjiInModes KanjiIn;
-		public KanjiInModes KanjiOut;
-		public short RussHost;
-		public short RussClient;
-		public short RussPrint;
 		public short AutoWinSwitch;
 		public TerminalId TerminalID;
 		public TerminalFlags TermFlag;
@@ -665,10 +508,6 @@ namespace TeraTrem
 		public bool ConfirmPasteMouseRButton;
 		public short DisableAcceleratorSendBreak;
 		public bool EnableClickableUrl;
-		public eterm_lookfeel_t EtermLookfeel;
-#if USE_NORMAL_BGCOLOR
-		public short UseNormalBGColor;
-#endif
 		public char[] UILanguageFile = new char[tttypes.MAX_PATH];
 		public char[] UIMsg = new char[tttypes.MAX_UIMSG];
 		public short BroadcastCommandHistory;
@@ -757,7 +596,6 @@ namespace TeraTrem
 			dest.FTFlag = FTFlag;
 			System.Buffer.BlockCopy(FileDir, 0, dest.FileDir, 0, FileDir.Length);
 			System.Buffer.BlockCopy(FileSendFilter, 0, dest.FileSendFilter, 0, FileSendFilter.Length);
-			dest.Language = Language;
 			System.Buffer.BlockCopy(DelimList, 0, dest.DelimList, 0, DelimList.Length);
 			dest.Minimize = Minimize;
 			dest.HideWindow = HideWindow;
@@ -769,12 +607,6 @@ namespace TeraTrem
 			dest.LocalEcho = LocalEcho;
 			System.Buffer.BlockCopy(Answerback, 0, dest.Answerback, 0, Answerback.Length);
 			dest.AnswerbackLen = AnswerbackLen;
-			dest.KanjiCode = KanjiCode;
-			dest.KanjiCodeSend = KanjiCodeSend;
-			dest.JIS7Katakana = JIS7Katakana;
-			dest.JIS7KatakanaSend = JIS7KatakanaSend;
-			dest.KanjiIn = KanjiIn;
-			dest.KanjiOut = KanjiOut;
 			dest.TermFlag = TermFlag;
 			dest.VTFlag = VTFlag;
 			System.Buffer.BlockCopy(TmpColor, 0, dest.TmpColor, 0, TmpColor.Length);
@@ -852,36 +684,6 @@ namespace TeraTrem
 		IdVT420 = 10,
 		IdVT520 = 11,
 		IdVT525 = 12,
-	}
-
-	/* Kanji Code ID */
-	enum KanjiCodeId
-	{
-		IdSJIS = 1,
-		IdEUC = 2,
-		IdJIS = 3,
-		IdUTF8 = 4,
-		IdUTF8m = 5,
-	}
-
-	// Russian code sets
-	enum RussianCodeSets
-	{
-		IdWindows = 1,
-		IdKOI8 = 2,
-		Id866 = 3,
-		IdISO = 4,
-	}
-
-	/* KanjiIn modes */
-	enum KanjiInModes
-	{
-		IdKanjiInA = 1,
-		IdKanjiInB = 2,
-		/* KanjiOut modes */
-		IdKanjiOutB = 1,
-		IdKanjiOutJ = 2,
-		IdKanjiOutH = 3,
 	}
 
 	/* Cursor shapes */
@@ -987,22 +789,6 @@ namespace TeraTrem
 		IdFlowX = 1,
 		IdFlowHard = 2,
 		IdFlowNone = 3,
-	}
-
-	/* GetHostName dialog record */
-	struct TGetHNRec
-	{
-		string SetupFN; // setup file name
-		short PortType; // TCPIP/Serial
-		string HostName; // host name 
-		short Telnet; // non-zero: enable telnet
-		short TelPort; // default TCP port# for telnet
-		short TCPPort; // TCP port #
-#if !NO_INET6
-		short ProtocolFamily; // Protocol Family (AF_INET/AF_INET6/AF_UNSPEC)
-#endif // NO_INET6
-		short ComPort; // serial port #
-		short MaxComPort; // max serial port #
 	}
 
 	/* Tera Term internal key codes */
@@ -1147,7 +933,7 @@ namespace TeraTrem
 	}
 
 	/* Control Characters */
-	enum ControlCharacters
+	enum ControlCharacters : byte
 	{
 		NUL = 0x00,
 		SOH = 0x01,
@@ -1224,44 +1010,17 @@ namespace TeraTrem
 		public byte[] OutBuff = new byte[tttypes.OutBuffSize];
 		public int OutBuffCount, OutPtr;
 
-		public IntPtr HWin;
 		public bool Ready;
 		public bool Open;
 		public PortTypeId PortType;
-		public short ComPort;
-		public uint s; /* SOCKET */
-		public short RetryCount;
-		public IntPtr ComID;
-		public bool CanSend, RRQ;
+		public bool CanSend;
 
-		public bool SendKanjiFlag;
-		public bool EchoKanjiFlag;
-		public CharacterSets SendCode;
-		public CharacterSets EchoCode;
-		public byte SendKanjiFirst;
-		public byte EchoKanjiFirst;
-
-		/* from VTSet */
-		public Language Language;
 		/* from TermSet */
 		public NewLineModes CRSend;
-		public KanjiCodeId KanjiCodeEcho;
-		public bool JIS7KatakanaEcho;
-		public KanjiCodeId KanjiCodeSend;
-		public bool JIS7KatakanaSend;
-		public KanjiInModes KanjiIn;
-		public KanjiInModes KanjiOut;
-		public short RussHost;
-		public short RussClient;
-		/* from PortSet */
-		public short DelayPerChar;
-		public short DelayPerLine;
 		public bool TelBinRecv, TelBinSend;
 
-		public bool DelayFlag;
 		public bool TelFlag, TelMode;
 		public bool IACFlag, TelCRFlag;
-		public bool TelCRSend, TelCRSendEcho;
 		public bool TelAutoDetect; /* TTPLUG */
 
 		/* Text log */
@@ -1277,26 +1036,13 @@ namespace TeraTrem
 		public bool ProtoFlag;
 		/* message flag */
 		public short NoMsg;
-#if !NO_INET6
-		/* if TRUE, teraterm trys to connect other protocol family */
-		public bool RetryWithOtherProtocol;
-		public addrinfo res0;
-		public addrinfo res;
-#endif // NO_INET6
-		public char[] Locale;
-		public int? CodePage;
-		public int? ConnetingTimeout;
 
-		public DateTime LastSendTime;
 		public short isSSH;
 		public string TitleRemote;
 
 		public byte[] LineModeBuff = new byte[tttypes.OutBuffSize];
-		public int LineModeBuffCount, FlushLen;
-		public bool Flush;
 
 		public bool TelLineMode;
-		public CultureInfo locale;
 	}
 
 	enum CommandId

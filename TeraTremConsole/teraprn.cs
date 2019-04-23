@@ -54,7 +54,7 @@ namespace TeraTrem
 		{
 		}
 
-		public void PrnOutText(byte[] Buff, int Offset, int Count)
+		public void PrnOutText(char[] Buff, int Offset, int Count)
 		{
 		}
 
@@ -83,7 +83,7 @@ namespace TeraTrem
 		{
 		}
 
-		public void WriteToPrnFile(byte b, bool Write)
+		public void WriteToPrnFile(char b, bool Write)
 		{
 		}
 	}

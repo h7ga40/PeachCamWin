@@ -46,9 +46,9 @@ namespace TeraTrem
 			throw new NotImplementedException();
 		}
 
-		internal static void FreeTTDLG()
+		internal static bool FreeTTDLG()
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 	}
 }

@@ -64,13 +64,13 @@ namespace TeraTrem
 		int NTabStops;
 
 		short BuffLock = 0;
-		byte[] HCodeBuff;
+		char[] HCodeBuff;
 		AttributeBitMasks[] HAttrBuff;
 		AttributeBitMasks[] HAttrBuff2;
 		ColorCodes[] HAttrBuffFG;
 		ColorCodes[] HAttrBuffBG;
 
-		byte[] CodeBuff;  /* Character code buffer */
+		char[] CodeBuff;  /* Character code buffer */
 		AttributeBitMasks[] AttrBuff;  /* Attribute buffer */
 		AttributeBitMasks[] AttrBuff2; /* Color attr buffer */
 		ColorCodes[] AttrBuffFG; /* Foreground color attr buffer */
@@ -94,7 +94,7 @@ namespace TeraTrem
 
 		TCharAttr CurCharAttr;
 
-		byte[] SaveCodeBuff = null;
+		char[] SaveCodeBuff = null;
 		AttributeBitMasks[] SaveAttrBuff;
 		AttributeBitMasks[] SaveAttrBuff2;
 		ColorCodes[] SaveAttrBuffFG;
@@ -120,7 +120,7 @@ namespace TeraTrem
 					dst[dstOffset + i] = src[srcOffset + i];
 		}
 
-		private int strncmp(byte[] string1, int offset, string string2, int count)
+		private int strncmp(char[] string1, int offset, string string2, int count)
 		{
 			int result = 0;
 
@@ -164,12 +164,12 @@ namespace TeraTrem
 
 		bool ChangeBuffer(int Nx, int Ny)
 		{
-			byte[] HCodeNew;
+			char[] HCodeNew;
 			AttributeBitMasks[] HAttrNew, HAttr2New;
 			ColorCodes[] HAttrFGNew, HAttrBGNew;
 			int NewSize;
 			int NxCopy, NyCopy, i;
-			byte[] CodeDest = null;
+			char[] CodeDest = null;
 			AttributeBitMasks[] AttrDest = null, AttrDest2 = null;
 			ColorCodes[] AttrDestFG = null, AttrDestBG = null;
 			int SrcPtr, DestPtr;
@@ -197,7 +197,7 @@ namespace TeraTrem
 			HAttrFGNew = null;
 			HAttrBGNew = null;
 
-			if ((HCodeNew = GlobalAlloc<byte>(GMEM_MOVEABLE, NewSize)) == null || (CodeDest = GlobalLock(HCodeNew)) == null) {
+			if ((HCodeNew = GlobalAlloc<char>(GMEM_MOVEABLE, NewSize)) == null || (CodeDest = GlobalLock(HCodeNew)) == null) {
 				goto allocate_error;
 			}
 			if ((HAttrNew = GlobalAlloc<AttributeBitMasks>(GMEM_MOVEABLE, NewSize)) == null || (AttrDest = GlobalLock(HAttrNew)) == null) {
@@ -213,7 +213,7 @@ namespace TeraTrem
 				goto allocate_error;
 			}
 
-			memset(CodeDest, 0, (byte)0x20, NewSize);
+			memset(CodeDest, 0, ' ', NewSize);
 			memset(AttrDest, 0, AttributeBitMasks.AttrDefault, NewSize);
 			memset(AttrDest2, 0, AttributeBitMasks.AttrDefault, NewSize);
 			memset(AttrDestFG, 0, (ColorCodes)AttributeBitMasks.AttrDefaultFG, NewSize);
@@ -243,7 +243,7 @@ namespace TeraTrem
 					memmove(AttrDestFG, DestPtr, AttrBuffFG, SrcPtr, NxCopy);
 					memmove(AttrDestBG, DestPtr, AttrBuffBG, SrcPtr, NxCopy);
 					if ((AttrDest[DestPtr + NxCopy - 1] & AttributeBitMasks.AttrKanji) != 0) {
-						CodeDest[DestPtr + NxCopy - 1] = (byte)' ';
+						CodeDest[DestPtr + NxCopy - 1] = ' ';
 						AttrDest[DestPtr + NxCopy - 1] ^= AttributeBitMasks.AttrKanji;
 					}
 					SrcPtr = NextLinePtr(SrcPtr);
@@ -420,7 +420,7 @@ namespace TeraTrem
 			}
 		}
 
-		void FreeBuffer()
+		public void FreeBuffer()
 		{
 			BuffLock = 1;
 			UnlockBuffer();
@@ -532,7 +532,7 @@ namespace TeraTrem
 					memmove(AttrBuff2, DestPtr, AttrBuff2, SrcPtr, VTDisp.NumOfColumns);
 					memmove(AttrBuffFG, DestPtr, AttrBuffFG, SrcPtr, VTDisp.NumOfColumns);
 					memmove(AttrBuffBG, DestPtr, AttrBuffBG, SrcPtr, VTDisp.NumOfColumns);
-					memset(CodeBuff, SrcPtr, (byte)0x20, VTDisp.NumOfColumns);
+					memset(CodeBuff, SrcPtr, ' ', VTDisp.NumOfColumns);
 					memset(AttrBuff, SrcPtr, AttributeBitMasks.AttrDefault, VTDisp.NumOfColumns);
 					memset(AttrBuff2, SrcPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, VTDisp.NumOfColumns);
 					memset(AttrBuffFG, SrcPtr, CurCharAttr.Fore, VTDisp.NumOfColumns);
@@ -543,7 +543,7 @@ namespace TeraTrem
 				}
 			}
 			for (i = 1; i <= n; i++) {
-				memset(CodeBuff, DestPtr, (byte)0x20, VTDisp.NumOfColumns);
+				memset(CodeBuff, DestPtr, ' ', VTDisp.NumOfColumns);
 				memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, VTDisp.NumOfColumns);
 				memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, VTDisp.NumOfColumns);
 				memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, VTDisp.NumOfColumns);
@@ -607,13 +607,13 @@ namespace TeraTrem
 
 			if ((VTDisp.CursorX - LR >= 0) &&
 				((AttrBuff[AttrLine + VTDisp.CursorX - LR] & AttributeBitMasks.AttrKanji) != 0)) {
-				CodeBuff[CodeLine + VTDisp.CursorX - LR] = 0x20;
+				CodeBuff[CodeLine + VTDisp.CursorX - LR] = ' ';
 				AttrBuff[AttrLine + VTDisp.CursorX - LR] = CurCharAttr.Attr;
 				AttrBuff2[AttrLine2 + VTDisp.CursorX - LR] = CurCharAttr.Attr2;
 				AttrBuffFG[AttrLineFG + VTDisp.CursorX - LR] = CurCharAttr.Fore;
 				AttrBuffBG[AttrLineBG + VTDisp.CursorX - LR] = CurCharAttr.Back;
 				if (VTDisp.CursorX - LR + 1 < VTDisp.NumOfColumns) {
-					CodeBuff[CodeLine + VTDisp.CursorX - LR + 1] = 0x20;
+					CodeBuff[CodeLine + VTDisp.CursorX - LR + 1] = ' ';
 					AttrBuff[AttrLine + VTDisp.CursorX - LR + 1] = CurCharAttr.Attr;
 					AttrBuff2[AttrLine2 + VTDisp.CursorX - LR + 1] = CurCharAttr.Attr2;
 					AttrBuffFG[AttrLineFG + VTDisp.CursorX - LR + 1] = CurCharAttr.Fore;
@@ -633,18 +633,18 @@ namespace TeraTrem
 			for (i = 0; i < count; i++) {
 				pos = ptr + CursorLeftM - 1;
 				if (CursorLeftM > 0 && ((AttrBuff[pos] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[pos] = 0x20;
+					CodeBuff[pos] = ' ';
 					AttrBuff[pos] &= ~AttributeBitMasks.AttrKanji;
 					pos++;
-					CodeBuff[pos] = 0x20;
+					CodeBuff[pos] = ' ';
 					AttrBuff[pos] &= ~AttributeBitMasks.AttrKanji;
 				}
 				pos = ptr + CursorRightM;
 				if (CursorRightM < VTDisp.NumOfColumns - 1 && ((AttrBuff[pos] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[pos] = 0x20;
+					CodeBuff[pos] = ' ';
 					AttrBuff[pos] &= ~AttributeBitMasks.AttrKanji;
 					pos++;
-					CodeBuff[pos] = 0x20;
+					CodeBuff[pos] = ' ';
 					AttrBuff[pos] &= ~AttributeBitMasks.AttrKanji;
 				}
 				ptr = NextLinePtr(ptr);
@@ -663,11 +663,10 @@ namespace TeraTrem
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8)
-				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
+			EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
 
 			if (CursorRightM < VTDisp.NumOfColumns - 1 && ((AttrBuff[AttrLine + CursorRightM] & AttributeBitMasks.AttrKanji) != 0)) {
-				CodeBuff[CodeLine + CursorRightM + 1] = 0x20;
+				CodeBuff[CodeLine + CursorRightM + 1] = ' ';
 				AttrBuff[AttrLine + CursorRightM + 1] &= ~AttributeBitMasks.AttrKanji;
 				extr = 1;
 			}
@@ -684,7 +683,7 @@ namespace TeraTrem
 				memmove(AttrBuffFG, AttrLineFG + VTDisp.CursorX + Count, AttrBuffFG, AttrLineFG + VTDisp.CursorX, MoveLen);
 				memmove(AttrBuffBG, AttrLineBG + VTDisp.CursorX + Count, AttrBuffBG, AttrLineBG + VTDisp.CursorX, MoveLen);
 			}
-			memset(CodeBuff, CodeLine + VTDisp.CursorX, (byte)0x20, Count);
+			memset(CodeBuff, CodeLine + VTDisp.CursorX, ' ', Count);
 			memset(AttrBuff, AttrLine + VTDisp.CursorX, AttributeBitMasks.AttrDefault, Count);
 			memset(AttrBuff2, AttrLine2 + VTDisp.CursorX, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, Count);
 			memset(AttrBuffFG, AttrLineFG + VTDisp.CursorX, CurCharAttr.Fore, Count);
@@ -692,7 +691,7 @@ namespace TeraTrem
 			/* last char in current line is kanji first? */
 			if ((AttrBuff[AttrLine + CursorRightM] & AttributeBitMasks.AttrKanji) != 0) {
 				/* then delete it */
-				CodeBuff[CodeLine + CursorRightM] = 0x20;
+				CodeBuff[CodeLine + CursorRightM] = ' ';
 				AttrBuff[AttrLine + CursorRightM] &= ~AttributeBitMasks.AttrKanji;
 			}
 			BuffUpdateRect(VTDisp.CursorX, VTDisp.CursorY, CursorRightM + extr, VTDisp.CursorY);
@@ -706,9 +705,7 @@ namespace TeraTrem
 			int i, YEnd;
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
-			}
+			EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
 			offset = VTDisp.CursorX;
 			TmpPtr = GetLinePtr(VTDisp.PageStart + VTDisp.CursorY);
 			YEnd = VTDisp.NumOfLines - 1;
@@ -716,7 +713,7 @@ namespace TeraTrem
 				YEnd--;
 			}
 			for (i = VTDisp.CursorY; i <= YEnd; i++) {
-				memset(CodeBuff, TmpPtr + offset, (byte)0x20, VTDisp.NumOfColumns - offset);
+				memset(CodeBuff, TmpPtr + offset, ' ', VTDisp.NumOfColumns - offset);
 				memset(AttrBuff, TmpPtr + offset, AttributeBitMasks.AttrDefault, VTDisp.NumOfColumns - offset);
 				memset(AttrBuff2, TmpPtr + offset, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, VTDisp.NumOfColumns - offset);
 				memset(AttrBuffFG, TmpPtr + offset, CurCharAttr.Fore, VTDisp.NumOfColumns - offset);
@@ -736,9 +733,7 @@ namespace TeraTrem
 			int i, YHome;
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(0); /* if cursor is on left half of a kanji, erase the kanji */
-			}
+			EraseKanji(0); /* if cursor is on left half of a kanji, erase the kanji */
 			offset = VTDisp.NumOfColumns;
 			if (isCursorOnStatusLine()) {
 				YHome = VTDisp.CursorY;
@@ -751,7 +746,7 @@ namespace TeraTrem
 				if (i == VTDisp.CursorY) {
 					offset = VTDisp.CursorX + 1;
 				}
-				memset(CodeBuff, TmpPtr, (byte)0x20, offset);
+				memset(CodeBuff, TmpPtr, ' ', offset);
 				memset(AttrBuff, TmpPtr, AttributeBitMasks.AttrDefault, offset);
 				memset(AttrBuff2, TmpPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, offset);
 				memset(AttrBuffFG, TmpPtr, CurCharAttr.Fore, offset);
@@ -794,7 +789,7 @@ namespace TeraTrem
 				DestPtr = PrevLinePtr(DestPtr);
 			}
 			for (i = 1; i <= Count; i++) {
-				memset(CodeBuff, DestPtr, (byte)0x20, linelen);
+				memset(CodeBuff, DestPtr, ' ', linelen);
 				memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, linelen);
 				memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 				memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, linelen);
@@ -818,12 +813,10 @@ namespace TeraTrem
 				LineContinued = true;
 			}
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
-			}
+			EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
-			memset(CodeBuff, CodeLine + XStart, (byte)0x20, Count);
+			memset(CodeBuff, CodeLine + XStart, ' ', Count);
 			memset(AttrBuff, AttrLine + XStart, AttributeBitMasks.AttrDefault, Count);
 			memset(AttrBuff2, AttrLine2 + XStart, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, Count);
 			memset(AttrBuffFG, AttrLineFG + XStart, CurCharAttr.Fore, Count);
@@ -873,7 +866,7 @@ namespace TeraTrem
 				DestPtr = NextLinePtr(DestPtr);
 			}
 			for (i = YEnd + 1 - Count; i <= YEnd; i++) {
-				memset(CodeBuff, DestPtr, (byte)0x20, linelen);
+				memset(CodeBuff, DestPtr, ' ', linelen);
 				memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, linelen);
 				memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 				memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, linelen);
@@ -898,15 +891,13 @@ namespace TeraTrem
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(0); /* if cursor is on left harf of a kanji, erase the kanji */
-				EraseKanji(1); /* if cursor on right half... */
-			}
+			EraseKanji(0); /* if cursor is on left harf of a kanji, erase the kanji */
+			EraseKanji(1); /* if cursor on right half... */
 
 			if (CursorRightM < VTDisp.NumOfColumns - 1 && ((AttrBuff[AttrLine + CursorRightM] & AttributeBitMasks.AttrKanji) != 0)) {
-				CodeBuff[CodeLine + CursorRightM] = 0x20;
+				CodeBuff[CodeLine + CursorRightM] = ' ';
 				AttrBuff[AttrLine + CursorRightM] &= ~AttributeBitMasks.AttrKanji;
-				CodeBuff[CodeLine + CursorRightM + 1] = 0x20;
+				CodeBuff[CodeLine + CursorRightM + 1] = ' ';
 				AttrBuff[AttrLine + CursorRightM + 1] &= ~AttributeBitMasks.AttrKanji;
 				extr = 1;
 			}
@@ -923,7 +914,7 @@ namespace TeraTrem
 				memmove(AttrBuffFG, AttrLineFG + VTDisp.CursorX, AttrBuffFG, AttrLineFG + VTDisp.CursorX + Count, MoveLen);
 				memmove(AttrBuffBG, AttrLineBG + VTDisp.CursorX, AttrBuffBG, AttrLineBG + VTDisp.CursorX + Count, MoveLen);
 			}
-			memset(CodeBuff, CodeLine + VTDisp.CursorX + MoveLen, (byte)0x20, Count);
+			memset(CodeBuff, CodeLine + VTDisp.CursorX + MoveLen, ' ', Count);
 			memset(AttrBuff, AttrLine + VTDisp.CursorX + MoveLen, AttributeBitMasks.AttrDefault, Count);
 			memset(AttrBuff2, AttrLine2 + VTDisp.CursorX + MoveLen, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, Count);
 			memset(AttrBuffFG, AttrLineFG + VTDisp.CursorX + MoveLen, CurCharAttr.Fore, Count);
@@ -938,15 +929,13 @@ namespace TeraTrem
 		{
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(0); /* if cursor is on left harf of a kanji, erase the kanji */
-				EraseKanji(1); /* if cursor on right half... */
-			}
+			EraseKanji(0); /* if cursor is on left harf of a kanji, erase the kanji */
+			EraseKanji(1); /* if cursor on right half... */
 
 			if (Count > VTDisp.NumOfColumns - VTDisp.CursorX) {
 				Count = VTDisp.NumOfColumns - VTDisp.CursorX;
 			}
-			memset(CodeBuff, CodeLine + VTDisp.CursorX, (byte)0x20, Count);
+			memset(CodeBuff, CodeLine + VTDisp.CursorX, ' ', Count);
 			memset(AttrBuff, AttrLine + VTDisp.CursorX, AttributeBitMasks.AttrDefault, Count);
 			memset(AttrBuff2, AttrLine2 + VTDisp.CursorX, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, Count);
 			memset(AttrBuffFG, AttrLineFG + VTDisp.CursorX, CurCharAttr.Fore, Count);
@@ -964,7 +953,7 @@ namespace TeraTrem
 
 			TmpPtr = GetLinePtr(VTDisp.PageStart);
 			for (i = 0; i <= VTDisp.NumOfLines - 1 - StatusLine; i++) {
-				memset(CodeBuff, TmpPtr, (byte)'E', VTDisp.NumOfColumns);
+				memset(CodeBuff, TmpPtr, 'E', VTDisp.NumOfColumns);
 				memset(AttrBuff, TmpPtr, AttributeBitMasks.AttrDefault, VTDisp.NumOfColumns);
 				memset(AttrBuff2, TmpPtr, AttributeBitMasks.AttrDefault, VTDisp.NumOfColumns);
 				memset(AttrBuffFG, TmpPtr, (ColorCodes)AttributeBitMasks.AttrDefaultFG, VTDisp.NumOfColumns);
@@ -1003,7 +992,7 @@ namespace TeraTrem
 					C = VTDisp.NumOfColumns - VTDisp.CursorX;
 				}
 				Ptr = GetLinePtr(VTDisp.PageStart + Y);
-				memset(CodeBuff, Ptr + VTDisp.CursorX, (byte)'q', C);
+				memset(CodeBuff, Ptr + VTDisp.CursorX, 'q', C);
 				memset(AttrBuff, Ptr + VTDisp.CursorX, Attr.Attr, C);
 				memset(AttrBuff2, Ptr + VTDisp.CursorX, Attr.Attr2, C);
 				memset(AttrBuffFG, Ptr + VTDisp.CursorX, Attr.Fore, C);
@@ -1031,7 +1020,7 @@ namespace TeraTrem
 					C = VTDisp.NumOfLines - StatusLine - VTDisp.CursorY;
 				}
 				for (i = 1; i <= C; i++) {
-					CodeBuff[Ptr + X] = (byte)'x';
+					CodeBuff[Ptr + X] = 'x';
 					AttrBuff[Ptr + X] = Attr.Attr;
 					AttrBuff2[Ptr + X] = Attr.Attr2;
 					AttrBuffFG[Ptr + X] = Attr.Fore;
@@ -1066,7 +1055,7 @@ namespace TeraTrem
 			for (i = YStart; i <= YEnd; i++) {
 				if ((XStart > 0) &&
 					((AttrBuff[Ptr + XStart - 1] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[Ptr + XStart - 1] = 0x20;
+					CodeBuff[Ptr + XStart - 1] = ' ';
 					AttrBuff[Ptr + XStart - 1] = CurCharAttr.Attr;
 					AttrBuff2[Ptr + XStart - 1] = CurCharAttr.Attr2;
 					AttrBuffFG[Ptr + XStart - 1] = CurCharAttr.Fore;
@@ -1074,13 +1063,13 @@ namespace TeraTrem
 				}
 				if ((XStart + C < VTDisp.NumOfColumns) &&
 					((AttrBuff[Ptr + XStart + C - 1] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[Ptr + XStart + C] = 0x20;
+					CodeBuff[Ptr + XStart + C] = ' ';
 					AttrBuff[Ptr + XStart + C] = CurCharAttr.Attr;
 					AttrBuff2[Ptr + XStart + C] = CurCharAttr.Attr2;
 					AttrBuffFG[Ptr + XStart + C] = CurCharAttr.Fore;
 					AttrBuffBG[Ptr + XStart + C] = CurCharAttr.Back;
 				}
-				memset(CodeBuff, Ptr + XStart, (byte)0x20, C);
+				memset(CodeBuff, Ptr + XStart, ' ', C);
 				memset(AttrBuff, Ptr + XStart, AttributeBitMasks.AttrDefault, C);
 				memset(AttrBuff2, Ptr + XStart, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, C);
 				memset(AttrBuffFG, Ptr + XStart, CurCharAttr.Fore, C);
@@ -1090,7 +1079,7 @@ namespace TeraTrem
 			BuffUpdateRect(XStart, YStart, XEnd, YEnd);
 		}
 
-		public void BuffFillBox(byte ch, int XStart, int YStart, int XEnd, int YEnd)
+		public void BuffFillBox(char ch, int XStart, int YStart, int XEnd, int YEnd)
 		{
 			int Cols, i;
 			int Ptr;
@@ -1112,12 +1101,12 @@ namespace TeraTrem
 			for (i = YStart; i <= YEnd; i++) {
 				if ((XStart > 0) &&
 					((AttrBuff[Ptr + XStart - 1] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[Ptr + XStart - 1] = 0x20;
+					CodeBuff[Ptr + XStart - 1] = ' ';
 					AttrBuff[Ptr + XStart - 1] ^= AttributeBitMasks.AttrKanji;
 				}
 				if ((XStart + Cols < VTDisp.NumOfColumns) &&
 					((AttrBuff[Ptr + XStart + Cols - 1] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[Ptr + XStart + Cols] = 0x20;
+					CodeBuff[Ptr + XStart + Cols] = ' ';
 				}
 				memset(CodeBuff, Ptr + XStart, ch, Cols);
 				memset(AttrBuff, Ptr + XStart, CurCharAttr.Attr, Cols);
@@ -1477,11 +1466,11 @@ namespace TeraTrem
 		// copy selected text to clipboard
 		{
 			int MemSize;
-			byte[] CBPtr;
+			char[] CBPtr;
 			int TmpPtr;
 			int i, j, k, IStart, IEnd = 0;
 			bool Sp, FirstChar;
-			byte b;
+			char b;
 			bool LineContinued, PrevLineContinued;
 			LineContinued = false;
 
@@ -1510,7 +1499,7 @@ namespace TeraTrem
 			// --- copy selected text to CB memory
 			LockBuffer();
 
-			CBPtr[0] = 0;
+			CBPtr[0] = '\0';
 			TmpPtr = GetLinePtr(SelectStart.Y);
 			k = 0;
 			for (j = SelectStart.Y; j <= SelectEnd.Y; j++) {
@@ -1572,7 +1561,7 @@ namespace TeraTrem
 					if (!Sp) {
 						if ((Table) && (b <= 0x20)) {
 							Sp = true;
-							b = 0x09;
+							b = '\x09';
 						}
 						if ((b != 0x09) || (!FirstChar) || PrevLineContinued) {
 							FirstChar = false;
@@ -1592,15 +1581,15 @@ namespace TeraTrem
 
 				if (!LineContinued)
 					if (j < SelectEnd.Y) {
-						CBPtr[k] = 0x0d;
+						CBPtr[k] = '\x0d';
 						k++;
-						CBPtr[k] = 0x0a;
+						CBPtr[k] = '\x0a';
 						k++;
 					}
 
 				TmpPtr = NextLinePtr(TmpPtr);
 			}
-			CBPtr[k] = 0;
+			CBPtr[k] = '\0';
 			LineContinued = false;
 			if (ts.EnableContinuedLineCopy && j != SelectEnd.Y && !BoxSelect && j < VTDisp.BuffEnd - 1) {
 				int NextTmpPtr = NextLinePtr(TmpPtr);
@@ -1722,7 +1711,7 @@ namespace TeraTrem
 			teraprn.VTPrintEnd();
 		}
 
-		public void BuffDumpCurrentLine(byte TERM)
+		public void BuffDumpCurrentLine(char TERM)
 		// Dumps current line to the file (for path through printing)
 		//   HFile: file handle
 		//   TERM: terminator character
@@ -1737,9 +1726,9 @@ namespace TeraTrem
 			for (j = 0; j < i; j++) {
 				teraprn.WriteToPrnFile(CodeBuff[CodeLine + j], false);
 			}
-			teraprn.WriteToPrnFile(0, true);
+			teraprn.WriteToPrnFile('\0', true);
 			if ((TERM >= (byte)ControlCharacters.LF) && (TERM <= (byte)ControlCharacters.FF)) {
-				teraprn.WriteToPrnFile(0x0d, false);
+				teraprn.WriteToPrnFile('\x0d', false);
 				teraprn.WriteToPrnFile(TERM, true);
 			}
 		}
@@ -1779,9 +1768,9 @@ namespace TeraTrem
 #if URL_EMPHASIS
 			int PrevCharPtr;
 			AttributeBitMasks PrevCharAttr;
-			byte PrevCharCode;
+			char PrevCharCode;
 
-			byte ch = CodeBuff[CodeLine + x];
+			char ch = CodeBuff[CodeLine + x];
 
 			if (ts.EnableClickableUrl == false &&
 				(ts.ColorFlag & ColorFlags.CF_URLCOLOR) == 0)
@@ -1838,7 +1827,7 @@ namespace TeraTrem
 		}
 		/* end - ishizaki */
 
-		public void BuffPutChar(byte b, TCharAttr Attr, bool Insert)
+		public void BuffPutChar(char b, TCharAttr Attr, bool Insert)
 		// Put a character in the buffer at the current position
 		//   b: character
 		//   Attr: attributes
@@ -1851,11 +1840,9 @@ namespace TeraTrem
 				Attr.Attr |= AttributeBitMasks.AttrLineContinued;
 			}
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
-				if (!Insert) {
-					EraseKanji(0); /* if cursor on left half... */
-				}
+			EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
+			if (!Insert) {
+				EraseKanji(0); /* if cursor on left half... */
 			}
 
 			if (Insert) {
@@ -1865,9 +1852,9 @@ namespace TeraTrem
 					LineEnd = CursorRightM;
 
 				if (LineEnd < VTDisp.NumOfColumns - 1 && ((AttrBuff[AttrLine + LineEnd] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[CodeLine + LineEnd] = 0x20;
+					CodeBuff[CodeLine + LineEnd] = ' ';
 					AttrBuff[AttrLine + LineEnd] &= ~AttributeBitMasks.AttrKanji;
-					CodeBuff[CodeLine + LineEnd + 1] = 0x20;
+					CodeBuff[CodeLine + LineEnd + 1] = ' ';
 					AttrBuff[AttrLine + LineEnd + 1] &= ~AttributeBitMasks.AttrKanji;
 					extr = 1;
 				}
@@ -1888,7 +1875,7 @@ namespace TeraTrem
 				/* last char in current line is kanji first? */
 				if ((AttrBuff[AttrLine + LineEnd] & AttributeBitMasks.AttrKanji) != 0) {
 					/* then delete it */
-					CodeBuff[CodeLine + LineEnd] = 0x20;
+					CodeBuff[CodeLine + LineEnd] = ' ';
 					AttrBuff[AttrLine + LineEnd] = CurCharAttr.Attr;
 					AttrBuff2[AttrLine2 + LineEnd] = CurCharAttr.Attr2;
 					AttrBuffFG[AttrLineFG + LineEnd] = CurCharAttr.Fore;
@@ -1947,9 +1934,9 @@ namespace TeraTrem
 					LineEnd = CursorRightM;
 
 				if (LineEnd < VTDisp.NumOfColumns - 1 && ((AttrBuff[AttrLine + LineEnd] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[CodeLine + LineEnd] = 0x20;
+					CodeBuff[CodeLine + LineEnd] = ' ';
 					AttrBuff[AttrLine + LineEnd] &= ~AttributeBitMasks.AttrKanji;
-					CodeBuff[CodeLine + LineEnd + 1] = 0x20;
+					CodeBuff[CodeLine + LineEnd + 1] = ' ';
 					AttrBuff[AttrLine + LineEnd + 1] &= ~AttributeBitMasks.AttrKanji;
 					extr = 1;
 				}
@@ -1963,13 +1950,13 @@ namespace TeraTrem
 					memmove(AttrBuffBG, AttrLineBG + VTDisp.CursorX + 2, AttrBuffBG, AttrLineBG + VTDisp.CursorX, MoveLen);
 				}
 
-				CodeBuff[CodeLine + VTDisp.CursorX] = (byte)(w >> 8);
+				CodeBuff[CodeLine + VTDisp.CursorX] = (char)w;
 				AttrBuff[AttrLine + VTDisp.CursorX] = Attr.Attr | AttributeBitMasks.AttrKanji; /* DBCS first byte */
 				AttrBuff2[AttrLine2 + VTDisp.CursorX] = Attr.Attr2;
 				AttrBuffFG[AttrLineFG + VTDisp.CursorX] = Attr.Fore;
 				AttrBuffBG[AttrLineBG + VTDisp.CursorX] = Attr.Back;
 				if (VTDisp.CursorX < LineEnd) {
-					CodeBuff[CodeLine + VTDisp.CursorX + 1] = (byte)(w & 0xFF);
+					CodeBuff[CodeLine + VTDisp.CursorX + 1] = '\0';
 					AttrBuff[AttrLine + VTDisp.CursorX + 1] = Attr.Attr;
 					AttrBuff2[AttrLine2 + VTDisp.CursorX + 1] = Attr.Attr2;
 					AttrBuffFG[AttrLineFG + VTDisp.CursorX + 1] = Attr.Fore;
@@ -1983,7 +1970,7 @@ namespace TeraTrem
 				/* last char in current line is kanji first? */
 				if ((AttrBuff[AttrLine + LineEnd] & AttributeBitMasks.AttrKanji) != 0) {
 					/* then delete it */
-					CodeBuff[CodeLine + LineEnd] = 0x20;
+					CodeBuff[CodeLine + LineEnd] = ' ';
 					AttrBuff[AttrLine + LineEnd] = CurCharAttr.Attr;
 					AttrBuff2[AttrLine2 + LineEnd] = CurCharAttr.Attr2;
 					AttrBuffFG[AttrLineFG + LineEnd] = CurCharAttr.Fore;
@@ -2000,13 +1987,13 @@ namespace TeraTrem
 				BuffUpdateRect(XStart, VTDisp.CursorY, LineEnd + extr, VTDisp.CursorY);
 			}
 			else {
-				CodeBuff[CodeLine + VTDisp.CursorX] = (byte)(w >> 8);
+				CodeBuff[CodeLine + VTDisp.CursorX] = (char)w;
 				AttrBuff[AttrLine + VTDisp.CursorX] = Attr.Attr | AttributeBitMasks.AttrKanji; /* DBCS first byte */
 				AttrBuff2[AttrLine2 + VTDisp.CursorX] = Attr.Attr2;
 				AttrBuffFG[AttrLineFG + VTDisp.CursorX] = Attr.Fore;
 				AttrBuffBG[AttrLineBG + VTDisp.CursorX] = Attr.Back;
 				if (VTDisp.CursorX < VTDisp.NumOfColumns - 1) {
-					CodeBuff[CodeLine + VTDisp.CursorX + 1] = (byte)(w & 0xFF);
+					CodeBuff[CodeLine + VTDisp.CursorX + 1] = '\0';
 					AttrBuff[AttrLine + VTDisp.CursorX + 1] = Attr.Attr;
 					AttrBuff2[AttrLine2 + VTDisp.CursorX + 1] = Attr.Attr2;
 					AttrBuffFG[AttrLineFG + VTDisp.CursorX + 1] = Attr.Fore;
@@ -2135,7 +2122,7 @@ namespace TeraTrem
 						TempAttr = CurAttr;
 						TempSel = CurSel;
 					}
-					VTDisp.DispStr(CodeBuff, TmpPtr + i, count, Y, ref X);
+					VTDisp.DispStr(CodeBuff, AttrBuff, TmpPtr + i, count, Y, ref X);
 					i = i + count;
 				}
 				while (i <= IEnd);
@@ -2182,7 +2169,7 @@ namespace TeraTrem
 					len++;
 				}
 				VTDisp.DispSetupDC(TempAttr, false);
-				VTDisp.DispStr(CodeBuff, CodeLine + StrChangeStart, len, Y, ref X);
+				VTDisp.DispStr(CodeBuff, AttrBuff, CodeLine + StrChangeStart, len, Y, ref X);
 
 				/* 残りの文字列があれば、ふつうに描画を行う。*/
 				if (len < StrChangeCount) {
@@ -2192,12 +2179,12 @@ namespace TeraTrem
 					TempAttr.Back = AttrBuffBG[AttrLineBG + StrChangeStart + pos];
 
 					VTDisp.DispSetupDC(TempAttr, false);
-					VTDisp.DispStr(CodeBuff, CodeLine + StrChangeStart + pos, (StrChangeCount - len), Y, ref X);
+					VTDisp.DispStr(CodeBuff, AttrBuff, CodeLine + StrChangeStart + pos, (StrChangeCount - len), Y, ref X);
 				}
 			}
 			else {
 				VTDisp.DispSetupDC(TempAttr, false);
-				VTDisp.DispStr(CodeBuff, CodeLine + StrChangeStart, StrChangeCount, Y, ref X);
+				VTDisp.DispStr(CodeBuff, AttrBuff, CodeLine + StrChangeStart, StrChangeCount, Y, ref X);
 			}
 
 			StrChangeCount = 0;
@@ -2293,7 +2280,7 @@ namespace TeraTrem
 					memmove(AttrBuffBG, DestPtr, AttrBuffBG, SrcPtr, linelen);
 					DestPtr = SrcPtr;
 				}
-				memset(CodeBuff, SrcPtr, (byte)0x20, linelen);
+				memset(CodeBuff, SrcPtr, ' ', linelen);
 				memset(AttrBuff, SrcPtr, AttributeBitMasks.AttrDefault, linelen);
 				memset(AttrBuff2, SrcPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 				memset(AttrBuffFG, SrcPtr, CurCharAttr.Fore, linelen);
@@ -2371,7 +2358,7 @@ namespace TeraTrem
 					n = CursorBottom - CursorTop + 1;
 				}
 				for (i = CursorBottom + 1 - n; i <= CursorBottom; i++) {
-					memset(CodeBuff, DestPtr, (byte)0x20, linelen);
+					memset(CodeBuff, DestPtr, ' ', linelen);
 					memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, linelen);
 					memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 					memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, linelen);
@@ -2433,7 +2420,7 @@ namespace TeraTrem
 					n = CursorBottom - CursorTop + 1;
 				}
 				for (i = CursorBottom + 1 - n; i <= CursorBottom; i++) {
-					memset(CodeBuff, DestPtr, (byte)0x20, linelen);
+					memset(CodeBuff, DestPtr, ' ', linelen);
 					memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, linelen);
 					memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 					memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, linelen);
@@ -2486,7 +2473,7 @@ namespace TeraTrem
 				n = CursorBottom - CursorTop + 1;
 			}
 			for (i = CursorTop + n - 1; i >= CursorTop; i--) {
-				memset(CodeBuff, DestPtr, (byte)0x20, linelen);
+				memset(CodeBuff, DestPtr, ' ', linelen);
 				memset(AttrBuff, DestPtr, AttributeBitMasks.AttrDefault, linelen);
 				memset(AttrBuff2, DestPtr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, linelen);
 				memset(AttrBuffFG, DestPtr, CurCharAttr.Fore, linelen);
@@ -2731,7 +2718,7 @@ namespace TeraTrem
 			int X, Y, YStart, YEnd;
 			int IStart, IEnd, i;
 			int TmpPtr;
-			byte b;
+			char b;
 			bool DBCS;
 
 			VTDisp.CaretOff();
@@ -3044,7 +3031,7 @@ namespace TeraTrem
 			bool Right;
 			int TmpPtr;
 			int i;
-			byte b;
+			char b;
 			bool DBCS;
 
 			VTDisp.DispConvWinToScreen(Xw, Yw, out X, out Y, out Right);
@@ -3496,7 +3483,7 @@ end:
 			Selected = false;
 
 			NewLine(0);
-			memset(CodeBuff, 0, (byte)0x20, BufferSize);
+			memset(CodeBuff, 0, ' ', BufferSize);
 			memset(AttrBuff, 0, AttributeBitMasks.AttrDefault, BufferSize);
 			memset(AttrBuff2, 0, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, BufferSize);
 			memset(AttrBuffFG, 0, CurCharAttr.Fore, BufferSize);
@@ -3723,7 +3710,7 @@ end:
 
 		public void BuffSaveScreen()
 		{
-			byte[] CodeDest;
+			char[] CodeDest;
 			AttributeBitMasks[] AttrDest, AttrDest2;
 			ColorCodes[] AttrDestFG, AttrDestBG;
 			int ScrSize;
@@ -3733,7 +3720,7 @@ end:
 			if (SaveCodeBuff == null) {
 				ScrSize = VTDisp.NumOfColumns * VTDisp.NumOfLines;
 
-				CodeDest = new byte[ScrSize];
+				CodeDest = new char[ScrSize];
 				AttrDest = new AttributeBitMasks[ScrSize];
 				AttrDest2 = new AttributeBitMasks[ScrSize];
 				AttrDestFG = new ColorCodes[ScrSize];
@@ -3780,7 +3767,7 @@ end:
 					memmove(AttrBuffFG, DestPtr, SaveAttrBuffFG, SrcPtr, CopyX);
 					memmove(AttrBuffBG, DestPtr, SaveAttrBuffBG, SrcPtr, CopyX);
 					if ((AttrBuff[DestPtr + CopyX - 1] & AttributeBitMasks.AttrKanji) != 0) {
-						CodeBuff[DestPtr + CopyX - 1] = (byte)' ';
+						CodeBuff[DestPtr + CopyX - 1] = ' ';
 						AttrBuff[DestPtr + CopyX - 1] ^= AttributeBitMasks.AttrKanji;
 					}
 					SrcPtr += SaveBuffX;
@@ -3816,10 +3803,8 @@ end:
 			int i, j, YEnd;
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
-					EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
-				}
+			if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
+				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
 			}
 			offset = VTDisp.CursorX;
 			TmpPtr = GetLinePtr(VTDisp.PageStart + VTDisp.CursorY);
@@ -3830,7 +3815,7 @@ end:
 			for (i = VTDisp.CursorY; i <= YEnd; i++) {
 				for (j = TmpPtr + offset; j < TmpPtr + VTDisp.NumOfColumns - offset; j++) {
 					if ((AttrBuff2[j] & AttributeBitMasks.Attr2Protect) == 0) {
-						CodeBuff[j] = 0x20;
+						CodeBuff[j] = ' ';
 						AttrBuff[j] &= AttributeBitMasks.AttrSgrMask;
 					}
 				}
@@ -3849,10 +3834,8 @@ end:
 			int i, j, YHome;
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
-					EraseKanji(0); /* if cursor is on left half of a kanji, erase the kanji */
-				}
+			if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
+				EraseKanji(0); /* if cursor is on left half of a kanji, erase the kanji */
 			}
 			offset = VTDisp.NumOfColumns;
 			if (isCursorOnStatusLine()) {
@@ -3868,7 +3851,7 @@ end:
 				}
 				for (j = TmpPtr; j < TmpPtr + offset; j++) {
 					if ((AttrBuff2[j] & AttributeBitMasks.Attr2Protect) == 0) {
-						CodeBuff[j] = 0x20;
+						CodeBuff[j] = ' ';
 						AttrBuff[j] &= AttributeBitMasks.AttrSgrMask;
 					}
 				}
@@ -3908,18 +3891,18 @@ end:
 				if ((XStart > 0) &&
 					((AttrBuff[Ptr + XStart - 1] & AttributeBitMasks.AttrKanji) != 0) &&
 					((AttrBuff2[Ptr + XStart - 1] & AttributeBitMasks.Attr2Protect) == 0)) {
-					CodeBuff[Ptr + XStart - 1] = 0x20;
+					CodeBuff[Ptr + XStart - 1] = ' ';
 					AttrBuff[Ptr + XStart - 1] &= AttributeBitMasks.AttrSgrMask;
 				}
 				if ((XStart + C < VTDisp.NumOfColumns) &&
 					((AttrBuff[Ptr + XStart + C - 1] & AttributeBitMasks.AttrKanji) != 0) &&
 					((AttrBuff2[Ptr + XStart + C - 1] & AttributeBitMasks.Attr2Protect) == 0)) {
-					CodeBuff[Ptr + XStart + C] = 0x20;
+					CodeBuff[Ptr + XStart + C] = ' ';
 					AttrBuff[Ptr + XStart + C] &= AttributeBitMasks.AttrSgrMask;
 				}
 				for (j = Ptr + XStart; j < Ptr + XStart + C; j++) {
 					if ((AttrBuff2[j] & AttributeBitMasks.Attr2Protect) == 0) {
-						CodeBuff[j] = 0x20;
+						CodeBuff[j] = ' ';
 						AttrBuff[j] &= AttributeBitMasks.AttrSgrMask;
 					}
 				}
@@ -3941,16 +3924,14 @@ end:
 				LineContinued = true;
 			}
 
-			if (ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) {
-				if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
-					EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
-				}
+			if ((AttrBuff2[AttrLine2 + VTDisp.CursorX] & AttributeBitMasks.Attr2Protect) == 0) {
+				EraseKanji(1); /* if cursor is on right half of a kanji, erase the kanji */
 			}
 
 			NewLine(VTDisp.PageStart + VTDisp.CursorY);
 			for (i = XStart; i < XStart + Count; i++) {
 				if ((AttrBuff2[AttrLine2 + i] & AttributeBitMasks.Attr2Protect) == 0) {
-					CodeBuff[CodeLine + i] = 0x20;
+					CodeBuff[CodeLine + i] = ' ';
 					AttrBuff[AttrLine + i] &= AttributeBitMasks.AttrSgrMask;
 				}
 			}
@@ -3981,19 +3962,19 @@ end:
 				Ptr = LPtr + CursorLeftM;
 
 				if ((AttrBuff[LPtr + CursorRightM] & AttributeBitMasks.AttrKanji) != 0) {
-					CodeBuff[LPtr + CursorRightM] = 0x20;
+					CodeBuff[LPtr + CursorRightM] = ' ';
 					AttrBuff[LPtr + CursorRightM] &= ~AttributeBitMasks.AttrKanji;
 					if (CursorRightM < VTDisp.NumOfColumns - 1) {
-						CodeBuff[LPtr + CursorRightM + 1] = 0x20;
+						CodeBuff[LPtr + CursorRightM + 1] = ' ';
 					}
 				}
 
 				if ((AttrBuff[Ptr + count - 1] & AttributeBitMasks.AttrKanji) != 0) {
-					CodeBuff[Ptr + count] = 0x20;
+					CodeBuff[Ptr + count] = ' ';
 				}
 
 				if (CursorLeftM > 0 && (AttrBuff[Ptr - 1] & AttributeBitMasks.AttrKanji) != 0) {
-					CodeBuff[Ptr - 1] = 0x20;
+					CodeBuff[Ptr - 1] = ' ';
 					AttrBuff[Ptr - 1] &= ~AttributeBitMasks.AttrKanji;
 				}
 
@@ -4003,7 +3984,7 @@ end:
 				memmove(AttrBuffFG, Ptr, AttrBuffFG, Ptr + count, MoveLen);
 				memmove(AttrBuffBG, Ptr, AttrBuffBG, Ptr + count, MoveLen);
 
-				memset(CodeBuff, Ptr + MoveLen, (byte)0x20, count);
+				memset(CodeBuff, Ptr + MoveLen, ' ', count);
 				memset(AttrBuff, Ptr + MoveLen, AttributeBitMasks.AttrDefault, count);
 				memset(AttrBuff2, Ptr + MoveLen, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, count);
 				memset(AttrBuffFG, Ptr + MoveLen, CurCharAttr.Fore, count);
@@ -4028,13 +4009,13 @@ end:
 				Ptr = LPtr + CursorLeftM;
 
 				if (CursorRightM < VTDisp.NumOfColumns - 1 && (AttrBuff[LPtr + CursorRightM] & AttributeBitMasks.AttrKanji) != 0) {
-					CodeBuff[LPtr + CursorRightM + 1] = 0x20;
+					CodeBuff[LPtr + CursorRightM + 1] = ' ';
 				}
 
 				if (CursorLeftM > 0 && ((AttrBuff[Ptr - 1] & AttributeBitMasks.AttrKanji) != 0)) {
-					CodeBuff[Ptr - 1] = 0x20;
+					CodeBuff[Ptr - 1] = ' ';
 					AttrBuff[Ptr - 1] &= ~AttributeBitMasks.AttrKanji;
-					CodeBuff[Ptr] = 0x20;
+					CodeBuff[Ptr] = ' ';
 				}
 
 				memmove(CodeBuff, Ptr + count, CodeBuff, Ptr, MoveLen);
@@ -4044,7 +4025,7 @@ end:
 				memmove(AttrBuffFG, Ptr + count, AttrBuffFG, Ptr, MoveLen);
 				memmove(AttrBuffBG, Ptr + count, AttrBuffBG, Ptr, MoveLen);
 
-				memset(CodeBuff, Ptr, (byte)0x20, count);
+				memset(CodeBuff, Ptr, ' ', count);
 
 				memset(AttrBuff, Ptr, AttributeBitMasks.AttrDefault, count);
 				memset(AttrBuff2, Ptr, CurCharAttr.Attr2 & AttributeBitMasks.Attr2ColorMask, count);
@@ -4052,7 +4033,7 @@ end:
 				memset(AttrBuffBG, Ptr, CurCharAttr.Back, count);
 
 				if ((AttrBuff[LPtr + CursorRightM] & AttributeBitMasks.AttrKanji) != 0) {
-					CodeBuff[LPtr + CursorRightM] = 0x20;
+					CodeBuff[LPtr + CursorRightM] = ' ';
 					AttrBuff[LPtr + CursorRightM] &= ~AttributeBitMasks.AttrKanji;
 				}
 
@@ -4063,18 +4044,18 @@ end:
 		}
 
 		// 現在行をまるごとバッファに格納する。返り値は現在のカーソル位置(X)。
-		int BuffGetCurrentLineData(byte[] buf, int bufsize)
+		int BuffGetCurrentLineData(char[] buf, int bufsize)
 		{
 			int Ptr;
 
 			Ptr = GetLinePtr(VTDisp.PageStart + VTDisp.CursorY);
-			memset(buf, 0, (byte)0, bufsize);
+			memset(buf, 0, '\0', bufsize);
 			memmove(buf, 0, CodeBuff, Ptr, Math.Min(VTDisp.NumOfColumns, bufsize - 1));
 			return (VTDisp.CursorX);
 		}
 
 		// 全バッファから指定した行を返す。
-		int BuffGetAnyLineData(int offset_y, byte[] buf, int bufsize)
+		int BuffGetAnyLineData(int offset_y, char[] buf, int bufsize)
 		{
 			int Ptr;
 			int copysize = 0;
@@ -4083,7 +4064,7 @@ end:
 				return -1;
 
 			Ptr = GetLinePtr(offset_y);
-			memset(buf, 0, (byte)0, bufsize);
+			memset(buf, 0, '\0', bufsize);
 			copysize = Math.Min(VTDisp.NumOfColumns, bufsize - 1);
 			memmove(buf, 0, CodeBuff, Ptr, copysize);
 

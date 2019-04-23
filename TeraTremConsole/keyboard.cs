@@ -113,7 +113,7 @@ namespace TeraTrem
 				KeyMap = new TKeyMap();
 			if (KeyMap != null) {
 				ttset.ReadKeyboardCnf(ts.KeyCnfFN, KeyMap, true);
-				//FreeTTSET();
+				//ttset.FreeTTSET();
 			}
 #if SHARED_KEYMAP
 			if ((TempDir == ts.HomeDir) &&
@@ -664,7 +664,7 @@ namespace TeraTrem
 
 			/* debug mode */
 			if ((ts.Debug > 0) && (VKey == Keys.Escape) && ShiftKey()) {
-				VTTerm.MessageBeep(0);
+				Console.Beep();
 				DebugFlag = (KeyboardDebugFlag)((int)(DebugFlag + 1) % (int)KeyboardDebugFlag.DEBUG_FLAG_MAXD);
 				PeekMessage(ref M, HWin.Handle, VTWindow.WM_CHAR, VTWindow.WM_CHAR, PM_REMOVE);
 				return KeyDownReturnType.KEYDOWN_CONTROL;

@@ -42,76 +42,10 @@ namespace TeraTrem
 
 		public TalkerMode TalkStatus = TalkerMode.IdTalkKeyb; /* IdTalkKeyb, IdTalkCB, IdTalkTextFile */
 		public Form MainForm = null;
-		public Control HVTWin = null;
+		public VTWindow HVTWin = null;
 		public Control HTEKWin = null;
 		public bool KeybEnabled = true;
 		public WindowId ActiveWin = WindowId.IdVT; /* IdVT, IdTEK */
-
-		// タイトルバーのCP932への変換を行う
-		// 現在、SJIS、EUCのみに対応。
-		// (2005.3.13 yutaka)
-		public void ConvertToCP932(byte[] str, int destlen)
-		{
-			int len = str.Length;
-			byte[] cc = new byte[len + 1];
-			int c = 0;
-			int i;
-			byte b;
-			char word;
-
-			//if (strcmp(ts.Locale, DEFAULT_LOCALE) == 0)
-			//{
-			for (i = 0; i < len; i++) {
-				b = str[i];
-				if ((ts.KanjiCode == KanjiCodeId.IdSJIS && IsDBCSLeadByte(b))
-					|| (ts.KanjiCode == KanjiCodeId.IdEUC && (b & 0x80) != 0)) {
-					word = (char)(b << 8);
-
-					if (i == len - 1) {
-						cc[c++] = b;
-						continue;
-					}
-
-					b = str[i + 1];
-					word |= (char)b;
-					i++;
-
-					if (ts.KanjiCode == KanjiCodeId.IdSJIS) {
-						// SJISはそのままCP932として出力する
-
-					}
-					else if (ts.KanjiCode == KanjiCodeId.IdEUC) {
-						// EUC -> SJIS
-						word &= unchecked((char)~0x8080u);
-						word = language.JIS2SJIS(word);
-
-					}
-					else if (ts.KanjiCode == KanjiCodeId.IdJIS) {
-
-					}
-					else if (ts.KanjiCode == KanjiCodeId.IdUTF8) {
-
-					}
-					else if (ts.KanjiCode == KanjiCodeId.IdUTF8m) {
-
-					}
-					else {
-
-					}
-
-					cc[c++] = (byte)(word >> 8);
-					cc[c++] = (byte)(word & 0xff);
-
-				}
-				else {
-					cc[c++] = b;
-				}
-				//}
-
-				cc[c] = 0;
-				System.Buffer.BlockCopy(cc, 0, str, 0, str.Length);
-			}
-		}
 
 		internal void ChangeTitle()
 		{
@@ -129,8 +63,5 @@ namespace TeraTrem
 		{
 			ts = datas.TTTSet;
 		}
-
-		[DllImport("kernel32.dll")]
-		public static extern bool IsDBCSLeadByte(byte TestChar);
 	}
 }

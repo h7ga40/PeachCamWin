@@ -55,9 +55,6 @@ namespace TeraTrem
 
 			ts.DisableTCPEchoCR = false;
 
-			/* Language */
-			ts.Language = Language.IdUtf8;
-
 			/* VT terminal size  */
 			ts.TerminalWidth = 80;
 			ts.TerminalHeight = 24;
@@ -80,24 +77,6 @@ namespace TeraTrem
 
 			/* Answerback */
 			ts.AnswerbackLen = 0;
-
-			/* Kanji Code (receive) */
-			ts.KanjiCode = KanjiCodeId.IdUTF8;
-
-			/* Katakana (receive) */
-			ts.JIS7Katakana = false;
-
-			/* Kanji Code (transmit) */
-			ts.KanjiCodeSend = KanjiCodeId.IdUTF8;
-
-			/* Katakana (transmit) */
-			ts.JIS7KatakanaSend = false;
-
-			/* KanjiIn */
-			ts.KanjiIn = KanjiInModes.IdKanjiInB;
-
-			/* KanjiOut */
-			ts.KanjiOut = KanjiInModes.IdKanjiOutJ;
 
 			/* Cursor shape */
 			ts.CursorShape = CursorShapes.IdBlkCur;

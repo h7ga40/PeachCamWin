@@ -74,7 +74,7 @@ namespace TeraTrem
 
 		internal static void CommClose(TComVar cv)
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		}
 	}
 }

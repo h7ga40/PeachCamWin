@@ -65,8 +65,8 @@ namespace TeraTrem
 		delegate int TImmGetCompositionString(IntPtr hIMC, uint dwIndex, IntPtr lpBuf, uint dwBufLen);
 		delegate IntPtr TImmGetContext(IntPtr hWnd);
 		delegate bool TImmReleaseContext(IntPtr hWnd, IntPtr hIMC);
-		delegate bool TImmSetCompositionFont(IntPtr hIMC, ref LOGFONT lplf);
-		delegate bool TImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpCompForm);
+		delegate bool TImmSetCompositionFont(IntPtr hIMC, [In]ref LOGFONT lplf);
+		delegate bool TImmSetCompositionWindow(IntPtr hIMC, [In]ref COMPOSITIONFORM lpCompForm);
 		delegate bool TImmGetOpenStatus(IntPtr hIMC);
 		delegate bool TImmSetOpenStatus(IntPtr hIMC, bool fOpen);
 
@@ -318,7 +318,7 @@ namespace TeraTrem
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 	public struct LOGFONT
 	{
-		public const int LF_FACESIZE = 2 * 32;
+		public const int LF_FACESIZE = 32;
 		public int lfHeight;
 		public int lfWidth;
 		public int lfEscapement;

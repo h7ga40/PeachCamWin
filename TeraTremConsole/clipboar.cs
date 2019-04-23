@@ -37,7 +37,7 @@ namespace TeraTrem
 {
 	class clipboar
 	{
-		internal byte[] CBOpen(int MemSize)
+		internal char[] CBOpen(int MemSize)
 		{
 			throw new NotImplementedException();
 		}

@@ -109,9 +109,6 @@ namespace TeraTrem
 		public int FontHeight, FontWidth, ScreenWidth, ScreenHeight;
 		public bool AdjustSize;
 		public bool DontChangeSize = false;
-#if ALPHABLEND_TYPE2
-		static int CRTWidth, CRTHeight;
-#endif
 		public int CursorX, CursorY;
 		/* Virtual screen region */
 		Rectangle VirtualScreen;
@@ -125,20 +122,18 @@ namespace TeraTrem
 		bool CursorOnDBCS = false;
 		bool SaveWinSize = false;
 		int WinWidthOld, WinHeightOld;
-		IntPtr Background;
+		Brush Background;
 		Color[] ANSIColor = new Color[256];
-		int[] Dx = new int[tttypes.TermWidthMax];
 
 		// caret variables
 		int CaretStatus;
 		bool CaretEnabled = true;
 
 		// ---- device context and status flags
-		IntPtr VTDC = IntPtr.Zero; /* Device context for ControlCharacters.VT window */
+		Graphics VTDC = null; /* Device context for ControlCharacters.VT window */
 		TCharAttr DCAttr;
 		TCharAttr CurCharAttr;
 		bool DCReverse;
-		IntPtr DCPrevFont;
 
 		public TCharAttr DefCharAttr = new TCharAttr(AttributeBitMasks.AttrDefault, AttributeBitMasks.AttrDefault, (ColorCodes)AttributeBitMasks.AttrDefaultFG, (ColorCodes)AttributeBitMasks.AttrDefaultBG);
 
@@ -148,40 +143,6 @@ namespace TeraTrem
 		int SRegionTop;
 		int SRegionBottom;
 
-#if ALPHABLEND_TYPE2
-		//<!--by AKASI
-
-		const string BG_SECTION = "BG";
-
-		enum BG_TYPE { BG_COLOR = 0, BG_PICTURE, BG_WALLPAPER }
-		enum BG_PATTERN { BG_STRETCH = 0, BG_TILE, BG_CENTER, BG_FIT_WIDTH, BG_FIT_HEIGHT, BG_AUTOFIT, BG_AUTOFILL }
-
-		struct BGSrc
-		{
-			Graphics hdc;
-			BG_TYPE type;
-			BG_PATTERN pattern;
-			bool antiAlias;
-			Color color;
-			int alpha;
-			int width;
-			int height;
-			string file;
-			string fileTmp;
-		}
-
-		BGSrc BGDest = new BGSrc();
-		BGSrc BGSrc1 = new BGSrc();
-		BGSrc BGSrc2 = new BGSrc();
-
-		int BGEnable;
-		int BGReverseTextAlpha;
-		int BGUseAlphaBlendAPI;
-		bool BGNoFrame;
-		bool BGFastSizeMove;
-
-		string BGSPIPath;
-#endif
 		Color[] BGVTColor = new Color[2];
 		Color[] BGVTBoldColor = new Color[2];
 		Color[] BGVTBlinkColor = new Color[2];
@@ -189,1307 +150,6 @@ namespace TeraTrem
 		/* begin - ishizaki */
 		Color[] BGURLColor = new Color[2];
 		/* end - ishizaki */
-#if ALPHABLEND_TYPE2
-		Rectangle BGPrevRect;
-		bool BGReverseText;
-
-		bool BGNoCopyBits;
-		bool BGInSizeMove;
-		Brush BGBrushInSizeMove;
-
-		Graphics hdcBGWork;
-		Graphics hdcBGBuffer;
-		Graphics hdcBG;
-
-		struct WallpaperInfo
-		{
-			string filename;
-			int pattern;
-		}
-
-		struct BGBLENDFUNCTION
-		{
-			byte BlendOp;
-			byte BlendFlags;
-			byte SourceConstantAlpha;
-			byte AlphaFormat;
-		}
-
-		delegate bool BGAlphaBlend(Graphics sg, int sx, int sy, int sw, int sh, Graphics dg, int dx, int dy, int dw, int dh, BGBLENDFUNCTION bf);
-		delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
-		delegate bool BGEnumDisplayMonitors(Graphics g, ref RECT rc, MonitorEnumProc mep, IntPtr lparam);
-
-
-		//便利関数☆
-
-		void dprintf(string format, params object[] args)
-		{
-			string buffer = String.Format(format, args);
-
-			System.Diagnostics.Debug.WriteLine(buffer);
-		}
-
-		IntPtr CreateScreenCompatibleBitmap(int width, int height)
-		{
-			Graphics hdc;
-			IntPtr hbm;
-
-#if DEBUG
-			dprintf("CreateScreenCompatibleBitmap : width = %d height = %d", width, height);
-#endif
-
-			hdc = Graphics.FromHwnd(IntPtr.Zero);
-
-			hbm = CreateCompatibleBitmap(hdc, width, height);
-
-			ReleaseDC(null, hdc);
-
-#if DEBUG
-			if (!hbm)
-				dprintf("CreateScreenCompatibleBitmap : fail in CreateCompatibleBitmap");
-#endif
-
-			return hbm;
-		}
-
-		IntPtr CreateDIB24BPP(int width, int height, ref byte[] buf, ref int lenBuf)
-		{
-			Graphics hdc;
-			IntPtr hbm;
-			BITMAPINFO bmi;
-
-#if DEBUG
-			dprintf("CreateDIB24BPP : width = %d height = %d", width, height);
-#endif
-
-			if (!width || !height)
-				return null;
-
-			ZeroMemory(&bmi, bmi.Length);
-
-			*lenBuf = ((width * 3 + 3) & ~3) * height;
-
-			bmi.bmiHeader.biSize = bmi.bmiHeader.Length;
-			bmi.bmiHeader.biWidth = width;
-			bmi.bmiHeader.biHeight = height;
-			bmi.bmiHeader.biPlanes = 1;
-			bmi.bmiHeader.biBitCount = 24;
-			bmi.bmiHeader.biSizeImage = *lenBuf;
-			bmi.bmiHeader.biCompression = BI_RGB;
-
-			hdc = Graphics.FromHwnd(IntPtr.Zero);
-
-			hbm = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, new IntPtr(buf), null, 0);
-
-			ReleaseDC(null, hdc);
-
-			return hbm;
-		}
-
-		Graphics CreateBitmapDC(IntPtr hbm)
-		{
-			Graphics hdc;
-
-#if DEBUG
-			dprintf("CreateBitmapDC : hbm = %x", hbm);
-#endif
-
-			hdc = CreateCompatibleDC(null);
-
-			SaveDC(hdc);
-			SelectObject(hdc, hbm);
-
-			return hdc;
-		}
-
-		void DeleteBitmapDC(ref IntPtr hdc)
-		{
-			IntPtr hbm;
-
-#if DEBUG
-			dprintf("DeleteBitmapDC : *hdc = %x", hdc);
-#endif
-
-			if (hdc == IntPtr.Zero)
-				return;
-
-			hbm = GetCurrentObject(*hdc, OBJ_BITMAP);
-
-			RestoreDC(hdc, -1);
-			hbm.Dispose();
-			DeleteDC(hdc);
-
-			hdc = IntPtr.Zero;
-		}
-
-		void FillBitmapDC(Graphics hdc, Color color)
-		{
-			IntPtr hbm;
-			BITMAP bm;
-			Rectangle rect;
-			Brush hBrush;
-
-#if DEBUG
-			dprintf("FillBitmapDC : hdc = %x color = %x", hdc, color);
-#endif
-
-			if (!hdc)
-				return;
-
-			hbm = GetCurrentObject(hdc, OBJ_BITMAP);
-			GetObject(hbm, bm.Length, &bm);
-
-			SetRect(&rect, 0, 0, bm.bmWidth, bm.bmHeight);
-			hBrush = CreateSolidBrush(color);
-			FillRect(hdc, &rect, hBrush);
-			hBrush.Dispose();
-		}
-
-		IntPtr GetProcAddressWithDllName(string dllName, string procName)
-		{
-			HINSTANCE hDll;
-
-			hDll = LoadLibrary(dllName);
-
-			if (hDll)
-				return GetProcAddress(hDll, procName);
-			else
-				return IntPtr.Zero;
-		}
-
-		void RandomFile(string filespec, string filename, int destlen)
-		{
-			int i;
-			int file_num;
-			string fullpath;
-			string filePart;
-
-			IntPtr hFind;
-			WIN32_FIND_DATA fd;
-
-			ExpandEnvironmentStrings(filespec_src, filespec, filespec.Length);
-
-			//絶対パスに変換
-			if (!GetFullPathName(filespec, tttypes.MAX_PATH, fullpath, ref filePart))
-				return;
-
-			//ファイルを数える
-			hFind = FindFirstFile(fullpath, &fd);
-
-			file_num = 0;
-
-			if (hFind != INVALID_HANDLE_VALUE && filePart) {
-
-				do {
-					if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-						file_num++;
-
-				} while (FindNextFile(hFind, &fd));
-			}
-
-			if (!file_num)
-				return;
-
-			FindClose(hFind);
-
-			//何番目のファイルにするか決める。
-			file_num = rand() % file_num + 1;
-
-			hFind = FindFirstFile(fullpath, &fd);
-
-			if (hFind != INVALID_HANDLE_VALUE) {
-				i = 0;
-
-				do {
-					if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-						i++;
-				} while (i < file_num && FindNextFile(hFind, &fd));
-
-			}
-			else {
-				return;
-			}
-
-			FindClose(hFind);
-
-			//ディレクトリ取得
-			ZeroMemory(filename, destlen);
-			{
-				int tmplen;
-				char* tmp;
-				tmplen = filePart - fullpath + 1;
-				tmp = (char*)_alloca(tmplen);
-				strncpy_s(tmp, tmplen, fullpath, filePart - fullpath);
-				strncpy_s(filename, destlen, tmp, _TRUNCATE);
-			}
-			strncat_s(filename, destlen, fd.cFileName, _TRUNCATE);
-		}
-
-		delegate int SPI_IsSupported(string s, uint dw);
-		delegate int SPI_GetPicture(string s, long p2, uint p3, IntPtr p4, IntPtr p5, IntPtr p6, long p7);
-		delegate int SPI_GetPluginInfo(int p1, string p2, int p3);
-
-		bool LoadPictureWithSPI(string nameSPI, string nameFile, byte[] bufFile, long sizeFile, IntPtr hbuf, IntPtr hbmi)
-		{
-			HINSTANCE hSPI;
-			char[] spiVersion = new char[8];
-			SPI_IsSupported SPI_IsSupported;
-			SPI_GetPicture SPI_GetPicture;
-			SPI_GetPluginInfo SPI_GetPluginInfo;
-			int ret;
-
-			ret = false;
-			hSPI = null;
-
-			//SPI をロード
-			hSPI = LoadLibrary(nameSPI);
-
-			if (!hSPI)
-				goto error;
-
-			(FARPROC)SPI_GetPluginInfo = GetProcAddress(hSPI, "GetPluginInfo");
-			(FARPROC)SPI_IsSupported = GetProcAddress(hSPI, "IsSupported");
-			(FARPROC)SPI_GetPicture = GetProcAddress(hSPI, "GetPicture");
-
-			if (!SPI_GetPluginInfo || !SPI_IsSupported || !SPI_GetPicture)
-				goto error;
-
-			//バージョンチェック
-			SPI_GetPluginInfo(0, spiVersion, 8);
-
-			if (spiVersion[2] != 'I' || spiVersion[3] != 'N')
-				goto error;
-
-			if (!SPI_IsSupported(nameFile, (ulong)bufFile))
-				goto error;
-
-			if (SPI_GetPicture(bufFile, sizeFile, 1, hbmi, hbuf, null, 0))
-				goto error;
-
-			ret = true;
-
-		error:
-
-			if (hSPI)
-				FreeLibrary(hSPI);
-
-			return ret;
-		}
-
-		bool SaveBitmapFile(string nameFile, byte[] pbuf, ref BITMAPINFO pbmi)
-		{
-			int bmiSize;
-			uint writtenByte;
-			IntPtr hFile;
-			BITMAPFILEHEADER bfh;
-
-			hFile = CreateFile(nameFile, GENERIC_WRITE, 0, null, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, null);
-
-			if (hFile == INVALID_HANDLE_VALUE)
-				return false;
-
-			bmiSize = pbmi.bmiHeader.biSize;
-
-			switch (pbmi.bmiHeader.biBitCount) {
-			case 1:
-				bmiSize += pbmi.bmiHeader.biClrUsed ? RGBQUAD.Length * 2 : 0;
-				break;
-
-			case 2:
-				bmiSize += RGBQUAD.Length * 4;
-				break;
-
-			case 4:
-				bmiSize += RGBQUAD.Length * 16;
-				break;
-
-			case 8:
-				bmiSize += RGBQUAD.Length * 256;
-				break;
-			}
-
-			ZeroMemory(&bfh, bfh.Length);
-			bfh.bfType = MAKEWORD('B', 'M');
-			bfh.bfOffBits = bfh.Length + bmiSize;
-			bfh.bfSize = bfh.bfOffBits + pbmi.bmiHeader.biSizeImage;
-
-			WriteFile(hFile, &bfh, bfh.Length, &writtenByte, 0);
-			WriteFile(hFile, pbmi, bmiSize, &writtenByte, 0);
-			WriteFile(hFile, pbuf, pbmi.bmiHeader.biSizeImage, &writtenByte, 0);
-
-			CloseHandle(hFile);
-
-			return true;
-		}
-
-		bool AlphaBlendWithoutAPI(Graphics hdcDest, int dx, int dy, int width, int height, Graphics hdcSrc, int sx, int sy, int sw, int sh, BGBLENDFUNCTION bf)
-		{
-			Graphics hdcDestWork, hdcSrcWork;
-			int i, invAlpha, alpha;
-			int lenBuf;
-			byte* bufDest;
-			byte* bufSrc;
-
-			if (dx != 0 || dy != 0 || sx != 0 || sy != 0 || width != sw || height != sh)
-				return false;
-
-			hdcDestWork = CreateBitmapDC(CreateDIB24BPP(width, height, &bufDest, &lenBuf));
-			hdcSrcWork = CreateBitmapDC(CreateDIB24BPP(width, height, &bufSrc, &lenBuf));
-
-			if (!bufDest || !bufSrc)
-				return false;
-
-			BitBlt(hdcDestWork, 0, 0, width, height, hdcDest, 0, 0, SRCCOPY);
-			BitBlt(hdcSrcWork, 0, 0, width, height, hdcSrc, 0, 0, SRCCOPY);
-
-			alpha = bf.SourceConstantAlpha;
-			invAlpha = 255 - alpha;
-
-			for (i = 0; i < lenBuf; i++, bufDest++, bufSrc++)
-				*bufDest = (*bufDest * invAlpha + *bufSrc * alpha) >> 8;
-
-			BitBlt(hdcDest, 0, 0, width, height, hdcDestWork, 0, 0, SRCCOPY);
-
-			DeleteBitmapDC(&hdcDestWork);
-			DeleteBitmapDC(&hdcSrcWork);
-
-			return true;
-		}
-
-		// 画像読み込み関係
-
-		void BGPreloadPicture(BGSrc src)
-		{
-			string spiPath;
-			string filespec;
-			string filePart;
-			int fileSize;
-			int readByte;
-			byte[] fileBuf;
-
-			IntPtr hbm;
-			IntPtr hPictureFile;
-			IntPtr hFind;
-			WIN32_FIND_DATA fd;
-
-#if DEBUG
-			dprintf("Preload Picture : %s", src.file);
-#endif
-
-			//ファイルを読み込む
-			hPictureFile = CreateFile(src.file, GENERIC_READ, 0, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, null);
-
-			if (hPictureFile == INVALID_HANDLE_VALUE)
-				return;
-
-			fileSize = GetFileSize(hPictureFile, 0);
-
-			//最低 2kb は確保 (Susie plugin の仕様より)
-			fileBuf = Buffer.GlobalAlloc(GPTR, fileSize + 2048);
-
-			//頭の 2kb は０で初期化
-			ZeroMemory(fileBuf, 2048);
-
-			ReadFile(hPictureFile, fileBuf, fileSize, &readByte, 0);
-
-			CloseHandle(hPictureFile);
-
-			// SPIPath を絶対パスに変換
-			if (!GetFullPathName(BGSPIPath, tttypes.MAX_PATH, filespec, &filePart))
-				return;
-
-			//プラグインを当たっていく
-			hFind = FindFirstFile(filespec, &fd);
-
-			if (hFind != INVALID_HANDLE_VALUE && filePart) {
-				//ディレクトリ取得
-				ExtractDirName(filespec, spiPath);
-				AppendSlash(spiPath, spiPath.Length);
-
-				do {
-					HLOCAL hbuf, hbmi;
-					BITMAPINFO pbmi;
-					char[] pbuf;
-					string spiFileName;
-
-					if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-						continue;
-
-					strncpy_s(spiFileName, spiFileName.Length, spiPath, _TRUNCATE);
-					strncat_s(spiFileName, spiFileName.Length, fd.cFileName, _TRUNCATE);
-
-					if (LoadPictureWithSPI(spiFileName, src.file, fileBuf, fileSize, &hbuf, &hbmi)) {
-						pbuf = LocalLock(hbuf);
-						pbmi = LocalLock(hbmi);
-
-						SaveBitmapFile(src.fileTmp, pbuf, pbmi);
-
-						LocalUnlock(hbmi);
-						LocalUnlock(hbuf);
-
-						LocalFree(hbmi);
-						LocalFree(hbuf);
-
-						strncpy_s(src.file, src.file.Length, src.fileTmp, _TRUNCATE);
-
-						break;
-					}
-				} while (FindNextFile(hFind, &fd));
-
-				FindClose(hFind);
-			}
-
-			GlobalFree(fileBuf);
-
-			//画像をビットマップとして読み込み
-
-			hbm = LoadImage(0, src.file, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
-			if (hbm) {
-				BITMAP bm;
-
-				GetObject(hbm, bm.Length, &bm);
-
-				src.hdc = CreateBitmapDC(hbm);
-				src.width = bm.bmWidth;
-				src.height = bm.bmHeight;
-			}
-			else {
-				src.type = BG_COLOR;
-			}
-		}
-
-		void BGGetWallpaperInfo(ref WallpaperInfo wi)
-		{
-			int length;
-			int style;
-			int tile;
-			string str;
-			HKEY hKey;
-
-			wi.pattern = BG_CENTER;
-			strncpy_s(wi.filename, wi.filename.Length, "", _TRUNCATE);
-
-			//レジストリキーのオープン
-			if (RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\Desktop", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
-				return;
-
-			//壁紙名ゲット
-			length = tttypes.MAX_PATH;
-			RegQueryValueEx(hKey, "Wallpaper", null, null, (byte*)(wi.filename), &length);
-
-			//壁紙スタイルゲット
-			length = 256;
-			RegQueryValueEx(hKey, "WallpaperStyle", null, null, (byte*)str, &length);
-			style = atoi(str);
-
-			//壁紙スタイルゲット
-			length = 256;
-			RegQueryValueEx(hKey, "TileWallpaper", null, null, (byte*)str, &length);
-			tile = atoi(str);
-
-			//これでいいの？
-			if (tile)
-				wi.pattern = BG_TILE;
-			else {
-				switch (style) {
-				case 0: // Center(中央に表示)
-					wi.pattern = BG_CENTER;
-					break;
-				case 2: // Stretch(画面に合わせて伸縮) アスペクト比は無視される
-					wi.pattern = BG_STRETCH;
-					break;
-				case 10: // Fill(ページ横幅に合わせる) とあるが、和訳がおかしい
-						 // アスペクト比を維持して、はみ出してでも最大表示する
-					wi.pattern = BG_AUTOFILL;
-					break;
-				case 6: // Fit(ページ縦幅に合わせる) とあるが、和訳がおかしい
-						// アスペクト比を維持して、はみ出さないように最大表示する
-					wi.pattern = BG_AUTOFIT;
-					break;
-				}
-			}
-
-			//レジストリキーのクローズ
-			RegCloseKey(hKey);
-		}
-
-		void BGPreloadWallpaper(BGSrc src)
-		{
-			IntPtr hbm;
-			WallpaperInfo wi;
-
-			BGGetWallpaperInfo(&wi);
-
-			//壁紙を読み込み
-			//LR_CREATEDIBSECTION を指定するのがコツ
-			if (wi.pattern == BG_STRETCH)
-				hbm = LoadImage(0, wi.filename, IMAGE_BITMAP, CRTWidth, CRTHeight, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-			else
-				hbm = LoadImage(0, wi.filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
-			//壁紙DCを作る
-			if (hbm) {
-				BITMAP bm;
-
-				GetObject(hbm, bm.Length, &bm);
-
-				src.hdc = CreateBitmapDC(hbm);
-				src.width = bm.bmWidth;
-				src.height = bm.bmHeight;
-				src.pattern = wi.pattern;
-			}
-			else {
-				src.hdc = null;
-			}
-
-			src.color = GetSysColor(COLOR_DESKTOP);
-		}
-
-		void BGPreloadSrc(BGSrc src)
-		{
-			DeleteBitmapDC(&(src.hdc));
-
-			switch (src.type) {
-			case BG_COLOR:
-				break;
-
-			case BG_WALLPAPER:
-				BGPreloadWallpaper(src);
-				break;
-
-			case BG_PICTURE:
-				BGPreloadPicture(src);
-				break;
-			}
-		}
-
-		void BGStretchPicture(Graphics hdcDest, BGSrc src, int x, int y, int width, int height, bool bAntiAlias)
-		{
-			if (!hdcDest || !src)
-				return;
-
-			if (bAntiAlias) {
-				if (src.width != width || src.height != height) {
-					IntPtr hbm;
-
-					hbm = LoadImage(0, src.file, IMAGE_BITMAP, width, height, LR_LOADFROMFILE);
-
-					if (!hbm)
-						return;
-
-					DeleteBitmapDC(&(src.hdc));
-					src.hdc = CreateBitmapDC(hbm);
-					src.width = width;
-					src.height = height;
-				}
-
-				BitBlt(hdcDest, x, y, width, height, src.hdc, 0, 0, SRCCOPY);
-			}
-			else {
-				SetStretchBltMode(src.hdc, COLORONCOLOR);
-				StretchBlt(hdcDest, x, y, width, height, src.hdc, 0, 0, src.width, src.height, SRCCOPY);
-			}
-		}
-
-		void BGLoadPicture(Graphics hdcDest, BGSrc src)
-		{
-			int x, y, width, height, pattern;
-			Graphics hdc = null;
-
-			FillBitmapDC(hdcDest, src.color);
-
-			if (!src.height || !src.width)
-				return;
-
-			if (src.pattern == BG_AUTOFIT) {
-				if ((src.height * ScreenWidth) > (ScreenHeight * src.width))
-					pattern = BG_FIT_WIDTH;
-				else
-					pattern = BG_FIT_HEIGHT;
-			}
-			else {
-				pattern = src.pattern;
-			}
-
-			switch (pattern) {
-			case BG_STRETCH:
-				BGStretchPicture(hdcDest, src, 0, 0, ScreenWidth, ScreenHeight, src.antiAlias);
-				break;
-
-			case BG_FIT_WIDTH:
-
-				height = (src.height * ScreenWidth) / src.width;
-				y = (ScreenHeight - height) / 2;
-
-				BGStretchPicture(hdcDest, src, 0, y, ScreenWidth, height, src.antiAlias);
-				break;
-
-			case BG_FIT_HEIGHT:
-
-				width = (src.width * ScreenHeight) / src.height;
-				x = (ScreenWidth - width) / 2;
-
-				BGStretchPicture(hdcDest, src, x, 0, width, ScreenHeight, src.antiAlias);
-				break;
-
-			case BG_TILE:
-				for (x = 0; x < ScreenWidth; x += src.width)
-					for (y = 0; y < ScreenHeight; y += src.height)
-						BitBlt(hdcDest, x, y, src.width, src.height, src.hdc, 0, 0, SRCCOPY);
-				break;
-
-			case BG_CENTER:
-				x = (ScreenWidth - src.width) / 2;
-				y = (ScreenHeight - src.height) / 2;
-
-				BitBlt(hdcDest, x, y, src.width, src.height, src.hdc, 0, 0, SRCCOPY);
-				break;
-			}
-		}
-
-		struct LoadWallpaperStruct
-		{
-			Rectangle? rectClient;
-			Graphics hdcDest;
-			BGSrc? src;
-		}
-
-		bool BGLoadWallpaperEnumFunc(IntPtr hMonitor, Graphics hdcMonitor, ref RECT lprcMonitor, IntPtr dwData)
-		{
-			Rectangle rectDest;
-			Rectangle rectRgn;
-			int monitorWidth;
-			int monitorHeight;
-			int destWidth;
-			int destHeight;
-			HRGN hRgn;
-			int x;
-			int y;
-
-			LoadWallpaperStruct* lws = (LoadWallpaperStruct*)dwData;
-
-			if (!IntersectRect(&rectDest, lprcMonitor, lws.rectClient))
-				return true;
-
-			//モニターにかかってる部分をマスク
-			SaveDC(lws.hdcDest);
-			CopyRect(&rectRgn, &rectDest);
-			OffsetRect(&rectRgn, -lws.rectClient.Left, -lws.rectClient.Top);
-			hRgn = CreateRectRgnIndirect(&rectRgn);
-			SelectObject(lws.hdcDest, hRgn);
-
-			//モニターの大きさ
-			monitorWidth = lprcMonitor.Right - lprcMonitor.Left;
-			monitorHeight = lprcMonitor.Bottom - lprcMonitor.Top;
-
-			destWidth = rectDest.Right - rectDest.Left;
-			destHeight = rectDest.Bottom - rectDest.Top;
-
-			switch (lws.src.pattern) {
-			case BG_CENTER:
-			case BG_STRETCH:
-
-				SetWindowOrgEx(lws.src.hdc,
-							   lprcMonitor.Left + (monitorWidth - lws.src.width) / 2,
-							   lprcMonitor.Top + (monitorHeight - lws.src.height) / 2, null);
-				BitBlt(lws.hdcDest, rectDest.Left, rectDest.Top, destWidth, destHeight,
-					   lws.src.hdc, rectDest.Left, rectDest.Top, SRCCOPY);
-
-				break;
-			case BG_TILE:
-
-				SetWindowOrgEx(lws.src.hdc, 0, 0, null);
-
-				for (x = rectDest.Left - (rectDest.Left % lws.src.width) - lws.src.width;
-					x < rectDest.Right; x += lws.src.width)
-					for (y = rectDest.Top - (rectDest.Top % lws.src.height) - lws.src.height;
-						y < rectDest.Bottom; y += lws.src.height)
-						BitBlt(lws.hdcDest, x, y, lws.src.width, lws.src.height, lws.src.hdc, 0, 0, SRCCOPY);
-				break;
-			}
-
-			//リージョンを破棄
-			RestoreDC(lws.hdcDest, -1);
-			hRgn.Dispose();
-
-			return true;
-		}
-
-		void BGLoadWallpaper(Graphics hdcDest, BGSrc src)
-		{
-			Rectangle rectClient;
-			Point point;
-			LoadWallpaperStruct lws;
-
-			//取りあえずデスクトップ色で塗りつぶす
-			FillBitmapDC(hdcDest, src.color);
-
-			//壁紙が設定されていない
-			if (!src.hdc)
-				return;
-
-			//hdcDestの座標系を仮想スクリーンに合わせる
-			point = new Point(0, 0);
-			ClientToScreen(ttwinman.HVTWin, &point);
-
-			SetWindowOrgEx(hdcDest, point.X, point.Y, null);
-
-			//仮想スクリーンでのクライアント領域
-			GetClientRect(ttwinman.HVTWin, &rectClient);
-			OffsetRect(&rectClient, point.X, point.Y);
-
-			//モニターを列挙
-			lws.rectClient = &rectClient;
-			lws.src = src;
-			lws.hdcDest = hdcDest;
-
-			if (BGEnumDisplayMonitors) {
-				(*BGEnumDisplayMonitors)(null, null, BGLoadWallpaperEnumFunc, (IntPtr) & lws);
-			}
-			else {
-				Rectangle rectMonitor;
-
-				SetRect(&rectMonitor, 0, 0, CRTWidth, CRTHeight);
-				BGLoadWallpaperEnumFunc(null, null, &rectMonitor, (IntPtr) & lws);
-			}
-
-			//座標系を戻す
-			SetWindowOrgEx(hdcDest, 0, 0, null);
-		}
-
-		void BGLoadSrc(Graphics hdcDest, BGSrc src)
-		{
-			switch (src.type) {
-			case BG_COLOR:
-				FillBitmapDC(hdcDest, src.color);
-				break;
-
-			case BG_WALLPAPER:
-				BGLoadWallpaper(hdcDest, src);
-				break;
-
-			case BG_PICTURE:
-				BGLoadPicture(hdcDest, src);
-				break;
-			}
-		}
-
-		void BGSetupPrimary(bool forceSetup)
-		{
-			Point point;
-			Rectangle rect;
-
-			if (!BGEnable)
-				return;
-
-			//窓の位置、大きさが変わったかチェック
-			point = new Point(0, 0);
-			ClientToScreen(ttwinman.HVTWin, &point);
-
-			GetClientRect(ttwinman.HVTWin, &rect);
-			OffsetRect(&rect, point.X, point.Y);
-
-			if (!forceSetup && EqualRect(&rect, &BGPrevRect))
-				return;
-
-			CopyRect(&BGPrevRect, &rect);
-
-#if DEBUG
-			dprintf("BGSetupPrimary : BGInSizeMove = %d", BGInSizeMove);
-#endif
-
-			//作業用 DC 作成
-			if (hdcBGWork) DeleteBitmapDC(&hdcBGWork);
-			if (hdcBGBuffer) DeleteBitmapDC(&hdcBGBuffer);
-
-			hdcBGWork = CreateBitmapDC(CreateScreenCompatibleBitmap(ScreenWidth, FontHeight));
-			hdcBGBuffer = CreateBitmapDC(CreateScreenCompatibleBitmap(ScreenWidth, FontHeight));
-
-			//hdcBGBuffer の属性設定
-			SetBkMode(hdcBGBuffer, TRANSPARENT);
-
-			if (!BGInSizeMove) {
-				BGBLENDFUNCTION bf;
-				Graphics hdcSrc = null;
-
-				//背景 Graphics
-				if (hdcBG) DeleteBitmapDC(&hdcBG);
-				hdcBG = CreateBitmapDC(CreateScreenCompatibleBitmap(ScreenWidth, ScreenHeight));
-
-				//作業用DC
-				hdcSrc = CreateBitmapDC(CreateScreenCompatibleBitmap(ScreenWidth, ScreenHeight));
-
-				//背景生成
-				BGLoadSrc(hdcBG, &BGDest);
-
-				ZeroMemory(&bf, bf.Length);
-				bf.BlendOp = AC_SRC_OVER;
-
-				if (bf.SourceConstantAlpha = BGSrc1.alpha) {
-					BGLoadSrc(hdcSrc, &BGSrc1);
-					BGAlphaBlend(hdcBG, 0, 0, ScreenWidth, ScreenHeight, hdcSrc, 0, 0, ScreenWidth, ScreenHeight, bf);
-				}
-
-				if (bf.SourceConstantAlpha = BGSrc2.alpha) {
-					BGLoadSrc(hdcSrc, &BGSrc2);
-					BGAlphaBlend(hdcBG, 0, 0, ScreenWidth, ScreenHeight, hdcSrc, 0, 0, ScreenWidth, ScreenHeight, bf);
-				}
-
-				DeleteBitmapDC(&hdcSrc);
-			}
-		}
-
-		Color BGGetColor(string name, Color defcolor, string file)
-		{
-			uint r, g, b;
-			string colorstr, defstr;
-
-			_snprintf_s(defstr, defstr.Length, _TRUNCATE, "%d,%d,%d", defcolor.R, defcolor.G, defcolor.B);
-
-			GetPrivateProfileString(BG_SECTION, name, defstr, colorstr, 255, file);
-
-			r = g = b = 0;
-
-			sscanf(colorstr, "%d , %d , %d", &r, &g, &b);
-
-			return Color.FromArgb(r, g, b);
-		}
-
-		BG_PATTERN BGGetStrIndex(string name, BG_PATTERN def, string file, string[] strList, int nList)
-		{
-			string defstr, str;
-			int i;
-
-			def %= nList;
-
-			strncpy_s(defstr, defstr.Length, strList[def], _TRUNCATE);
-			GetPrivateProfileString(BG_SECTION, name, defstr, str, 64, file);
-
-			for (i = 0; i < nList; i++)
-				if (!_stricmp(str, strList[i]))
-					return i;
-
-			return 0;
-		}
-
-		bool BGGetOnOff(string name, bool def, string file)
-		{
-			string[] strList = { "Off", "On" };
-
-			return BGGetStrIndex(name, def, file, strList, 2);
-		}
-
-		BG_PATTERN BGGetPattern(string name, BG_PATTERN def, string file)
-		{
-			string[] strList = { "stretch", "tile", "center", "fitwidth", "fitheight", "autofit" };
-
-			return BGGetStrIndex(name, def, file, strList, 6);
-		}
-
-		BG_PATTERN BGGetType(string name, BG_TYPE def, string file)
-		{
-			string[] strList = { "color", "picture", "wallpaper" };
-
-			return BGGetStrIndex(name, def, file, strList, 3);
-		}
-
-		void BGReadTextColorConfig(string file)
-		{
-			ANSIColor[(int)ColorCodes.IdFore] = BGGetColor("Fore", ANSIColor[(int)ColorCodes.IdFore], file);
-			ANSIColor[(int)ColorCodes.IdBack] = BGGetColor("Back", ANSIColor[(int)ColorCodes.IdBack], file);
-			ANSIColor[(int)ColorCodes.IdRed] = BGGetColor("Red", ANSIColor[(int)ColorCodes.IdRed], file);
-			ANSIColor[(int)ColorCodes.IdGreen] = BGGetColor("Green", ANSIColor[(int)ColorCodes.IdGreen], file);
-			ANSIColor[(int)ColorCodes.IdYellow] = BGGetColor("Yellow", ANSIColor[(int)ColorCodes.IdYellow], file);
-			ANSIColor[(int)ColorCodes.IdBlue] = BGGetColor("Blue", ANSIColor[(int)ColorCodes.IdBlue], file);
-			ANSIColor[(int)ColorCodes.IdMagenta] = BGGetColor("Magenta", ANSIColor[(int)ColorCodes.IdMagenta], file);
-			ANSIColor[(int)ColorCodes.IdCyan] = BGGetColor("Cyan", ANSIColor[(int)ColorCodes.IdCyan], file);
-
-			ANSIColor[(int)ColorCodes.IdFore + 8] = BGGetColor("DarkFore", ANSIColor[(int)ColorCodes.IdFore + 8], file);
-			ANSIColor[(int)ColorCodes.IdBack + 8] = BGGetColor("DarkBack", ANSIColor[(int)ColorCodes.IdBack + 8], file);
-			ANSIColor[(int)ColorCodes.IdRed + 8] = BGGetColor("DarkRed", ANSIColor[(int)ColorCodes.IdRed + 8], file);
-			ANSIColor[(int)ColorCodes.IdGreen + 8] = BGGetColor("DarkGreen", ANSIColor[(int)ColorCodes.IdGreen + 8], file);
-			ANSIColor[(int)ColorCodes.IdYellow + 8] = BGGetColor("DarkYellow", ANSIColor[(int)ColorCodes.IdYellow + 8], file);
-			ANSIColor[(int)ColorCodes.IdBlue + 8] = BGGetColor("DarkBlue", ANSIColor[(int)ColorCodes.IdBlue + 8], file);
-			ANSIColor[(int)ColorCodes.IdMagenta + 8] = BGGetColor("DarkMagenta", ANSIColor[(int)ColorCodes.IdMagenta + 8], file);
-			ANSIColor[(int)ColorCodes.IdCyan + 8] = BGGetColor("DarkCyan", ANSIColor[(int)ColorCodes.IdCyan + 8], file);
-
-			BGVTColor[0] = BGGetColor("VTFore", BGVTColor[0], file);
-			BGVTColor[1] = BGGetColor("VTBack", BGVTColor[1], file);
-
-			BGVTBlinkColor[0] = BGGetColor("VTBlinkFore", BGVTBlinkColor[0], file);
-			BGVTBlinkColor[1] = BGGetColor("VTBlinkBack", BGVTBlinkColor[1], file);
-
-			BGVTBoldColor[0] = BGGetColor("VTBoldFore", BGVTBoldColor[0], file);
-			BGVTBoldColor[1] = BGGetColor("VTBoldBack", BGVTBoldColor[1], file);
-
-			BGVTReverseColor[0] = BGGetColor("VTReverseFore", BGVTReverseColor[0], file);
-			BGVTReverseColor[1] = BGGetColor("VTReverseBack", BGVTReverseColor[1], file);
-
-			/* begin - ishizaki */
-			BGURLColor[0] = BGGetColor("URLFore", BGURLColor[0], file);
-			BGURLColor[1] = BGGetColor("URLBack", BGURLColor[1], file);
-			/* end - ishizaki */
-		}
-
-		void BGReadIniFile(string file)
-		{
-			string path;
-
-			// Easy Setting
-			BGDest.pattern = BGGetPattern("BGPicturePattern", BGSrc1.pattern, file);
-			BGDest.color = BGGetColor("BGPictureBaseColor", BGSrc1.color, file);
-
-			GetPrivateProfileString(BG_SECTION, "BGPictureFile", BGSrc1.file, path, tttypes.MAX_PATH, file);
-			RandomFile(path, BGDest.file, BGDest.file.Length);
-
-			BGSrc1.alpha = 255 - GetPrivateProfileInt(BG_SECTION, "BGPictureTone", 255 - BGSrc1.alpha, file);
-
-			if (!strcmp(BGDest.file, ""))
-				BGSrc1.alpha = 255;
-
-			BGSrc2.alpha = 255 - GetPrivateProfileInt(BG_SECTION, "BGFadeTone", 255 - BGSrc2.alpha, file);
-			BGSrc2.color = BGGetColor("BGFadeColor", BGSrc2.color, file);
-
-			BGReverseTextAlpha = GetPrivateProfileInt(BG_SECTION, "BGReverseTextTone", BGReverseTextAlpha, file);
-
-			//Src1 の読み出し
-			BGSrc1.type = BGGetType("BGSrc1Type", BGSrc1.type, file);
-			BGSrc1.pattern = BGGetPattern("BGSrc1Pattern", BGSrc1.pattern, file);
-			BGSrc1.antiAlias = BGGetOnOff("BGSrc1AntiAlias", BGSrc1.antiAlias, file);
-			BGSrc1.alpha = GetPrivateProfileInt(BG_SECTION, "BGSrc1Alpha", BGSrc1.alpha, file);
-			BGSrc1.color = BGGetColor("BGSrc1Color", BGSrc1.color, file);
-
-			GetPrivateProfileString(BG_SECTION, "BGSrc1File", BGSrc1.file, path, tttypes.MAX_PATH, file);
-			RandomFile(path, BGSrc1.file, BGSrc1.file.Length);
-
-			//Src2 の読み出し
-			BGSrc2.type = BGGetType("BGSrc2Type", BGSrc2.type, file);
-			BGSrc2.pattern = BGGetPattern("BGSrc2Pattern", BGSrc2.pattern, file);
-			BGSrc2.antiAlias = BGGetOnOff("BGSrc2AntiAlias", BGSrc2.antiAlias, file);
-			BGSrc2.alpha = GetPrivateProfileInt(BG_SECTION, "BGSrc2Alpha", BGSrc2.alpha, file);
-			BGSrc2.color = BGGetColor("BGSrc2Color", BGSrc2.color, file);
-
-			GetPrivateProfileString(BG_SECTION, "BGSrc2File", BGSrc2.file, path, tttypes.MAX_PATH, file);
-			RandomFile(path, BGSrc2.file, BGSrc2.file.Length);
-
-			//Dest の読み出し
-			BGDest.type = BGGetType("BGDestType", BGDest.type, file);
-			BGDest.pattern = BGGetPattern("BGDestPattern", BGDest.pattern, file);
-			BGDest.antiAlias = BGGetOnOff("BGDestAntiAlias", BGDest.antiAlias, file);
-			BGDest.color = BGGetColor("BGDestColor", BGDest.color, file);
-
-			GetPrivateProfileString(BG_SECTION, "BGDestFile", BGDest.file, path, tttypes.MAX_PATH, file);
-			RandomFile(path, BGDest.file, BGDest.file.Length);
-
-			//その他読み出し
-			BGReverseTextAlpha = GetPrivateProfileInt(BG_SECTION, "BGReverseTextAlpha", BGReverseTextAlpha, file);
-			BGReadTextColorConfig(file);
-		}
-
-		void BGDestruct()
-		{
-			if (!BGEnable)
-				return;
-
-			DeleteBitmapDC(&hdcBGBuffer);
-			DeleteBitmapDC(&hdcBGWork);
-			DeleteBitmapDC(&hdcBG);
-			DeleteBitmapDC(&(BGDest.hdc));
-			DeleteBitmapDC(&(BGSrc1.hdc));
-			DeleteBitmapDC(&(BGSrc2.hdc));
-
-			//テンポラリーファイル削除
-			DeleteFile(BGDest.fileTmp);
-			DeleteFile(BGSrc1.fileTmp);
-			DeleteFile(BGSrc2.fileTmp);
-		}
-
-		void BGInitialize()
-		{
-			string path, config_file, tempPath;
-			string msimg32_dll, user32_dll;
-
-			// VTColor を読み込み
-			BGVTColor[0] = ts.VTColor[0];
-			BGVTColor[1] = ts.VTColor[1];
-
-			BGVTBoldColor[0] = ts.VTBoldColor[0];
-			BGVTBoldColor[1] = ts.VTBoldColor[1];
-
-			BGVTBlinkColor[0] = ts.VTBlinkColor[0];
-			BGVTBlinkColor[1] = ts.VTBlinkColor[1];
-
-			BGVTReverseColor[0] = ts.VTReverseColor[0];
-			BGVTReverseColor[1] = ts.VTReverseColor[1];
-
-#if true
-			// ハイパーリンク描画の復活。(2009.8.26 yutaka)
-			/* begin - ishizaki */
-			BGURLColor[0] = ts.URLColor[0];
-			BGURLColor[1] = ts.URLColor[1];
-			/* end - ishizaki */
-#else
-			// TODO: ハイパーリンクの描画がリアルタイムに行われないことがあるので、
-			// 色属性変更はいったん取りやめることにする。将来、対応する。(2005.4.3 yutaka)
-			BGURLColor[0] = ts.VTColor[0];
-			BGURLColor[1] = ts.VTColor[1];
-#endif
-
-			// ANSI color設定のほうを優先させる (2005.2.3 yutaka)
-			InitColorTable();
-
-			//リソース解放
-			BGDestruct();
-
-			//BG が有効かチェック
-			// 空の場合のみ、ディスクから読む。BGInitialize()が Tera Term 起動時以外にも、
-			// Additional settings から呼び出されることがあるため。
-			if (ts.EtermLookfeel.BGThemeFile[0] == '\0') {
-				ts.EtermLookfeel.BGEnable = BGEnable = BGGetOnOff("BGEnable", false, ts.SetupFName);
-			}
-			else {
-				BGEnable = BGGetOnOff("BGEnable", false, ts.SetupFName);
-			}
-
-			ts.EtermLookfeel.BGUseAlphaBlendAPI = BGGetOnOff("BGUseAlphaBlendAPI", true, ts.SetupFName);
-			ts.EtermLookfeel.BGNoFrame = BGGetOnOff("BGNoFrame", false, ts.SetupFName);
-			ts.EtermLookfeel.BGFastSizeMove = BGGetOnOff("BGFastSizeMove", true, ts.SetupFName);
-			ts.EtermLookfeel.BGNoCopyBits = BGGetOnOff("BGFlickerlessMove", true, ts.SetupFName);
-
-			GetPrivateProfileString(BG_SECTION, "BGSPIPath", "plugin", BGSPIPath, tttypes.MAX_PATH, ts.SetupFName);
-			strncpy_s(ts.EtermLookfeel.BGSPIPath, ts.EtermLookfeel.BGSPIPath.Length, BGSPIPath, _TRUNCATE);
-
-			if (ts.EtermLookfeel.BGThemeFile[0] == '\0') {
-				//コンフィグファイルの決定
-				GetPrivateProfileString(BG_SECTION, "BGThemeFile", "", path, tttypes.MAX_PATH, ts.SetupFName);
-				strncpy_s(ts.EtermLookfeel.BGThemeFile, ts.EtermLookfeel.BGThemeFile.Length, path, _TRUNCATE);
-
-				// 背景画像の読み込み
-				_snprintf_s(path, path.Length, _TRUNCATE, "%s\\%s", ts.HomeDir, BG_THEME_IMAGEFILE);
-				GetPrivateProfileString(BG_SECTION, BG_DESTFILE, "", ts.BGImageFilePath, ts.BGImageFilePath.Length, path);
-
-				// 背景画像の明るさの読み込み。
-				// BGSrc1Alpha と BGSrc2Alphaは同値として扱う。
-				ts.BGImgBrightness = GetPrivateProfileInt(BG_SECTION, BG_THEME_IMAGE_BRIGHTNESS1, BG_THEME_IMAGE_BRIGHTNESS_DEFAULT, path);
-			}
-
-			if (!BGEnable)
-				return;
-
-			//乱数初期化
-			// add cast (2006.2.18 yutaka)
-			srand((uint)time(null));
-
-			//BGシステム設定読み出し
-			BGUseAlphaBlendAPI = ts.EtermLookfeel.BGUseAlphaBlendAPI;
-			BGNoFrame = ts.EtermLookfeel.BGNoFrame;
-			BGFastSizeMove = ts.EtermLookfeel.BGFastSizeMove;
-			BGNoCopyBits = ts.EtermLookfeel.BGNoCopyBits;
-
-#if false
-  GetPrivateProfileString(BG_SECTION,"BGSPIPath","plugin",BGSPIPath,tttypes.MAX_PATH,ts.SetupFName);
-  strncpy_s(ts.EtermLookfeel.BGSPIPath, ts.EtermLookfeel.BGSPIPath.Length, BGSPIPath, _TRUNCATE);
-#endif
-
-			//テンポラリーファイル名を生成
-			GetTempPath(tttypes.MAX_PATH, tempPath);
-			GetTempFileName(tempPath, "ttAK", 0, BGDest.fileTmp);
-			GetTempFileName(tempPath, "ttAK", 0, BGSrc1.fileTmp);
-			GetTempFileName(tempPath, "ttAK", 0, BGSrc2.fileTmp);
-
-			//デフォルト値
-			BGDest.type = BG_PICTURE;
-			BGDest.pattern = BG_STRETCH;
-			BGDest.color = Color.FromArgb(0, 0, 0);
-			BGDest.antiAlias = true;
-			strncpy_s(BGDest.file, BGDest.file.Length, "", _TRUNCATE);
-
-			BGSrc1.type = BG_WALLPAPER;
-			BGSrc1.pattern = BG_STRETCH;
-			BGSrc1.color = Color.FromArgb(255, 255, 255);
-			BGSrc1.antiAlias = true;
-			BGSrc1.alpha = 255;
-			strncpy_s(BGSrc1.file, BGSrc1.file.Length, "", _TRUNCATE);
-
-			BGSrc2.type = BG_COLOR;
-			BGSrc2.pattern = BG_STRETCH;
-			BGSrc2.color = Color.FromArgb(0, 0, 0);
-			BGSrc2.antiAlias = true;
-			BGSrc2.alpha = 128;
-			strncpy_s(BGSrc2.file, BGSrc2.file.Length, "", _TRUNCATE);
-
-			BGReverseTextAlpha = 255;
-
-			//設定の読み出し
-			BGReadIniFile(ts.SetupFName);
-
-			//コンフィグファイルの決定
-			GetPrivateProfileString(BG_SECTION, "BGThemeFile", "", path, tttypes.MAX_PATH, ts.SetupFName);
-			RandomFile(path, config_file, config_file.Length);
-
-			//設定のオーバーライド
-			if (strcmp(config_file, "")) {
-				string dir, prevDir;
-
-				//INIファイルのあるディレクトリに一時的に移動
-				GetCurrentDirectory(tttypes.MAX_PATH, prevDir);
-
-				ExtractDirName(config_file, dir);
-				SetCurrentDirectory(dir);
-
-				BGReadIniFile(config_file);
-
-				SetCurrentDirectory(prevDir);
-			}
-
-			//SPI のパスを整形
-			AppendSlash(BGSPIPath, BGSPIPath.Length);
-			strncat_s(BGSPIPath, BGSPIPath.Length, "*", _TRUNCATE);
-
-			//壁紙 or 背景をプリロード
-			BGPreloadSrc(&BGDest);
-			BGPreloadSrc(&BGSrc1);
-			BGPreloadSrc(&BGSrc2);
-
-			// AlphaBlend のアドレスを読み込み
-			if (BGUseAlphaBlendAPI) {
-				GetSystemDirectory(msimg32_dll, msimg32_dll.Length);
-				strncat_s(msimg32_dll, msimg32_dll.Length, "\\msimg32.dll", _TRUNCATE);
-				(FARPROC)BGAlphaBlend = GetProcAddressWithDllName(msimg32_dll, "AlphaBlend");
-			}
-			else {
-				BGAlphaBlend = null;
-			}
-
-			if (!BGAlphaBlend)
-				BGAlphaBlend = AlphaBlendWithoutAPI;
-
-			//EnumDisplayMonitors を探す
-			GetSystemDirectory(user32_dll, user32_dll.Length);
-			strncat_s(user32_dll, user32_dll.Length, "\\user32.dll", _TRUNCATE);
-			(FARPROC)BGEnumDisplayMonitors = GetProcAddressWithDllName(user32_dll, "EnumDisplayMonitors");
-		}
-
-		void BGExchangeColor()
-		{
-			Color ColorRef;
-			if (ts.ColorFlag & AnsiAttributeColorFlags.CF_REVERSECOLOR) {
-				ColorRef = BGVTColor[0];
-				BGVTColor[0] = BGVTReverseColor[0];
-				BGVTReverseColor[0] = ColorRef;
-				ColorRef = BGVTColor[1];
-				BGVTColor[1] = BGVTReverseColor[1];
-				BGVTReverseColor[1] = ColorRef;
-			}
-			else {
-				ColorRef = BGVTColor[0];
-				BGVTColor[0] = BGVTColor[1];
-				BGVTColor[1] = ColorRef;
-			}
-
-			ColorRef = BGVTBoldColor[0];
-			BGVTBoldColor[0] = BGVTBoldColor[1];
-			BGVTBoldColor[1] = ColorRef;
-
-			ColorRef = BGVTBlinkColor[0];
-			BGVTBlinkColor[0] = BGVTBlinkColor[1];
-			BGVTBlinkColor[1] = ColorRef;
-
-			ColorRef = BGURLColor[0];
-			BGURLColor[0] = BGURLColor[1];
-			BGURLColor[1] = ColorRef;
-
-			//    BGReverseText = !BGReverseText;
-		}
-
-		void BGFillRect(Graphics hdc, Rectangle R, Brush brush)
-		{
-			if (!BGEnable)
-				FillRect(hdc, R, brush);
-			else
-				BitBlt(VTDC, R.Left, R.Top, R.Right - R.Left, R.Bottom - R.Top, hdcBG, R.Left, R.Top, SRCCOPY);
-		}
-
-		void BGScrollWindow(IntPtr hWnd, int xa, int ya, Rectangle Rect, Rectangle ClipRect)
-		{
-			if (ts.MaximizedBugTweak) {
-				// Eterm lookfeelが有効、もしくは最大化ウィンドウの場合はスクロールは使わない。
-				// これにより、最大化ウィンドウで文字欠けとなる現象が改善される。(2008.2.1 doda, yutaka)
-				if (BGEnable || IsZoomed(hWnd))
-					InvalidateRect(ttwinman.HVTWin, ClipRect, false);
-				else
-					ScrollWindow(hWnd, xa, ya, Rect, ClipRect);
-			}
-			else {
-				if (!BGEnable)
-					ScrollWindow(hWnd, xa, ya, Rect, ClipRect);
-				else
-					InvalidateRect(ttwinman.HVTWin, ClipRect, false);
-			}
-		}
-
-		void BGOnEnterSizeMove()
-		{
-			int r, g, b;
-
-			if (!BGEnable || !BGFastSizeMove)
-				return;
-
-			BGInSizeMove = true;
-
-			//背景色生成
-			r = BGDest.color.R;
-			g = BGDest.color.G;
-			b = BGDest.color.B;
-
-			r = (r * (255 - BGSrc1.alpha) + BGSrc1.color.R * BGSrc1.alpha) >> 8;
-			g = (g * (255 - BGSrc1.alpha) + BGSrc1.color.G * BGSrc1.alpha) >> 8;
-			b = (b * (255 - BGSrc1.alpha) + BGSrc1.color.B * BGSrc1.alpha) >> 8;
-
-			r = (r * (255 - BGSrc2.alpha) + BGSrc2.color.R * BGSrc2.alpha) >> 8;
-			g = (g * (255 - BGSrc2.alpha) + BGSrc2.color.G * BGSrc2.alpha) >> 8;
-			b = (b * (255 - BGSrc2.alpha) + BGSrc2.color.B * BGSrc2.alpha) >> 8;
-
-			BGBrushInSizeMove = CreateSolidBrush(Color.FromArgb(r, g, b));
-		}
-
-		void BGOnExitSizeMove()
-		{
-			if (!BGEnable || !BGFastSizeMove)
-				return;
-
-			BGInSizeMove = false;
-
-			BGSetupPrimary(true);
-			InvalidateRect(ttwinman.HVTWin, null, false);
-
-			//ブラシを削除
-			if (BGBrushInSizeMove) {
-				BGBrushInSizeMove.Dispose();
-				BGBrushInSizeMove = null;
-			}
-		}
-
-		void BGOnSettingChange()
-		{
-			if (!BGEnable)
-				return;
-
-			CRTWidth = GetSystemMetrics(SM_CXSCREEN);
-			CRTHeight = GetSystemMetrics(SM_CYSCREEN);
-
-			//壁紙 or 背景をプリロード
-			BGPreloadSrc(&BGDest);
-			BGPreloadSrc(&BGSrc1);
-			BGPreloadSrc(&BGSrc2);
-
-			BGSetupPrimary(true);
-			InvalidateRect(ttwinman.HVTWin, null, false);
-		}
-
-		//-->
-#endif  // ALPHABLEND_TYPE2
 
 		void DispApplyANSIColor()
 		{
@@ -1499,13 +159,8 @@ namespace TeraTrem
 				ANSIColor[i] = ts.ANSIColor[i];
 
 			if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-#if ALPHABLEND_TYPE2
-				ANSIColor[(int)ColorCodes.IdBack] = BGVTColor[1]; // use background color for "Black"
-				ANSIColor[(int)ColorCodes.IdFore] = BGVTColor[0]; // use text color for "white"
-#else
 				ANSIColor[(int)ColorCodes.IdBack] = ts.VTColor[1]; // use background color for "Black"
 				ANSIColor[(int)ColorCodes.IdFore] = ts.VTColor[0]; // use text color for "white"
-#endif
 			}
 		}
 
@@ -1549,19 +204,12 @@ namespace TeraTrem
 
 			TmpDC = Graphics.FromHwnd(IntPtr.Zero);
 
-#if ALPHABLEND_TYPE2
-			CRTWidth = GetSystemMetrics(SM_CXSCREEN);
-			CRTHeight = GetSystemMetrics(SM_CYSCREEN);
-
-			BGInitialize();
-#else
 			InitColorTable();
-#endif  // ALPHABLEND_TYPE2
 
 			DispSetNearestColors((int)ColorCodes.IdBack, 255, TmpDC);
 
 			/* background paintbrush */
-			Background = CreateSolidBrush(ts.VTColor[1]);
+			Background = new SolidBrush(ts.VTColor[1]);
 			/* CRT width & height */
 			{
 				OperatingSystem ver = Environment.OSVersion;
@@ -1616,26 +264,17 @@ namespace TeraTrem
 			}
 		}
 
-		void EndDisp()
+		public void EndDisp()
 		{
-			int i, j;
-
-			if (VTDC != IntPtr.Zero) DispReleaseDC();
+			if (VTDC != null) DispReleaseDC();
 
 			/* Delete fonts */
 			VTFont.Dispose();
 
-			if (Background != IntPtr.Zero) {
-				DeleteObject(Background);
-				Background = IntPtr.Zero;
+			if (Background != null) {
+				Background.Dispose();
+				Background = null;
 			}
-
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			BGDestruct();
-			//-->
-#endif  // ALPHABLEND_TYPE2
-
 		}
 
 		public void DispReset()
@@ -1684,9 +323,7 @@ namespace TeraTrem
 
 		public void ChangeFont()
 		{
-			int i, j;
-			TEXTMETRIC Metrics;
-			Graphics TmpDC;
+			int i;
 
 			/* Delete Old Fonts */
 			if (VTFont != null)
@@ -1698,46 +335,27 @@ namespace TeraTrem
 			/* set IME font */
 			ttime.SetConversionLogFont(VTFont);
 
-			TmpDC = Graphics.FromHwnd(ttwinman.HVTWin.Handle);
-			IntPtr hdc = TmpDC.GetHdc();
-			try {
-				SelectObject(hdc, VTFont.ToHfont());
-				GetTextMetrics(hdc, out Metrics);
-
-				FontWidth = Metrics.tmAveCharWidth + ts.FontDW;
-				FontHeight = Metrics.tmHeight + ts.FontDH;
-			}
-			finally {
-				TmpDC.ReleaseHdc();
-				TmpDC.Dispose();
-			}
-
-			for (i = 0; i < tttypes.TermWidthMax; i++)
-				Dx[i] = FontWidth;
+			float h = VTFont.GetHeight();
+			//Size size = TextRenderer.MeasureText("W", VTFont, new Size((int)h / 2, (int)h));
+			Size size = new Size((int)h / 2, (int)h);
+			FontWidth = size.Width + ts.FontDW;
+			FontHeight = size.Height + ts.FontDH;
 		}
 
 		public void ResetIME()
 		{
-			/* reset language for communication */
-			cv.Language = ts.Language;
-
 			/* reset IME */
-			if ((ts.Language == Language.IdJapanese) || (ts.Language == Language.IdKorean) || (ts.Language == Language.IdUtf8)) //HKS
-			{
-				if (!ts.UseIME)
-					ttime.FreeIME();
-				else if (!ttime.LoadIME())
-					ts.UseIME = false;
-
-				if (ts.UseIME) {
-					if (ts.IMEInline)
-						ttime.SetConversionLogFont(VTFont);
-					else
-						ttime.SetConversionWindow(ttwinman.HVTWin, -1, 0);
-				}
-			}
-			else
+			if (!ts.UseIME)
 				ttime.FreeIME();
+			else if (!ttime.LoadIME())
+				ts.UseIME = false;
+
+			if (ts.UseIME) {
+				if (ts.IMEInline)
+					ttime.SetConversionLogFont(VTFont);
+				else
+					ttime.SetConversionWindow(ttwinman.HVTWin, -1, 0);
+			}
 
 			if (IsCaretOn()) CaretOn();
 		}
@@ -1763,7 +381,8 @@ namespace TeraTrem
 			if (CaretEnabled &&
 				(ts.NonblinkingCursor)) {
 				T = GetCaretBlinkTime() * 2u / 3u;
-				VTWindow.SetTimer(ttwinman.HVTWin.Handle, (int)TimerId.IdCaretTimer, T, IntPtr.Zero);
+				ttwinman.HVTWin.IdCaretTimer.Interval = (int)T;
+				ttwinman.HVTWin.IdCaretTimer.Enabled = true;
 			}
 			UpdateCaretPosition(true);
 		}
@@ -1773,16 +392,9 @@ namespace TeraTrem
 		{
 			int CaretX, CaretY;
 			Point[] p = new Point[5];
-			IntPtr oldpen;
 
 			if (!ts.KillFocusCursor)
 				return;
-
-			// Eterm lookfeelの場合は何もしない
-#if ALPHABLEND_TYPE2
-			if (BGEnable)
-				return;
-#endif   // ALPHABLEND_TYPE2
 
 			/* Get Device Context */
 			DispInitDC();
@@ -1809,14 +421,11 @@ namespace TeraTrem
 
 			if (show) {
 				// ポリゴンカーソルを表示（非フォーカス時）
-				oldpen = SelectObject(VTDC, CreatePen(PS_SOLID, 0, ts.VTColor[0]));
+				VTDC.DrawLines(new Pen(ts.VTColor[0]), p);
 			}
 			else {
-				oldpen = SelectObject(VTDC, CreatePen(PS_SOLID, 0, ts.VTColor[1]));
+				VTDC.DrawLines(new Pen(ts.VTColor[1]), p);
 			}
-			Polyline(VTDC, p, 5);
-			oldpen = SelectObject(VTDC, oldpen);
-			DeleteObject(oldpen);
 
 			/* release device context */
 			DispReleaseDC();
@@ -1839,12 +448,6 @@ namespace TeraTrem
 
 			if (!enforce && !ts.KillFocusCursor)
 				return;
-
-			// Eterm lookfeelの場合は何もしない
-#if ALPHABLEND_TYPE2
-			if (BGEnable)
-				return;
-#endif   // ALPHABLEND_TYPE2
 
 			if (enforce == true || !Active) {
 				if (CursorOnDBCS)
@@ -1885,8 +488,7 @@ namespace TeraTrem
 			CaretX = (CursorX - WinOrgX) * FontWidth;
 			CaretY = (CursorY - WinOrgY) * FontHeight;
 
-			if ((ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) &&
-				ttime.CanUseIME() && ts.IMEInline) {
+			if (ttime.CanUseIME() && ts.IMEInline) {
 				/* set IME conversion window pos. & font */
 				ttime.SetConversionWindow(ttwinman.HVTWin, CaretX, CaretY);
 			}
@@ -1948,7 +550,7 @@ namespace TeraTrem
 		{
 			DestroyCaret();
 			if (ts.NonblinkingCursor)
-				VTWindow.KillTimer(ttwinman.HVTWin.Handle, (int)TimerId.IdCaretTimer);
+				ttwinman.HVTWin.IdCaretTimer.Enabled = false;
 		}
 
 		public bool IsCaretOn()
@@ -2064,7 +666,7 @@ namespace TeraTrem
 			}
 		}
 
-		public void PaintWindow(IntPtr PaintDC, Rectangle PaintRect, bool fBkGnd,
+		public void PaintWindow(Graphics PaintDC, Rectangle PaintRect, bool fBkGnd,
 			out int Xs, out int Ys, out int Xe, out int Ye)
 		//  Paint window with background color &
 		//  convert paint region from window coord. to screen coord.
@@ -2075,22 +677,12 @@ namespace TeraTrem
 		//		    in screen coord.
 		//	*Xe, *Ye: lower right
 		{
-			if (VTDC != IntPtr.Zero)
+			if (VTDC != null)
 				DispReleaseDC();
 			VTDC = PaintDC;
-			DCPrevFont = SelectObject(VTDC, VTFont.ToHfont());
 			DispInitDC();
-
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//if (fBkGnd)
-			if (!BGEnable && fBkGnd)
-				//-->
-#else
 			if (fBkGnd)
-#endif  // ALPHABLEND_TYPE2
-
-				FillRect(VTDC, PaintRect, Background);
+				VTDC.FillRectangle(Background, PaintRect);
 
 			Xs = PaintRect.Left / FontWidth + WinOrgX;
 			Ys = PaintRect.Top / FontHeight + WinOrgY;
@@ -2100,9 +692,8 @@ namespace TeraTrem
 
 		public void DispEndPaint()
 		{
-			if (VTDC == IntPtr.Zero) return;
-			SelectObject(VTDC, DCPrevFont);
-			VTDC = IntPtr.Zero;
+			if (VTDC == null) return;
+			VTDC = null;
 		}
 
 		public void DispClearWin()
@@ -2115,13 +706,16 @@ namespace TeraTrem
 				DispChangeWinSize(NumOfColumns, NumOfLines);
 			else {
 				if ((NumOfLines == WinHeight) && (ts.EnableScrollBuff > 0)) {
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, 1, false);
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = 1;
 				}
-				else
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, NumOfLines - WinHeight, false);
+				else {
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = NumOfLines - WinHeight;
+				}
 
-				SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Horizontal, 0, true);
-				SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, true);
+				ttwinman.HVTWin.HorizontalScroll.Value = 0;
+				ttwinman.HVTWin.VerticalScroll.Value = 0;
 			}
 			if (IsCaretOn()) CaretOn();
 		}
@@ -2129,20 +723,16 @@ namespace TeraTrem
 		public void DispChangeBackground()
 		{
 			DispReleaseDC();
-			if (Background != IntPtr.Zero) DeleteObject(Background);
+			if (Background != null) Background.Dispose();
 
 			if ((CurCharAttr.Attr2 & AttributeBitMasks.Attr2Back) != 0) {
 				if (((int)CurCharAttr.Back < 16) && ((int)CurCharAttr.Back & 7) != 0)
-					Background = CreateSolidBrush(ANSIColor[(int)CurCharAttr.Back ^ 8]);
+					Background = new SolidBrush(ANSIColor[(int)CurCharAttr.Back ^ 8]);
 				else
-					Background = CreateSolidBrush(ANSIColor[(int)CurCharAttr.Back]);
+					Background = new SolidBrush(ANSIColor[(int)CurCharAttr.Back]);
 			}
 			else {
-#if ALPHABLEND_TYPE2
-				Background = CreateSolidBrush(BGVTColor[1]);
-#else
-				Background = CreateSolidBrush(ts.VTColor[1]);
-#endif  // ALPHABLEND_TYPE2
+				Background = new SolidBrush(ts.VTColor[1]);
 			}
 
 			ttwinman.HVTWin.Invalidate(true);
@@ -2174,54 +764,34 @@ namespace TeraTrem
 				ANSIColor[(int)ColorCodes.IdFore] = ts.VTColor[0];
 				ANSIColor[(int)ColorCodes.IdBack] = ts.VTColor[1];
 
-#if ALPHABLEND_TYPE2
 				ANSIColor[(int)ColorCodes.IdFore] = BGVTColor[0];
 				ANSIColor[(int)ColorCodes.IdBack] = BGVTColor[1];
-#endif  // ALPHABLEND_TYPE2
-
 			}
 
 			/* change background color */
 			DispChangeBackground();
 		}
 
-		const int OPAQUE = 2;
+		Color m_TextColor;
+		Color m_BackColor;
 
 		public void DispInitDC()
 		{
-			if (VTDC == IntPtr.Zero) {
-				VTDC = Graphics.FromHwnd(ttwinman.HVTWin.Handle).GetHdc();
-				if (VTFont != null)
-					DCPrevFont = SelectObject(VTDC, VTFont.ToHfont());
+			if (VTDC == null) {
+				VTDC = Graphics.FromHwnd(ttwinman.HVTWin.Handle);
 			}
-			else
-				SelectObject(VTDC, VTFont.ToHfont());
-#if ALPHABLEND_TYPE2
-			SetTextColor(VTDC, BGVTColor[0]);
-			SetBkColor(VTDC, BGVTColor[1]);
-#else
-			SetTextColor(VTDC, ts.VTColor[0]);
-			SetBkColor(VTDC, ts.VTColor[1]);
-#endif  // ALPHABLEND_TYPE2
 
-			SetBkMode(VTDC, OPAQUE);
+			m_TextColor = ts.VTColor[0];
+			m_BackColor = ts.VTColor[1];
+
 			DCAttr = DefCharAttr;
 			DCReverse = false;
-
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			BGReverseText = false;
-			//-->
-#endif  // ALPHABLEND_TYPE2
 		}
 
 		public void DispReleaseDC()
 		{
-			if (VTDC == IntPtr.Zero) return;
-			if (DCPrevFont != IntPtr.Zero)
-				SelectObject(VTDC, DCPrevFont);
-			DCPrevFont = IntPtr.Zero;
-			VTDC = IntPtr.Zero;
+			if (VTDC == null) return;
+			VTDC = null;
 		}
 
 		bool isURLColored(TCharAttr x) { return ((ts.ColorFlag & ColorFlags.CF_URLCOLOR) != 0) && ((x.Attr & AttributeBitMasks.AttrURL) != 0); }
@@ -2240,7 +810,7 @@ namespace TeraTrem
 			Color TextColor, BackColor;
 			int NoReverseColor = 2;
 
-			if (VTDC == IntPtr.Zero) DispInitDC();
+			if (VTDC == null) DispInitDC();
 
 			if (TCharAttrCmp(DCAttr, Attr) == 0 && DCReverse == Reverse) {
 				return;
@@ -2258,36 +828,19 @@ namespace TeraTrem
 
 			Font font = new Font(VTFont, fontStyle);
 
-			SelectObject(VTDC, VTFont.ToHfont());
-
 			if ((ts.ColorFlag & ColorFlags.CF_FULLCOLOR) == 0) {
 				if (isBlinkColored(Attr)) {
-#if ALPHABLEND_TYPE2 // AKASI
-					TextColor = BGVTBlinkColor[0];
-					BackColor = BGVTBlinkColor[1];
-#else
 					TextColor = ts.VTBlinkColor[0];
 					BackColor = ts.VTBlinkColor[1];
-#endif
 				}
 				else if (isBoldColored(Attr)) {
-#if ALPHABLEND_TYPE2 // AKASI
-					TextColor = BGVTBoldColor[0];
-					BackColor = BGVTBoldColor[1];
-#else
 					TextColor = ts.VTBoldColor[0];
 					BackColor = ts.VTBoldColor[1];
-#endif
 				}
 				/* begin - ishizaki */
 				else if (isURLColored(Attr)) {
-#if ALPHABLEND_TYPE2 // AKASI
-					TextColor = BGURLColor[0];
-					BackColor = BGURLColor[1];
-#else
 					TextColor = ts.URLColor[0];
 					BackColor = ts.URLColor[1];
-#endif
 				}
 				/* end - ishizaki */
 				else {
@@ -2295,11 +848,7 @@ namespace TeraTrem
 						TextColor = ANSIColor[(int)Attr.Fore];
 					}
 					else {
-#if ALPHABLEND_TYPE2 // AKASI
-						TextColor = BGVTColor[0];
-#else
 						TextColor = ts.VTColor[0];
-#endif
 						NoReverseColor = 1;
 					}
 
@@ -2307,11 +856,7 @@ namespace TeraTrem
 						BackColor = ANSIColor[(int)Attr.Back];
 					}
 					else {
-#if ALPHABLEND_TYPE2 // AKASI
-						BackColor = BGVTColor[1];
-#else
 						BackColor = ts.VTColor[1];
-#endif
 						if (NoReverseColor == 1) {
 							NoReverseColor = (ts.ColorFlag & ColorFlags.CF_REVERSECOLOR) == 0 ? 1 : 0;
 						}
@@ -2336,15 +881,6 @@ namespace TeraTrem
 					}
 				}
 				else if (isBlinkColored(Attr))
-#if ALPHABLEND_TYPE2 // AKASI
-					TextColor = BGVTBlinkColor[0];
-				else if (isBoldColored(Attr))
-					TextColor = BGVTBoldColor[0];
-				else if (isURLColored(Attr))
-					TextColor = BGURLColor[0];
-				else {
-					TextColor = BGVTColor[0];
-#else
 					TextColor = ts.VTBlinkColor[0];
 				else if (isBoldColored(Attr))
 					TextColor = ts.VTBoldColor[0];
@@ -2352,7 +888,6 @@ namespace TeraTrem
 					TextColor = ts.URLColor[0];
 				else {
 					TextColor = ts.VTColor[0];
-#endif
 					NoReverseColor = 1;
 				}
 				if (isBackColored(Attr)) {
@@ -2372,15 +907,6 @@ namespace TeraTrem
 					}
 				}
 				else if (isBlinkColored(Attr))
-#if ALPHABLEND_TYPE2 // AKASI
-					BackColor = BGVTBlinkColor[1];
-				else if (isBoldColored(Attr))
-					BackColor = BGVTBoldColor[1];
-				else if (isURLColored(Attr))
-					BackColor = BGURLColor[1];
-				else {
-					BackColor = BGVTColor[1];
-#else
 					BackColor = ts.VTBlinkColor[1];
 				else if (isBoldColored(Attr))
 					BackColor = ts.VTBoldColor[1];
@@ -2388,7 +914,6 @@ namespace TeraTrem
 					BackColor = ts.URLColor[1];
 				else {
 					BackColor = ts.VTColor[1];
-#endif
 					if (NoReverseColor == 1) {
 						NoReverseColor = (ts.ColorFlag & ColorFlags.CF_REVERSECOLOR) == 0 ? 1 : 0;
 					}
@@ -2396,43 +921,26 @@ namespace TeraTrem
 			}
 #if USE_NORMAL_BGCOLOR_REJECT
 			if (ts.UseNormalBGColor) {
-#if ALPHABLEND_TYPE2
-				BackColor = BGVTColor[1];
-#else
 				BackColor = ts.VTColor[1];
-#endif
 			}
 #endif
 			if (Reverse != ((Attr.Attr & AttributeBitMasks.AttrReverse) != 0)) {
-#if ALPHABLEND_TYPE2
-				BGReverseText = true;
-#endif
 				if ((Attr.Attr & AttributeBitMasks.AttrReverse) != 0 && (NoReverseColor == 0)) {
-#if ALPHABLEND_TYPE2
-					SetTextColor(VTDC, BGVTReverseColor[0]);
-					SetBkColor(VTDC, BGVTReverseColor[1]);
-#else
-					SetTextColor(VTDC, ts.VTReverseColor[0]);
-					SetBkColor(VTDC, ts.VTReverseColor[1]);
-#endif
+					m_TextColor = ts.VTReverseColor[0];
+					m_BackColor = ts.VTReverseColor[1];
 				}
 				else {
-					SetTextColor(VTDC, BackColor);
-					SetBkColor(VTDC, TextColor);
+					m_TextColor = BackColor;
+					m_BackColor = TextColor;
 				}
 			}
 			else {
-#if ALPHABLEND_TYPE2 // by AKASI
-				BGReverseText = false;
-#endif
-				SetTextColor(VTDC, TextColor);
-				SetBkColor(VTDC, BackColor);
+				m_TextColor = TextColor;
+				m_BackColor = BackColor;
 			}
 		}
 
-#if true
-		// 当面はこちらの関数を使う。(2004.11.4 yutaka)
-		public void DispStr(byte[] Buff, int Offset, int Count, int Y, ref int X)
+		public void DispStr(char[] Buff, AttributeBitMasks[] Attr, int Offset, int Count, int Y, ref int X)
 		// Display a string
 		//   Buff: points the string
 		//   Y: vertical position in window cordinate
@@ -2441,219 +949,74 @@ namespace TeraTrem
 		//  *X: horizontal position shifted by the width of the string
 		{
 			Rectangle RText;
+			byte[] mbchar = new byte[32];
+			int width = Count;
 
-			if ((ts.Language == Language.IdRussian) &&
-				(ts.RussClient != ts.RussFont))
-				language.RussConvStr(ts.RussClient, ts.RussFont, Buff, Offset, Count);
-
-			RText = new Rectangle(X, Y, Count * FontWidth, FontHeight);
-
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			if (!BGEnable) {
-				ExtTextOut(VTDC, X + ts.FontDX, Y + ts.FontDY,
-					ETO_CLIPPED | ETO_OPAQUE,
-					&RText, Buff, Count, &Dx[0]);
+			for (int i = 0; i < Count; i++) {
+				if ((Attr[Offset + i] & AttributeBitMasks.AttrKanji) != 0)
+					width++;
 			}
-			else {
 
-				int width;
-				int height;
-				int eto_options = ETO_CLIPPED;
-				Rectangle rect;
-				Font hPrevFont;
+			using (Brush bkColor = new SolidBrush(m_BackColor)) {
+				VTDC.FillRectangle(bkColor, X, Y, FontWidth * width, FontHeight);
+			}
 
-				width = Count * FontWidth;
-				height = FontHeight;
-				SetRect(&rect, 0, 0, width, height);
+			RText = new Rectangle(X, Y, FontWidth, FontHeight);
 
-				//hdcBGBuffer の属性を設定
-				hPrevFont = SelectObject(hdcBGBuffer, GetCurrentObject(VTDC, OBJ_FONT));
-				SetTextColor(hdcBGBuffer, GetTextColor(VTDC));
-				SetBkColor(hdcBGBuffer, GetBkColor(VTDC));
-
-				//窓の移動、リサイズ中は背景を BGBrushInSizeMove で塗りつぶす
-				if (BGInSizeMove)
-					FillRect(hdcBGBuffer, &rect, BGBrushInSizeMove);
-
-				BitBlt(hdcBGBuffer, 0, 0, width, height, hdcBG, X, Y, SRCCOPY);
-
-				if (BGReverseText == true) {
-					if (BGReverseTextAlpha < 255) {
-						BGBLENDFUNCTION bf;
-						Brush hbr;
-
-						hbr = CreateSolidBrush(GetBkColor(hdcBGBuffer));
-						FillRect(hdcBGWork, &rect, hbr);
-						hbr.Dispose();
-
-						ZeroMemory(&bf, bf.Length);
-						bf.BlendOp = AC_SRC_OVER;
-						bf.SourceConstantAlpha = BGReverseTextAlpha;
-
-						BGAlphaBlend(hdcBGBuffer, 0, 0, width, height, hdcBGWork, 0, 0, width, height, bf);
-					}
-					else {
-						eto_options |= ETO_OPAQUE;
-					}
+			for (int i = 0; i < Count; i++) {
+				string s = new string(Buff, Offset + i, 1);
+				if ((Attr[Offset + i] & AttributeBitMasks.AttrKanji) != 0) {
+					RText.Width = 2 * FontWidth;
+					i++;
 				}
-
-				ExtTextOut(hdcBGBuffer, ts.FontDX, ts.FontDY, eto_options, &rect, Buff, Count, &Dx[0]);
-				BitBlt(VTDC, X, Y, width, height, hdcBGBuffer, 0, 0, SRCCOPY);
-
-				SelectObject(hdcBGBuffer, hPrevFont);
+				else {
+					RText.Width = FontWidth;
+				}
+				TextRenderer.DrawText(VTDC, s, VTFont, RText, m_TextColor,
+					TextFormatFlags.HorizontalCenter | TextFormatFlags.NoClipping);
+				RText.Offset(RText.Width, 0);
 			}
-			//-->
-#else
-			ExtTextOut(VTDC, X + ts.FontDX, Y + ts.FontDY, ETO_CLIPPED | ETO_OPAQUE, RText, Buff, Offset, Count, Dx);
-#endif
-			X = RText.Right;
 
-			if ((ts.Language == Language.IdRussian) &&
-				(ts.RussClient != ts.RussFont))
-				language.RussConvStr(ts.RussFont, ts.RussClient, Buff, 0, Count);
+			X = RText.Right + 1;
 		}
-
-#else
-		void DispStr(string Buff, int Count, int Y, ref int X)
-		// Display a string
-		//   Buff: points the string
-		//   Y: vertical position in window cordinate
-		//   X: horizontal position
-		// Return:
-		//   X: horizontal position shifted by the width of the string
-		{
-			Rectangle RText;
-			wchar_t *wc;
-			int len, wclen;
-			CHAR ch;
-
-#if false
-		//#include <crtdbg.h>
-			_CrtSetBreakAlloc(52);
-			Buff[0] = 0x82;
-			Buff[1] = 0xe4;
-			Buff[2] = 0x82;
-			Buff[3] = 0xbd;
-			Buff[4] = 0x82;
-			Buff[5] = 0xa9;
-			Count = 6;
-#endif
-
-			setlocale(LC_ALL, ts.Locale);
-
-			ch = Buff[Count];
-			Buff[Count] = 0;
-			len = mbstowcs(null, Buff, 0);
-
-			wc = malloc(wchar_t.Length * (len + 1));
-			if (wc == null)
-				return;
-			wclen = mbstowcs(wc, Buff, len + 1);
-			Buff[Count] = ch;
-
-			if ((ts.Language==Language.IdRussian) &&
-				(ts.RussClient!=ts.RussFont))
-				RussConvStr(ts.RussClient,ts.RussFont,Buff,Count);
-
-			RText = new Rectangle(Y, Y + FontHeight, RText - Y - FontHeight, RText - Y); // 
-
-			// Unicodeで出力する。
-#if true
-			// UTF-8環境において、tcshがEUC出力した場合、画面に何も表示されないことがある。
-			// マウスでドラッグしたり、ログファイルへ保存してみると、文字化けした文字列を
-			// 確認することができる。(2004.8.6 yutaka)
-			ExtTextOutW(VTDC,X+ts.FontDX,Y+ts.FontDY,
-				ETO_CLIPPED | ETO_OPAQUE,
-				&RText, wc, wclen, null);
-		//		&RText, wc, wclen, &Dx[0]);
-#else
-			TextOutW(VTDC, X+ts.FontDX, Y+ts.FontDY, wc, wclen);
-
-#endif
-
-			X = RText.Right;
-
-			if ((ts.Language==Language.IdRussian) &&
-				(ts.RussClient!=ts.RussFont))
-				RussConvStr(ts.RussFont,ts.RussClient,Buff,Count);
-
-			free(wc);
-		}
-#endif
 
 		public void DispEraseCurToEnd(int YEnd)
 		{
 			Rectangle R;
 
-			if (VTDC == IntPtr.Zero) DispInitDC();
+			if (VTDC == null) DispInitDC();
 			R = new Rectangle(0, (CursorY + 1 - WinOrgY) * FontHeight, ScreenWidth, (YEnd - CursorY) * FontHeight);
 
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//  FillRect(VTDC,&R,Background);
-			BGFillRect(VTDC, &R, Background);
-			//-->
-#else
-			FillRect(VTDC, R, Background);
-#endif
+			VTDC.FillRectangle(Background, R);
 
 			R.X = (CursorX - WinOrgX) * FontWidth;
 			R.Offset(0, -FontHeight);
 
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//FillRect(VTDC,&R,Background);
-			BGFillRect(VTDC, &R, Background);
-			//-->
-#else
-			FillRect(VTDC, R, Background);
-#endif
+			VTDC.FillRectangle(Background, R);
 		}
 
 		public void DispEraseHomeToCur(int YHome)
 		{
 			Rectangle R;
 
-			if (VTDC == IntPtr.Zero) DispInitDC();
+			if (VTDC == null) DispInitDC();
 			R = new Rectangle(0, (YHome - WinOrgY) * FontHeight, ScreenWidth, (CursorY - YHome) * FontHeight);
 
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//FillRect(VTDC,&R,Background);
-			BGFillRect(VTDC, &R, Background);
-			//-->
-#else
-			FillRect(VTDC, R, Background);
-#endif
+			VTDC.FillRectangle(Background, R);
 			R = new Rectangle(R.Left, R.Bottom, (CursorX + 1 - WinOrgX) * FontWidth, FontHeight);
 
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//FillRect(VTDC,&R,Background);
-			BGFillRect(VTDC, &R, Background);
-			//-->
-#else
-			FillRect(VTDC, R, Background);
-#endif
+			VTDC.FillRectangle(Background, R);
 		}
 
 		public void DispEraseCharsInLine(int XStart, int Count)
 		{
 			Rectangle R;
 
-			if (VTDC == IntPtr.Zero) DispInitDC();
+			if (VTDC == null) DispInitDC();
 
 			R = new Rectangle((XStart - WinOrgX) * FontWidth, (CursorY - WinOrgY) * FontHeight, Count * FontWidth, FontHeight);
 
-#if ALPHABLEND_TYPE2
-			//<!--by AKASI
-			//FillRect(VTDC,&R,Background);
-			BGFillRect(VTDC, &R, Background);
-			//-->
-#else
-			FillRect(VTDC, R, Background);
-#endif
+			VTDC.FillRectangle(Background, R);
 		}
 
 		public bool DispDeleteLines(int Count, int YEnd)
@@ -2666,14 +1029,7 @@ namespace TeraTrem
 			if (Active && CompletelyVisible &&
 				(YEnd + 1 - WinOrgY <= WinHeight)) {
 				R = new Rectangle(0, (CursorY - WinOrgY) * FontHeight, ScreenWidth, (YEnd + 1 - CursorY) * FontHeight);
-#if ALPHABLEND_TYPE2
-				//<!--by AKASI
-				//ScrollWindow(ttwinman.HVTWin,0,-FontHeight*Count,&R,&R);
-				BGScrollWindow(ttwinman.HVTWin, 0, -FontHeight * Count, &R, &R);
-				//-->
-#else
-				ScrollWindow(ttwinman.HVTWin, 0, -FontHeight * Count, R, R);
-#endif
+				ttwinman.HVTWin.ScrollWindow(0, -FontHeight * Count, R, R);
 				ttwinman.HVTWin.Update();
 				return true;
 			}
@@ -2691,14 +1047,7 @@ namespace TeraTrem
 			if (Active && CompletelyVisible &&
 				(CursorY >= WinOrgY)) {
 				R = new Rectangle(0, (CursorY - WinOrgY) * FontHeight, ScreenWidth, (YEnd + 1 - CursorY) * FontHeight);
-#if ALPHABLEND_TYPE2
-				//<!--by AKASI
-				//ScrollWindow(ttwinman.HVTWin,0,FontHeight*Count,&R,&R);
-				BGScrollWindow(ttwinman.HVTWin, 0, FontHeight * Count, &R, &R);
-				//-->
-#else
-				ScrollWindow(ttwinman.HVTWin, 0, FontHeight * Count, R, R);
-#endif
+				ttwinman.HVTWin.ScrollWindow(0, FontHeight * Count, R, R);
 				ttwinman.HVTWin.Update();
 				return true;
 			}
@@ -2752,8 +1101,8 @@ namespace TeraTrem
 			else
 				YRange = 0;
 
-			ScrollPosX = GetScrollPos(ttwinman.HVTWin.Handle, Orientation.Horizontal);
-			ScrollPosY = GetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical);
+			ScrollPosX = ttwinman.HVTWin.HorizontalScroll.Value;
+			ScrollPosY = ttwinman.HVTWin.VerticalScroll.Value;
 			if (ScrollPosX > XRange)
 				ScrollPosX = XRange;
 			if (ScrollPosY > YRange)
@@ -2766,17 +1115,20 @@ namespace TeraTrem
 
 			DontChangeSize = true;
 
-			SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Horizontal, 0, XRange, false);
+			ttwinman.HVTWin.HorizontalScroll.Minimum = 0;
+			ttwinman.HVTWin.HorizontalScroll.Maximum = XRange;
 
 			if ((YRange == 0) && (ts.EnableScrollBuff > 0)) {
-				SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, 1, false);
+				ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+				ttwinman.HVTWin.VerticalScroll.Maximum = 1;
 			}
 			else {
-				SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, YRange, false);
+				ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+				ttwinman.HVTWin.VerticalScroll.Maximum = YRange;
 			}
 
-			SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Horizontal, ScrollPosX, true);
-			SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical, ScrollPosY, true);
+			ttwinman.HVTWin.HorizontalScroll.Value = ScrollPosX;
+			ttwinman.HVTWin.VerticalScroll.Value = ScrollPosY;
 
 			DontChangeSize = false;
 		}
@@ -2832,22 +1184,19 @@ namespace TeraTrem
 			if (dScroll != 0) {
 				d = dScroll * FontHeight;
 				R = new Rectangle(0, (SRegionTop - WinOrgY) * FontHeight, ScreenWidth, (SRegionBottom + 1 - SRegionTop) * FontHeight);
-#if ALPHABLEND_TYPE2
-				//<!--by AKASI
-				//  ScrollWindow(ttwinman.HVTWin,0,-d,&R,&R);
-				BGScrollWindow(ttwinman.HVTWin, 0, -d, &R, &R);
-				//-->
-#else
-				ScrollWindow(ttwinman.HVTWin, 0, -d, R, R);
-#endif
+				ttwinman.HVTWin.ScrollWindow(0, -d, R, R);
 
 				if ((SRegionTop == 0) && (dScroll > 0)) { // update scroll bar if BuffEnd is changed
 					if ((BuffEnd == WinHeight) &&
-						(ts.EnableScrollBuff > 0))
-						SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, 1, true);
-					else
-						SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, BuffEnd - WinHeight, false);
-					SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical, WinOrgY + PageStart, true);
+						(ts.EnableScrollBuff > 0)) {
+						ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+						ttwinman.HVTWin.VerticalScroll.Maximum = 1;
+					}
+					else {
+						ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+						ttwinman.HVTWin.VerticalScroll.Maximum = BuffEnd - WinHeight;
+					}
+					ttwinman.HVTWin.VerticalScroll.Value = WinOrgY + PageStart;
 				}
 				dScroll = 0;
 			}
@@ -2864,11 +1213,15 @@ namespace TeraTrem
 			   NewOrgYが変化していなくてもバッファ行数が変化するので更新する */
 			if (ts.AutoScrollOnlyInBottomLine != 0) {
 				if ((BuffEnd == WinHeight) &&
-					(ts.EnableScrollBuff > 0))
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, 1, true);
-				else
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, BuffEnd - WinHeight, false);
-				SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical, NewOrgY + PageStart, true);
+					(ts.EnableScrollBuff > 0)) {
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = 1;
+				}
+				else {
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = BuffEnd - WinHeight;
+				}
+				ttwinman.HVTWin.VerticalScroll.Value = NewOrgY + PageStart;
 			}
 
 			if ((NewOrgX == WinOrgX) &&
@@ -2876,40 +1229,30 @@ namespace TeraTrem
 
 			if (NewOrgX == WinOrgX) {
 				d = (NewOrgY - WinOrgY) * FontHeight;
-#if ALPHABLEND_TYPE2
-				//<!--by AKASI
-				//  ScrollWindow(ttwinman.HVTWin,0,-d,null,null);
-				BGScrollWindow(ttwinman.HVTWin, 0, -d, null, null);
-				//-->
-#else
-				ScrollWindow(ttwinman.HVTWin, 0, -d);
-#endif
+				ttwinman.HVTWin.ScrollWindow(0, -d);
 			}
 			else if (NewOrgY == WinOrgY) {
 				d = (NewOrgX - WinOrgX) * FontWidth;
-#if ALPHABLEND_TYPE2
-				//<!--by AKASI
-				//  ScrollWindow(ttwinman.HVTWin,-d,0,null,null);
-				BGScrollWindow(ttwinman.HVTWin, -d, 0, null, null);
-				//-->
-#else
-				ScrollWindow(ttwinman.HVTWin, -d, 0);
-#endif
+				ttwinman.HVTWin.ScrollWindow(-d, 0);
 			}
 			else
 				ttwinman.HVTWin.Invalidate(true);
 
 			/* Update scroll bars */
 			if (NewOrgX != WinOrgX)
-				SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Horizontal, NewOrgX, true);
+				ttwinman.HVTWin.HorizontalScroll.Value = NewOrgX;
 
 			if (ts.AutoScrollOnlyInBottomLine == 0 && NewOrgY != WinOrgY) {
 				if ((BuffEnd == WinHeight) &&
-					(ts.EnableScrollBuff > 0))
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, 1, true);
-				else
-					SetScrollRange(ttwinman.HVTWin.Handle, Orientation.Vertical, 0, BuffEnd - WinHeight, false);
-				SetScrollPos(ttwinman.HVTWin.Handle, Orientation.Vertical, NewOrgY + PageStart, true);
+					(ts.EnableScrollBuff > 0)) {
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = 1;
+				}
+				else {
+					ttwinman.HVTWin.VerticalScroll.Minimum = 0;
+					ttwinman.HVTWin.VerticalScroll.Maximum = BuffEnd - WinHeight;
+				}
+				ttwinman.HVTWin.VerticalScroll.Value = NewOrgY + PageStart;
 			}
 
 			WinOrgX = NewOrgX;
@@ -3044,11 +1387,6 @@ namespace TeraTrem
 			Point = new Point(0, ScreenHeight);
 			Point = ttwinman.HVTWin.PointToScreen(Point);
 			CompletelyVisible = (Point.Y <= VirtualScreen.Bottom);
-
-#if ALPHABLEND_TYPE2
-			if (BGEnable)
-				InvalidateRect(ttwinman.HVTWin, null, false);
-#endif
 		}
 
 		public void DispMoveWindow(int x, int y)
@@ -3072,8 +1410,7 @@ namespace TeraTrem
 				ttwinman.ActiveWin = WindowId.IdVT;
 			}
 			else {
-				if ((ts.Language == Language.IdJapanese || ts.Language == Language.IdKorean || ts.Language == Language.IdUtf8) &&
-					ttime.CanUseIME()) {
+				if (ttime.CanUseIME()) {
 					/* position & font of conv. window -> default */
 					ttime.SetConversionWindow(ttwinman.HVTWin, -1, 0);
 				}
@@ -3096,33 +1433,6 @@ namespace TeraTrem
 		public void DispSetColor(ANSIColors num, Color color)
 		{
 			switch (num) {
-#if ALPHABLEND_TYPE2
-			case ANSIColors.CS_VT_NORMALFG:
-				BGVTColor[0] = color;
-				if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-					ANSIColor[(byte)ColorCodes.IdFore] = BGVTColor[0]; // use text color for "white"
-				}
-				break;
-			case ANSIColors.CS_VT_NORMALBG:
-				BGVTColor[1] = color;
-				if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-					ANSIColor[(byte)ColorCodes.IdBack] = BGVTColor[1]; // use background color for "Black"
-				}
-				if (ts.UseNormalBGColor) {
-					BGVTBoldColor[1] = BGVTColor[1];
-					BGVTBlinkColor[1] = BGVTColor[1];
-					BGURLColor[1] = BGVTColor[1];
-				}
-				break;
-			case ANSIColors.CS_VT_BOLDFG: BGVTBoldColor[0] = color; break;
-			case ANSIColors.CS_VT_BOLDBG: BGVTBoldColor[1] = color; break;
-			case ANSIColors.CS_VT_BLINKFG: BGVTBlinkColor[0] = color; break;
-			case ANSIColors.CS_VT_BLINKBG: BGVTBlinkColor[1] = color; break;
-			case ANSIColors.CS_VT_REVERSEFG: BGVTReverseColor[0] = color; break;
-			case ANSIColors.CS_VT_REVERSEBG: BGVTReverseColor[1] = color; break;
-			case ANSIColors.CS_VT_URLFG: BGURLColor[0] = color; break;
-			case ANSIColors.CS_VT_URLBG: BGURLColor[1] = color; break;
-#else
 			case ANSIColors.CS_VT_NORMALFG:
 				ts.VTColor[0] = color;
 				if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
@@ -3148,7 +1458,6 @@ namespace TeraTrem
 			case ANSIColors.CS_VT_REVERSEBG: ts.VTReverseColor[1] = color; break;
 			case ANSIColors.CS_VT_URLFG: ts.URLColor[0] = color; break;
 			case ANSIColors.CS_VT_URLBG: ts.URLColor[1] = color; break;
-#endif
 			case ANSIColors.CS_TEK_FG: ts.TEKColor[0] = color; break;
 			case ANSIColors.CS_TEK_BG: ts.TEKColor[1] = color; break;
 			default:
@@ -3181,33 +1490,6 @@ namespace TeraTrem
 			}
 
 			switch (_num) {
-#if ALPHABLEND_TYPE2
-			case ANSIColors.CS_VT_NORMALFG:
-				BGVTColor[0] = ts.VTColor[0];
-				if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-					ANSIColor[(byte)ColorCodes.IdFore] = ts.VTColor[0]; // use text color for "white"
-				}
-				break;
-			case ANSIColors.CS_VT_NORMALBG:
-				BGVTColor[1] = ts.VTColor[1];
-				if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-					ANSIColor[(byte)ColorCodes.IdBack] = ts.VTColor[1]; // use background color for "Black"
-				}
-				if (ts.UseNormalBGColor) {
-					BGVTBoldColor[1] = ts.VTColor[1];
-					BGVTBlinkColor[1] = ts.VTColor[1];
-					BGURLColor[1] = ts.VTColor[1];
-				}
-				break;
-			case ANSIColors.CS_VT_BOLDFG: BGVTBoldColor[0] = ts.VTBoldColor[0]; break;
-			case ANSIColors.CS_VT_BOLDBG: BGVTBoldColor[1] = ts.VTBoldColor[1]; break;
-			case ANSIColors.CS_VT_BLINKFG: BGVTBlinkColor[0] = ts.VTBlinkColor[0]; break;
-			case ANSIColors.CS_VT_BLINKBG: BGVTBlinkColor[1] = ts.VTBlinkColor[1]; break;
-			case ANSIColors.CS_VT_REVERSEFG: BGVTReverseColor[0] = ts.VTReverseColor[0]; break;
-			case ANSIColors.CS_VT_REVERSEBG: BGVTReverseColor[1] = ts.VTReverseColor[1]; break;
-			case ANSIColors.CS_VT_URLFG: BGURLColor[0] = ts.URLColor[0]; break;
-			case ANSIColors.CS_VT_URLBG: BGURLColor[1] = ts.URLColor[1]; break;
-#endif
 			case ANSIColors.CS_TEK_FG:
 				break;
 			case ANSIColors.CS_TEK_BG:
@@ -3250,11 +1532,7 @@ namespace TeraTrem
 			default:
 				if (num == (int)ColorCodes.IdBack) {
 					if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-#if ALPHABLEND_TYPE2
-						ANSIColor[(byte)ColorCodes.IdBack] = BGVTColor[1]; // use background color for "Black"
-#else
 						ANSIColor[(byte)ColorCodes.IdBack] = ts.VTColor[1]; // use background color for "Black"
-#endif
 					}
 					else {
 						ANSIColor[(byte)ColorCodes.IdBack] = ts.ANSIColor[(byte)ColorCodes.IdBack];
@@ -3263,11 +1541,7 @@ namespace TeraTrem
 				}
 				else if (num == (int)ColorCodes.IdFore) {
 					if ((ts.ColorFlag & ColorFlags.CF_USETEXTCOLOR) != 0) {
-#if ALPHABLEND_TYPE2
-						ANSIColor[(byte)ColorCodes.IdFore] = BGVTColor[0]; // use text color for "white"
-#else
 						ANSIColor[(byte)ColorCodes.IdFore] = ts.VTColor[0]; // use text color for "white"
-#endif
 					}
 					else {
 						ANSIColor[(byte)ColorCodes.IdFore] = ts.ANSIColor[(byte)ColorCodes.IdFore];
@@ -3334,20 +1608,16 @@ namespace TeraTrem
 
 		void UpdateBGBrush()
 		{
-			if (Background != IntPtr.Zero) DeleteObject(Background);
+			if (Background != null) Background.Dispose();
 
 			if ((CurCharAttr.Attr2 & AttributeBitMasks.Attr2Back) != 0) {
 				if (((int)CurCharAttr.Back < 16) && ((int)CurCharAttr.Back & 7) != 0)
-					Background = CreateSolidBrush(ANSIColor[(int)CurCharAttr.Back ^ 8]);
+					Background = new SolidBrush(ANSIColor[(int)CurCharAttr.Back ^ 8]);
 				else
-					Background = CreateSolidBrush(ANSIColor[(int)CurCharAttr.Back]);
+					Background = new SolidBrush(ANSIColor[(int)CurCharAttr.Back]);
 			}
 			else {
-#if ALPHABLEND_TYPE2
-				Background = CreateSolidBrush(BGVTColor[1]);
-#else
-				Background = CreateSolidBrush(ts.VTColor[1]);
-#endif  // ALPHABLEND_TYPE2
+				Background = new SolidBrush(ts.VTColor[1]);
 			}
 		}
 
@@ -3500,163 +1770,5 @@ namespace TeraTrem
 		public static extern uint GetCaretBlinkTime();
 		[DllImport("user32.dll")]
 		public static extern bool SetCaretBlinkTime(uint uMSeconds);
-
-		[DllImport("user32.dll")]
-		public static extern int GetScrollPos(IntPtr hWnd, Orientation nBar);
-		[DllImport("user32.dll")]
-		public static extern int SetScrollPos(IntPtr hWnd, Orientation nBar, int nPos, bool bRedraw);
-		[DllImport("user32.dll")]
-		public static extern bool SetScrollRange(IntPtr hWnd, Orientation nBar, int nMinPos, int nMaxPos, bool bRedraw);
-		[DllImport("user32.dll")]
-		public static extern bool ScrollWindow(IntPtr hWnd, int XAmount, int YAmount, ref RECT lpRect, ref RECT lpClipRect);
-
-		public static bool ScrollWindow(Control control, int XAmount, int YAmount, Rectangle rect, Rectangle clipRect)
-		{
-			RECT lpRect = new RECT(rect), lpClipRect = new RECT(clipRect);
-			return ScrollWindow(control.Handle, XAmount, YAmount, ref lpRect, ref lpClipRect);
-		}
-
-		[DllImport("user32.dll")]
-		public static extern bool ScrollWindow(IntPtr hWnd, int XAmount, int YAmount, IntPtr lpRect, IntPtr lpClipRect);
-
-		public static bool ScrollWindow(Control control, int XAmount, int YAmount)
-		{
-			return ScrollWindow(control.Handle, XAmount, YAmount, IntPtr.Zero, IntPtr.Zero);
-		}
-
-		const int TRANSPARENT = 1;
-
-		[DllImport("gdi32.dll")]
-		public static extern int SetBkMode(IntPtr hdc, int iBkMode);
-		[DllImport("gdi32.dll")]
-		public static extern uint SetBkColor(IntPtr hdc, int crColor);
-
-		public static uint SetBkColor(IntPtr hdc, Color color)
-		{
-			return SetBkColor(hdc, color.ToArgb() & 0x00FFFFFF);
-		}
-
-		[DllImport("gdi32.dll")]
-		public static extern uint SetTextColor(IntPtr hdc, int crColor);
-
-		public static uint SetTextColor(IntPtr hdc, Color color)
-		{
-			return SetTextColor(hdc, color.ToArgb() & 0x00FFFFFF);
-		}
-
-		[DllImport("gdi32.dll", ExactSpelling = true, PreserveSig = true, SetLastError = true)]
-		public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
-
-		[DllImport("user32.dll")]
-		public static extern int FillRect(IntPtr hDC, ref RECT lprc, IntPtr hbr);
-
-		public static int FillRect(IntPtr hDC, Rectangle rc, IntPtr hbr)
-		{
-			RECT lprc = new RECT(rc);
-			return FillRect(hDC, ref lprc, hbr);
-		}
-
-		[DllImport("gdi32.dll")]
-		public static extern bool Polyline(IntPtr hdc, Point[] lppt, int cPoints);
-
-		const uint ETO_OPAQUE = 0x0002;
-		const uint ETO_CLIPPED = 0x0004;
-
-		//[DllImport("gdi32.dll")]
-		//public static extern bool ExtTextOutW(IntPtr hdc, int X, int Y, uint fuOptions,
-		//    ref RECT lprc, [MarshalAs(UnmanagedType.LPWStr)] string lpString,
-		//    uint cbCount, int[] lpDx);
-
-		//public static bool ExtTextOut(IntPtr hdc, int X, int Y, uint fuOptions, Rectangle rc, byte[] buff, int offset, int count, int[] lpDx)
-		//{
-		//    string lpString = Encoding.Default.GetString(buff, offset, count);
-		//    return ExtTextOutW(hdc, X, Y, fuOptions, ref lprc, lpString, (uint)count, lpDx);
-		//}
-
-		[DllImport("gdi32.dll")]
-		public static extern bool ExtTextOutA(IntPtr hdc, int X, int Y, uint fuOptions,
-			ref RECT lprc, IntPtr lpString, uint cbCount, int[] lpDx);
-
-		public static bool ExtTextOut(IntPtr hdc, int X, int Y, uint fuOptions, Rectangle rc, byte[] buff, int offset, int count, int[] lpDx)
-		{
-			bool result;
-			RECT lprc = new RECT(rc);
-			GCHandle hBuff = GCHandle.Alloc(buff, GCHandleType.Pinned);
-			try {
-				IntPtr lpString = Marshal.UnsafeAddrOfPinnedArrayElement(buff, offset);
-
-				result = ExtTextOutA(hdc, X, Y, fuOptions, ref lprc, lpString, (uint)count, lpDx);
-			}
-			finally {
-				hBuff.Free();
-			}
-			return result;
-		}
-
-		const int PS_SOLID = 0;
-
-		[DllImport("gdi32.dll")]
-		public static extern IntPtr CreatePen(int fnPenStyle, int nWidth, int crColor);
-
-		public static IntPtr CreatePen(int fnPenStyle, int nWidth, Color color)
-		{
-			return CreatePen(fnPenStyle, nWidth, color.ToArgb() & 0x00FFFFFF);
-		}
-
-		[DllImport("gdi32.dll")]
-		public static extern IntPtr CreateSolidBrush(int crColor);
-
-		public static IntPtr CreateSolidBrush(Color color)
-		{
-			return CreateSolidBrush(color.ToArgb() & 0x00FFFFFF);
-		}
-
-		[DllImport("gdi32.dll")]
-		public static extern bool DeleteObject(IntPtr hObject);
-
-		[DllImport("gdi32.dll", CharSet = CharSet.Auto)]
-		public static extern bool GetTextMetrics(IntPtr hdc, out TEXTMETRIC lptm);
-	}
-
-	[Serializable, StructLayout(LayoutKind.Sequential)]
-	public struct RECT
-	{
-		public int Left;
-		public int Top;
-		public int Right;
-		public int Bottom;
-
-		public RECT(Rectangle rect)
-		{
-			Left = rect.Left;
-			Top = rect.Top;
-			Right = rect.Right;
-			Bottom = rect.Bottom;
-		}
-	}
-
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-	public struct TEXTMETRIC
-	{
-		public int tmHeight;
-		public int tmAscent;
-		public int tmDescent;
-		public int tmInternalLeading;
-		public int tmExternalLeading;
-		public int tmAveCharWidth;
-		public int tmMaxCharWidth;
-		public int tmWeight;
-		public int tmOverhang;
-		public int tmDigitizedAspectX;
-		public int tmDigitizedAspectY;
-		public char tmFirstChar;
-		public char tmLastChar;
-		public char tmDefaultChar;
-		public char tmBreakChar;
-		public byte tmItalic;
-		public byte tmUnderlined;
-		public byte tmStruckOut;
-		public byte tmPitchAndFamily;
-		public byte tmCharSet;
 	}
 }

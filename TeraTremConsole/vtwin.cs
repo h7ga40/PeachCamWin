@@ -35,6 +35,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace TeraTrem
 {
@@ -50,6 +51,17 @@ namespace TeraTrem
 		Buffer Buffer;
 		VTDisp VTDisp;
 		VTTerm VTTerm;
+		Timer IdBreakTimer;
+		Timer IdDelayTimer;
+		Timer IdProtoTimer;
+		Timer IdDblClkTimer;
+		Timer IdScrollTimer;
+		Timer IdComEndTimer;
+		internal Timer IdCaretTimer;
+		Timer IdPrnStartTimer;
+		Timer IdPrnProcTimer;
+		Timer IdCancelConnectTimer;  // add (2007.1.10 yutaka)
+		Timer IdPasteDelayTimer;
 
 		bool Minimized, FirstPaint;
 		/* mouse status */
@@ -57,11 +69,16 @@ namespace TeraTrem
 		bool DblClk, AfterDblClk, TplClk;
 		int DblClkX, DblClkY;
 
-		// "Hold" key status
-		bool Hold;
+		[DefaultValue(typeof(Cursor), nameof(Cursors.IBeam))]
+		public override Cursor Cursor { get => base.Cursor; set => base.Cursor = value; }
 
-		// ScrollLock key
-		bool ScrollLock;
+		[DefaultValue(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+		[Category("CatLayout")]
+		public new bool HScroll { get => base.HScroll; set => base.HScroll = value; }
+
+		[DefaultValue(true), DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+		[Category("CatLayout")]
+		public new bool VScroll { get => base.VScroll; set => base.VScroll = value; }
 
 		public VTWindow()
 		{
@@ -86,8 +103,28 @@ namespace TeraTrem
 
 			ttime.LoadIME();
 
+			IdCaretTimer = new Timer();
+			IdCaretTimer.Tick += IdCaretTimer_Tick;
+			IdScrollTimer = new Timer();
+			IdScrollTimer.Tick += IdScrollTimer_Tick;
+			IdCancelConnectTimer = new Timer();
+			IdCancelConnectTimer.Tick += IdCancelConnectTimer_Tick;
+			IdDelayTimer = new Timer();
+			IdDelayTimer.Tick += IdDelayTimer_Tick;
+			IdProtoTimer = new Timer();
+			IdProtoTimer.Tick += IdProtoTimer_Tick;
+			IdDblClkTimer = new Timer();
+			IdDblClkTimer.Tick += IdDblClkTimer_Tick;
+			IdComEndTimer = new Timer();
+			IdComEndTimer.Tick += IdComEndTimer_Tick;
+			IdPrnStartTimer = new Timer();
+			IdPrnStartTimer.Tick += IdPrnStartTimer_Tick;
+			IdPrnProcTimer = new Timer();
+			IdPrnProcTimer.Tick += IdPrnProcTimer_Tick;
+
 			Cursor = Cursors.IBeam;
-			TabStop = true;
+			HScroll = true;
+			VScroll = true;
 
 			ttcmn.DataReceiveSender = this;
 
@@ -121,9 +158,7 @@ namespace TeraTrem
 			DblClk = false;
 			AfterDblClk = false;
 			TplClk = false;
-			Hold = false;
 			FirstPaint = true;
-			ScrollLock = false;  // 初期値は無効 (2006.11.14 yutaka)
 
 			/* Initialize scroll buffer */
 			Buffer.InitBuffer();
@@ -136,96 +171,82 @@ namespace TeraTrem
 			return true;// base.IsInputKey(keyData);
 		}
 
-		public const int WM_SIZE = 0x0005;
-		public const int WM_ACTIVATE = 0x0006;
+		internal const int WM_SIZE = 0x0005;
+		internal const int WM_ACTIVATE = 0x0006;
 
-		public const int WM_SETFOCUS = 0x0007;
-		public const int WM_KILLFOCUS = 0x0008;
+		internal const int WM_MOUSEACTIVATE = 0x0021;
 
-		public const int WM_MOUSEACTIVATE = 0x0021;
+		internal const int WM_INPUTLANGCHANGE = 0x0051;
 
-		public const int WM_INPUTLANGCHANGE = 0x0051;
+		internal const int WM_KEYDOWN = 0x0100;
+		internal const int WM_KEYUP = 0x0101;
+		internal const int WM_CHAR = 0x0102;
 
-		public const int WM_KEYDOWN = 0x0100;
-		public const int WM_KEYUP = 0x0101;
-		public const int WM_CHAR = 0x0102;
+		internal const int WM_SYSCHAR = 0x0106;
 
-		public const int WM_SYSCHAR = 0x0106;
+		internal const int WM_IME_STARTCOMPOSITION = 0x010D;
+		internal const int WM_IME_ENDCOMPOSITION = 0x010E;
+		internal const int WM_IME_COMPOSITION = 0x010F;
+		internal const int WM_IME_KEYLAST = 0x010F;
+		internal const int WM_IME_NOTIFY = 0x0282;
 
-		public const int WM_IME_STARTCOMPOSITION = 0x010D;
-		public const int WM_IME_ENDCOMPOSITION = 0x010E;
-		public const int WM_IME_COMPOSITION = 0x010F;
-		public const int WM_IME_KEYLAST = 0x010F;
-		public const int WM_IME_NOTIFY = 0x0282;
+		internal const int WM_MOUSEMOVE = 0x0200;
+		internal const int WM_LBUTTONDOWN = 0x0201;
+		internal const int WM_LBUTTONUP = 0x0202;
+		internal const int WM_LBUTTONDBLCLK = 0x0203;
+		internal const int WM_RBUTTONDOWN = 0x0204;
+		internal const int WM_RBUTTONUP = 0x0205;
+		internal const int WM_RBUTTONDBLCLK = 0x0206;
+		internal const int WM_MBUTTONDOWN = 0x0207;
+		internal const int WM_MBUTTONUP = 0x0208;
+		internal const int WM_MBUTTONDBLCLK = 0x0209;
+		internal const int WM_MOUSEWHEEL = 0x020A;
 
-		public const int WM_TIMER = 0x0113;
-
-		public const int WM_MOUSEMOVE = 0x0200;
-		public const int WM_LBUTTONDOWN = 0x0201;
-		public const int WM_LBUTTONUP = 0x0202;
-		public const int WM_LBUTTONDBLCLK = 0x0203;
-		public const int WM_RBUTTONDOWN = 0x0204;
-		public const int WM_RBUTTONUP = 0x0205;
-		public const int WM_RBUTTONDBLCLK = 0x0206;
-		public const int WM_MBUTTONDOWN = 0x0207;
-		public const int WM_MBUTTONUP = 0x0208;
-		public const int WM_MBUTTONDBLCLK = 0x0209;
-		public const int WM_MOUSEWHEEL = 0x020A;
-
-		public const int WM_NCLBUTTONDBLCLK = 0x00A3;
-		public const int WM_NCRBUTTONDBLCLK = 0x00A6;
+		internal const int WM_NCLBUTTONDBLCLK = 0x00A3;
+		internal const int WM_NCRBUTTONDBLCLK = 0x00A6;
 
 		protected override void WndProc(ref Message m)
 		{
 			switch (m.Msg) {
-				case WM_SIZE:
-					OnSize((uint)m.WParam.ToInt32(), m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
-					break;
-				case WM_ACTIVATE:
-					OnActivate((uint)(m.WParam.ToInt32() & 0xFFFF), m.LParam, (((uint)m.WParam.ToInt32()) >> 16) != 0);
-					break;
-				case WM_MOUSEACTIVATE:
-					OnMouseActivate(m.WParam, m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
-					break;
-				case WM_INPUTLANGCHANGE:
-					OnIMEInputChange((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
-					break;
-				case WM_KEYDOWN:
-					OnKeyDown((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-					break;
-				case WM_KEYUP:
-					OnKeyUp((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-					break;
-				case WM_CHAR:
-					OnChar((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
-					break;
-				case WM_IME_COMPOSITION:
-					OnIMEComposition((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32());
-					break;
-				case WM_IME_NOTIFY:
-					OnIMENotify((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
-					break;
-				case WM_TIMER:
-					OnTimer((TimerId)m.WParam.ToInt32());
-					break;
-				case WM_LBUTTONDBLCLK:
-					OnLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-					break;
-				case WM_NCLBUTTONDBLCLK:
-					OnNcLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-					break;
-				case WM_NCRBUTTONDBLCLK:
-					OnNcRButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
-					break;
+			case WM_SIZE:
+				OnSize((uint)m.WParam.ToInt32(), m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
+				break;
+			case WM_ACTIVATE:
+				OnActivate((uint)(m.WParam.ToInt32() & 0xFFFF), m.LParam, (((uint)m.WParam.ToInt32()) >> 16) != 0);
+				break;
+			case WM_MOUSEACTIVATE:
+				OnMouseActivate(m.WParam, m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16));
+				break;
+			case WM_INPUTLANGCHANGE:
+				OnIMEInputChange((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
+				break;
+			case WM_KEYDOWN:
+				OnKeyDown((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+				break;
+			case WM_KEYUP:
+				OnKeyUp((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+				break;
+			case WM_CHAR:
+				OnChar((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32() & 0xFFFF, (((uint)m.LParam.ToInt32()) >> 16));
+				break;
+			case WM_IME_COMPOSITION:
+				OnIMEComposition((uint)m.WParam.ToInt32(), (uint)m.LParam.ToInt32());
+				break;
+			case WM_IME_NOTIFY:
+				OnIMENotify((uint)m.WParam.ToInt32(), m.LParam.ToInt32());
+				break;
+			case WM_LBUTTONDBLCLK:
+				OnLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+				break;
+			case WM_NCLBUTTONDBLCLK:
+				OnNcLButtonDblClk((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+				break;
+			case WM_NCRBUTTONDBLCLK:
+				OnNcRButtonDown((uint)m.WParam.ToInt32(), new Point(m.LParam.ToInt32() & 0xFFFF, (int)(((uint)m.LParam.ToInt32()) >> 16)));
+				break;
 			}
 
 			base.WndProc(ref m);
-
-			switch (m.Msg) {
-				case WM_KILLFOCUS:
-					OnKillFocus2(m.WParam);
-					break;
-			}
 		}
 
 		protected override void OnHandleCreated(EventArgs e)
@@ -283,9 +304,6 @@ namespace TeraTrem
 				return;
 			}
 
-			if ((ts.Language == Language.IdRussian) && ((byte)nChar >= 128)) {
-				nChar = (char)language.RussConv(ts.RussKeyb, ts.RussClient, (byte)nChar);
-			}
 			Code = Encoding.UTF8.GetBytes(new char[] { (char)nChar });
 
 			for (i = 1; i <= nRepCnt; i++) {
@@ -300,6 +318,52 @@ namespace TeraTrem
 			if (ts.AutoScrollOnlyInBottomLine != 0 && VTDisp.WinOrgY != 0) {
 				VTDisp.DispVScroll(ScrollType.SCROLL_BOTTOM, 0);
 			}
+		}
+
+		protected override void OnHandleDestroyed(EventArgs e)
+		{
+			// remove this window from the window list
+			//UnregWin(ttwinman.HVTWin);
+
+			// USBデバイス変化通知解除
+			//UnRegDeviceNotify(ttwinman.HVTWin);
+
+			keyboard.EndKeyboard();
+
+			/* Disable drag-drop */
+			//::DragAcceptFiles(ttwinman.HVTWin, FALSE);
+			//DropListFree();
+
+			//EndDDE();
+
+			if (cv.TelFlag) {
+				telnet.EndTelnet();
+			}
+			commlib.CommClose(cv);
+
+			//OpenHelp(HH_CLOSE_ALL, 0, ts.UILanguageFile);
+
+			ttime.FreeIME();
+			//ttset.FreeTTSET();
+			do { }
+			while (ttdialog.FreeTTDLG());
+
+			//do { }
+			//while (FreeTTFILE());
+
+			//if (ttwinman.HTEKWin != null) {
+			//	::DestroyWindow(ttwinman.HTEKWin);
+			//}
+
+			VTTerm.EndTerm();
+			VTDisp.EndDisp();
+
+			Buffer.FreeBuffer();
+
+			base.OnHandleDestroyed(e);
+			//TTXEnd(); /* TTPLUG */
+
+			//DeleteNotifyIcon(cv);
 		}
 
 		private static IntPtr MAKELONG(uint lo, uint hi)
@@ -319,8 +383,8 @@ namespace TeraTrem
 			bool pasteMButton = MButton && Paste;
 
 			/* disable autoscrolling */
-			KillTimer(Handle, (int)TimerId.IdScrollTimer);
-			ReleaseCapture();
+			IdScrollTimer.Enabled = false;
+			Capture = false;
 
 			if (ts.SelectOnlyByLButton && (MButton || RButton)) {
 				disableBuffEndSelect = true;
@@ -372,17 +436,18 @@ namespace TeraTrem
 			}
 
 			if (AfterDblClk && (LMR == TeraTrem.MouseButtons.IdLeftButton) &&
-				(Math.Abs(p.X - DblClkX) <= GetSystemMetrics(SM_CXDOUBLECLK)) &&
-				(Math.Abs(p.Y - DblClkY) <= GetSystemMetrics(SM_CYDOUBLECLK))) {
+				(Math.Abs(p.X - DblClkX) <= SystemInformation.DoubleClickSize.Width) &&
+				(Math.Abs(p.Y - DblClkY) <= SystemInformation.DoubleClickSize.Height)) {
 				/* triple click */
-				KillTimer(Handle, (int)TimerId.IdDblClkTimer);
+				IdDblClkTimer.Enabled = false;
 				AfterDblClk = false;
 				Buffer.BuffTplClk(p.Y);
 				LButton = true;
 				TplClk = true;
 				/* for AutoScrolling */
-				SetCapture(Handle);
-				SetTimer(Handle, (int)TimerId.IdScrollTimer, 100, IntPtr.Zero);
+				Capture = true;
+				IdScrollTimer.Interval = 100;
+				IdScrollTimer.Enabled = true;
 			}
 			else {
 				if (!(LButton || MButton || RButton)) {
@@ -406,22 +471,23 @@ namespace TeraTrem
 							TplClk = false;
 
 							/* for AutoScrolling */
-							SetCapture(Handle);
-							SetTimer(Handle, (int)TimerId.IdScrollTimer, 100, IntPtr.Zero);
+							Capture = true;
+							IdScrollTimer.Interval = 100;
+							IdScrollTimer.Enabled = true;
 						}
 					}
 				}
 
 				switch (LMR) {
-					case TeraTrem.MouseButtons.IdRightButton:
-						RButton = true;
-						break;
-					case TeraTrem.MouseButtons.IdMiddleButton:
-						MButton = true;
-						break;
-					case TeraTrem.MouseButtons.IdLeftButton:
-						LButton = true;
-						break;
+				case TeraTrem.MouseButtons.IdRightButton:
+					RButton = true;
+					break;
+				case TeraTrem.MouseButtons.IdMiddleButton:
+					MButton = true;
+					break;
+				case TeraTrem.MouseButtons.IdLeftButton:
+					LButton = true;
+					break;
 				}
 			}
 		}
@@ -431,32 +497,32 @@ namespace TeraTrem
 			ScrollType Func = 0;
 
 			switch (se.Type) {
-				case ScrollEventType.Last:
-					Func = ScrollType.SCROLL_BOTTOM;
-					break;
-				case ScrollEventType.EndScroll:
-					break;
-				case ScrollEventType.SmallIncrement:
-					Func = ScrollType.SCROLL_LINEDOWN;
-					break;
-				case ScrollEventType.SmallDecrement:
-					Func = ScrollType.SCROLL_LINEUP;
-					break;
-				case ScrollEventType.LargeIncrement:
-					Func = ScrollType.SCROLL_PAGEDOWN;
-					break;
-				case ScrollEventType.LargeDecrement:
-					Func = ScrollType.SCROLL_PAGEUP;
-					break;
-				case ScrollEventType.ThumbPosition:
-				case ScrollEventType.ThumbTrack:
-					Func = ScrollType.SCROLL_POS;
-					break;
-				case ScrollEventType.First:
-					Func = ScrollType.SCROLL_TOP;
-					break;
-				default:
-					break;
+			case ScrollEventType.Last:
+				Func = ScrollType.SCROLL_BOTTOM;
+				break;
+			case ScrollEventType.EndScroll:
+				break;
+			case ScrollEventType.SmallIncrement:
+				Func = ScrollType.SCROLL_LINEDOWN;
+				break;
+			case ScrollEventType.SmallDecrement:
+				Func = ScrollType.SCROLL_LINEUP;
+				break;
+			case ScrollEventType.LargeIncrement:
+				Func = ScrollType.SCROLL_PAGEDOWN;
+				break;
+			case ScrollEventType.LargeDecrement:
+				Func = ScrollType.SCROLL_PAGEUP;
+				break;
+			case ScrollEventType.ThumbPosition:
+			case ScrollEventType.ThumbTrack:
+				Func = ScrollType.SCROLL_POS;
+				break;
+			case ScrollEventType.First:
+				Func = ScrollType.SCROLL_TOP;
+				break;
+			default:
+				break;
 			}
 
 			if (Func != 0) {
@@ -477,17 +543,17 @@ namespace TeraTrem
 			MSG M;
 
 			switch (keyboard.KeyDown(this, (Keys)nChar, (ushort)nRepCnt, (ushort)(nFlags & 0x1ff))) {
-				case KeyDownReturnType.KEYDOWN_OTHER:
-					break;
-				case KeyDownReturnType.KEYDOWN_CONTROL:
-					return;
-				case KeyDownReturnType.KEYDOWN_COMMOUT:
-					/* 最下行でだけ自動スクロールする設定の場合
-					   リモートへのキー入力送信でスクロールさせる */
-					if (ts.AutoScrollOnlyInBottomLine != 0 && VTDisp.WinOrgY != 0) {
-						VTDisp.DispVScroll(ScrollType.SCROLL_BOTTOM, 0);
-					}
-					return;
+			case KeyDownReturnType.KEYDOWN_OTHER:
+				break;
+			case KeyDownReturnType.KEYDOWN_CONTROL:
+				return;
+			case KeyDownReturnType.KEYDOWN_COMMOUT:
+				/* 最下行でだけ自動スクロールする設定の場合
+				   リモートへのキー入力送信でスクロールさせる */
+				if (ts.AutoScrollOnlyInBottomLine != 0 && VTDisp.WinOrgY != 0) {
+					VTDisp.DispVScroll(ScrollType.SCROLL_BOTTOM, 0);
+				}
+				return;
 			}
 
 			if ((ts.MetaKey > 0) && ((nFlags & 0x2000) != 0)) {
@@ -502,21 +568,6 @@ namespace TeraTrem
 				M.lParam = new IntPtr((nRepCnt) | ((nFlags & 0xdfff) << 16));
 				TranslateMessage(ref M);
 			}
-			else {
-				// ScrollLockキーが点灯している場合は、マウスをクリックしっぱなし状態であると
-				// 見なす。すなわち、パージング処理が一時停止する。
-				// 当該キーを消灯させると、処理が再開される。(2006.11.14 yutaka)
-#if false
-				keyboard.GetKeyboardState((PBYTE)KeyState);
-				if (KeyState[Keys.Scroll] == 0x81) { // on : scroll locked
-					ScrollLock = true;
-				} else if (KeyState[Keys.Scroll] == 0x80) { // off : scroll unlocked
-					ScrollLock = false;
-				} else {
-					// do nothing
-				}
-#endif
-			}
 		}
 
 		void OnKeyUp(uint nChar, uint nRepCnt, uint nFlags)
@@ -528,11 +579,9 @@ namespace TeraTrem
 		{
 			VTDisp.DispDestroyCaret();
 			VTTerm.FocusReport(false);
-			base.OnLostFocus(e);
-		}
 
-		void OnKillFocus2(IntPtr pNewWnd)
-		{
+			base.OnLostFocus(e);
+
 			if (VTDisp.IsCaretOn()) {
 				VTDisp.CaretKillFocus(true);
 			}
@@ -560,11 +609,13 @@ namespace TeraTrem
 			LButton = true;
 			DblClk = true;
 			AfterDblClk = true;
-			SetTimer(Handle, (int)TimerId.IdDblClkTimer, GetDoubleClickTime(), IntPtr.Zero);
+			IdDblClkTimer.Interval = SystemInformation.DoubleClickTime;
+			IdDblClkTimer.Enabled = true;
 
 			/* for AutoScrolling */
-			SetCapture(Handle);
-			SetTimer(Handle, (int)TimerId.IdScrollTimer, 100, IntPtr.Zero);
+			Capture = true;
+			IdScrollTimer.Interval = 100;
+			IdScrollTimer.Enabled = true;
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
@@ -736,17 +787,11 @@ namespace TeraTrem
 		{
 			base.OnPaint(e);
 			int Xs, Ys, Xe, Ye;
-			IntPtr hdc = e.Graphics.GetHdc();
-			try {
-				VTDisp.PaintWindow(hdc, e.ClipRectangle, true, out Xs, out Ys, out Xe, out Ye);
-				Buffer.LockBuffer();
-				Buffer.BuffUpdateRect(Xs, Ys, Xe, Ye);
-				Buffer.UnlockBuffer();
-				VTDisp.DispEndPaint();
-			}
-			finally {
-				e.Graphics.ReleaseHdc();
-			}
+			VTDisp.PaintWindow(e.Graphics, e.ClipRectangle, true, out Xs, out Ys, out Xe, out Ye);
+			Buffer.LockBuffer();
+			Buffer.BuffUpdateRect(Xs, Ys, Xe, Ye);
+			Buffer.UnlockBuffer();
+			VTDisp.DispEndPaint();
 		}
 
 		protected override void OnGotFocus(EventArgs e)
@@ -843,101 +888,116 @@ namespace TeraTrem
 
 		const int MK_LBUTTON = 0x0001;
 
-		private void OnTimer(TimerId nIDEvent)
+		private void IdCaretTimer_Tick(object sender, EventArgs e)
 		{
-			Point Point;
-			PortTypeId PortType;
 			uint T;
 
-			if (nIDEvent == TimerId.IdCaretTimer) {
-				if (ts.NonblinkingCursor) {
-					T = VTDisp.GetCaretBlinkTime();
-					VTDisp.SetCaretBlinkTime(T);
-				}
-				else {
-					KillTimer(Handle, (int)TimerId.IdCaretTimer);
-				}
+			if (ts.NonblinkingCursor) {
+				T = VTDisp.GetCaretBlinkTime();
+				VTDisp.SetCaretBlinkTime(T);
+			}
+			else {
+				IdCaretTimer.Enabled = false;
+			}
+		}
+
+		private void IdScrollTimer_Tick(object sender, EventArgs e)
+		{
+			Point Point;
+
+			Point = MousePosition;
+			Point = PointToClient(Point);
+			VTDisp.DispAutoScroll(Point);
+			if ((Point.X < 0) || (Point.X >= VTDisp.ScreenWidth) ||
+				(Point.Y < 0) || (Point.Y >= VTDisp.ScreenHeight)) {
+				PostMessage(Handle, WM_MOUSEMOVE, new IntPtr(MK_LBUTTON), MAKELONG((uint)Point.X, (uint)Point.Y));
+			}
+		}
+
+		private void IdCancelConnectTimer_Tick(object sender, EventArgs e)
+		{
+			// まだ接続が完了していなければ、ソケットを強制クローズ。
+			// CloseSocket()を呼びたいが、ここからは呼べないので、直接Win32APIをコールする。
+			if (!cv.Ready) {
+				//closesocket(cv.s);
+				//cv.s = INVALID_SOCKET;  /* ソケット無効の印を付ける。(2010.8.6 yutaka) */
+				//PostMessage(Handle, WM_USER_COMMNOTIFY, 0, FD_CLOSE);
+			}
+			IdCancelConnectTimer.Enabled = false;
+		}
+
+		private void IdDelayTimer_Tick(object sender, EventArgs e)
+		{
+			IdDelayTimer.Enabled = false;
+			cv.CanSend = true;
+		}
+
+		private void IdProtoTimer_Tick(object sender, EventArgs e)
+		{
+			IdProtoTimer.Enabled = false;
+			filesys.ProtoDlgTimeOut();
+			IdDblClkTimer_Tick(sender, e);
+		}
+
+		private void IdDblClkTimer_Tick(object sender, EventArgs e)
+		{
+			IdDblClkTimer.Enabled = false;
+			AfterDblClk = false;
+		}
+
+		private void IdComEndTimer_Tick(object sender, EventArgs e)
+		{
+			PortTypeId PortType;
+
+			IdComEndTimer.Enabled = false;
+			if (!commlib.CommCanClose(cv)) {
+				// wait if received data remains
+				IdComEndTimer.Interval = 1;
+				IdComEndTimer.Enabled = true;
 				return;
 			}
-			else if (nIDEvent == TimerId.IdScrollTimer) {
-				Point = MousePosition;
-				Point = PointToClient(Point);
-				VTDisp.DispAutoScroll(Point);
-				if ((Point.X < 0) || (Point.X >= VTDisp.ScreenWidth) ||
-					(Point.Y < 0) || (Point.Y >= VTDisp.ScreenHeight)) {
-					PostMessage(Handle, WM_MOUSEMOVE, new IntPtr(MK_LBUTTON), MAKELONG((uint)Point.X, (uint)Point.Y));
+			cv.Ready = false;
+			if (cv.TelFlag) {
+				telnet.EndTelnet();
+			}
+			PortType = cv.PortType;
+			commlib.CommClose(cv);
+			//SetDdeComReady(0);
+			if ((PortType == PortTypeId.IdTCPIP) &&
+				((ts.PortFlag & PortFlags.PF_BEEPONCONNECT) != 0)) {
+				Console.Beep();
+			}
+			if ((PortType == PortTypeId.IdTCPIP) &&
+				(ts.AutoWinClose > 0) &&
+				Enabled /*&&
+					((HTEKWin == null) || IsWindowEnabled(HTEKWin))*/) {
+				// OnClose();
+			}
+			else {
+				ttwinman.ChangeTitle();
+				if (ts.ClearScreenOnCloseConnection) {
+					OnEditClearScreen();
 				}
-				return;
 			}
-			else if (nIDEvent == TimerId.IdCancelConnectTimer) {
-				// まだ接続が完了していなければ、ソケットを強制クローズ。
-				// CloseSocket()を呼びたいが、ここからは呼べないので、直接Win32APIをコールする。
-				if (!cv.Ready) {
-					//closesocket(cv.s);
-					//cv.s = INVALID_SOCKET;  /* ソケット無効の印を付ける。(2010.8.6 yutaka) */
-					//PostMessage(Handle, WM_USER_COMMNOTIFY, 0, FD_CLOSE);
-				}
-			}
+		}
 
-			KillTimer(Handle, (int)nIDEvent);
+		private void IdPrnStartTimer_Tick(object sender, EventArgs e)
+		{
+			IdPrnStartTimer.Enabled = false;
+			teraprn.PrnFileStart();
+		}
 
-			switch (nIDEvent) {
-				case TimerId.IdDelayTimer:
-					cv.CanSend = true;
-					break;
-				case TimerId.IdProtoTimer:
-					filesys.ProtoDlgTimeOut();
-					goto case TimerId.IdDblClkTimer;
-				case TimerId.IdDblClkTimer:
-					AfterDblClk = false;
-					break;
-				case TimerId.IdComEndTimer:
-					if (!commlib.CommCanClose(cv)) {
-						// wait if received data remains
-						SetTimer(Handle, (int)TimerId.IdComEndTimer, 1, IntPtr.Zero);
-						break;
-					}
-					cv.Ready = false;
-					if (cv.TelFlag) {
-						telnet.EndTelnet();
-					}
-					PortType = cv.PortType;
-					commlib.CommClose(cv);
-					//SetDdeComReady(0);
-					if ((PortType == PortTypeId.IdTCPIP) &&
-						((ts.PortFlag & PortFlags.PF_BEEPONCONNECT) != 0)) {
-						VTTerm.MessageBeep(0);
-					}
-					if ((PortType == PortTypeId.IdTCPIP) &&
-						(ts.AutoWinClose > 0) &&
-						Enabled /*&&
-						((HTEKWin == null) || IsWindowEnabled(HTEKWin))*/
-																		 ) {
-						// OnClose();
-					}
-					else {
-						ttwinman.ChangeTitle();
-						if (ts.ClearScreenOnCloseConnection) {
-							OnEditClearScreen();
-						}
-					}
-					break;
-				case TimerId.IdPrnStartTimer:
-					teraprn.PrnFileStart();
-					break;
-				case TimerId.IdPrnProcTimer:
-					teraprn.PrnFileDirectProc();
-					break;
-			}
+		private void IdPrnProcTimer_Tick(object sender, EventArgs e)
+		{
+			IdPrnProcTimer.Enabled = false;
+			teraprn.PrnFileDirectProc();
 		}
 
 		void OnIMEComposition(uint wParam, uint lParam)
 		{
 			string hstr;
-			IntPtr lpstr;
 			int Len;
 			byte[] mbstr;
-			int mlen;
 
 			if (ttime.CanUseIME()) {
 				hstr = ttime.GetConvString(wParam, lParam);
@@ -953,16 +1013,16 @@ namespace TeraTrem
 				Len = strlen(mbstr);
 				if (Len == 1) {
 					switch (mbstr[0]) {
-						case 0x20:
-							if (keyboard.ControlKey()) {
-								mbstr[0] = 0; /* Ctrl-Space */
-							}
-							break;
-						case 0x5c: // Ctrl-\ support for NEC-PC98
-							if (keyboard.ControlKey()) {
-								mbstr[0] = 0x1c;
-							}
-							break;
+					case 0x20:
+						if (keyboard.ControlKey()) {
+							mbstr[0] = 0; /* Ctrl-Space */
+						}
+						break;
+					case 0x5c: // Ctrl-\ support for NEC-PC98
+						if (keyboard.ControlKey()) {
+							mbstr[0] = 0x1c;
+						}
+						break;
 					}
 				}
 				if (ts.LocalEcho) {
@@ -1021,60 +1081,26 @@ namespace TeraTrem
 			remove { ttcmn.DataReceive -= value; }
 		}
 
-		public const int SB_LINELEFT = 0;
-		public const int SB_LINERIGHT = 1;
-		public const int SB_PAGELEFT = 2;
-		public const int SB_PAGERIGHT = 3;
-		public const int SB_THUMBPOSITION = 4;
-		public const int SB_THUMBTRACK = 5;
-		public const int SB_LEFT = 6;
-		public const int SB_RIGHT = 7;
-		public const int SB_ENDSCROLL = 8;
-
-		public const int SB_LINEUP = 0;
-		public const int SB_LINEDOWN = 1;
-		public const int SB_PAGEUP = 2;
-		public const int SB_PAGEDOWN = 3;
-		public const int SB_TOP = 6;
-		public const int SB_BOTTOM = 7;
-
-		public const int SIF_TRACKPOS = 0x10;
-		public const int SIF_RANGE = 0x1;
-		public const int SIF_POS = 0x4;
-		public const int SIF_PAGE = 0x2;
-		public const int SIF_ALL = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
-
-		[DllImport("user32", SetLastError = true)]
-		public static extern bool GetScrollInfo(IntPtr hWnd, int n, ref SCROLLINFO lpScrollInfo);
-
-		[DllImport("user32", SetLastError = true)]
-		public static extern bool SetScrollInfo(IntPtr hWnd, int n, ref SCROLLINFO lpScrollInfo, bool Redraw);
-
-		[DllImport("user32")]
-		public static extern IntPtr SetTimer(IntPtr hWnd, int uIDEvent, uint uElapse, IntPtr lpTimerFunc);
-		[DllImport("user32")]
-		public static extern void KillTimer(IntPtr hWnd, int uIDEvent);
-
-		[DllImport("user32")]
-		public static extern IntPtr GetCapture();
-		[DllImport("user32")]
-		public static extern IntPtr SetCapture(IntPtr hwnd);
-		[DllImport("user32")]
-		public static extern bool ReleaseCapture();
-
 		[DllImport("user32")]
 		public static extern bool TranslateMessage([In] ref MSG lpMsg);
 		[DllImport("user32")]
 		public static extern bool PostMessage(IntPtr Handle, int nMsg, IntPtr wParam, IntPtr lParam);
+		[DllImport("user32.dll")]
+		public static extern bool ScrollWindow(IntPtr hWnd, int XAmount, int YAmount, ref RECT lpRect, ref RECT lpClipRect);
 
-		[DllImport("user32")]
-		public static extern uint GetDoubleClickTime();
+		public bool ScrollWindow(int XAmount, int YAmount, Rectangle rect, Rectangle clipRect)
+		{
+			RECT lpRect = new RECT(rect), lpClipRect = new RECT(clipRect);
+			return ScrollWindow(Handle, XAmount, YAmount, ref lpRect, ref lpClipRect);
+		}
 
-		const int SM_CXDOUBLECLK = 36;
-		const int SM_CYDOUBLECLK = 37;
+		[DllImport("user32.dll")]
+		public static extern bool ScrollWindow(IntPtr hWnd, int XAmount, int YAmount, IntPtr lpRect, IntPtr lpClipRect);
 
-		[DllImport("user32")]
-		public static extern int GetSystemMetrics(int nIndex);
+		public bool ScrollWindow(int XAmount, int YAmount)
+		{
+			return ScrollWindow(Handle, XAmount, YAmount, IntPtr.Zero, IntPtr.Zero);
+		}
 	}
 
 	class ProgramDatas
@@ -1116,15 +1142,20 @@ namespace TeraTrem
 		public Point pt;
 	}
 
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct SCROLLINFO
+	[Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct RECT
 	{
-		public int cbSize;
-		public int fMask;
-		public int nMin;
-		public int nMax;
-		public int nPage;
-		public int nPos;
-		public int nTrackPos;
+		public int Left;
+		public int Top;
+		public int Right;
+		public int Bottom;
+
+		public RECT(Rectangle rect)
+		{
+			Left = rect.Left;
+			Top = rect.Top;
+			Right = rect.Right;
+			Bottom = rect.Bottom;
+		}
 	}
 }
