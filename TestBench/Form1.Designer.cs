@@ -40,6 +40,7 @@
 			this.cmbVideoList = new System.Windows.Forms.ComboBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.cmbMpsseList = new System.Windows.Forms.ComboBox();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1.SuspendLayout();
@@ -60,7 +61,7 @@
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(6, 68);
+			this.label1.Location = new System.Drawing.Point(6, 92);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(21, 12);
 			this.label1.TabIndex = 1;
@@ -69,7 +70,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(6, 84);
+			this.label2.Location = new System.Drawing.Point(6, 108);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(33, 12);
 			this.label2.TabIndex = 2;
@@ -78,7 +79,7 @@
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(6, 100);
+			this.label3.Location = new System.Drawing.Point(6, 124);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(26, 12);
 			this.label3.TabIndex = 3;
@@ -87,7 +88,7 @@
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(6, 116);
+			this.label4.Location = new System.Drawing.Point(6, 140);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(27, 12);
 			this.label4.TabIndex = 4;
@@ -95,24 +96,24 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(8, 140);
+			this.button1.Location = new System.Drawing.Point(8, 164);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(75, 23);
 			this.button1.TabIndex = 5;
-			this.button1.Text = "button1";
+			this.button1.Text = "user_btn1";
 			this.button1.UseVisualStyleBackColor = true;
-			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
 			// vtWindow1
 			// 
 			this.tableLayoutPanel1.SetColumnSpan(this.vtWindow1, 2);
-			this.vtWindow1.Cursor = System.Windows.Forms.Cursors.IBeam;
 			this.vtWindow1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.vtWindow1.Font = new System.Drawing.Font("MS UI Gothic", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
 			this.vtWindow1.Location = new System.Drawing.Point(3, 281);
 			this.vtWindow1.Name = "vtWindow1";
 			this.vtWindow1.Size = new System.Drawing.Size(629, 166);
 			this.vtWindow1.TabIndex = 6;
 			this.vtWindow1.Text = "vtWindow1";
+			this.vtWindow1.DataReceive += new TeraTrem.DataReceiveEventHandlear(this.vtWindow1_DataReceive);
 			// 
 			// timer1
 			// 
@@ -135,7 +136,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmbVideoList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cmbVideoList.FormattingEnabled = true;
-			this.cmbVideoList.Location = new System.Drawing.Point(8, 40);
+			this.cmbVideoList.Location = new System.Drawing.Point(8, 34);
 			this.cmbVideoList.Name = "cmbVideoList";
 			this.cmbVideoList.Size = new System.Drawing.Size(126, 20);
 			this.cmbVideoList.TabIndex = 8;
@@ -159,6 +160,7 @@
 			// 
 			// panel1
 			// 
+			this.panel1.Controls.Add(this.cmbMpsseList);
 			this.panel1.Controls.Add(this.cmbAudioList);
 			this.panel1.Controls.Add(this.label1);
 			this.panel1.Controls.Add(this.cmbVideoList);
@@ -172,6 +174,18 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(143, 272);
 			this.panel1.TabIndex = 10;
+			// 
+			// cmbFtdiList
+			// 
+			this.cmbMpsseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmbMpsseList.DisplayMember = "SerialNumber";
+			this.cmbMpsseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cmbMpsseList.FormattingEnabled = true;
+			this.cmbMpsseList.Location = new System.Drawing.Point(8, 60);
+			this.cmbMpsseList.Name = "cmbFtdiList";
+			this.cmbMpsseList.Size = new System.Drawing.Size(126, 20);
+			this.cmbMpsseList.TabIndex = 9;
 			// 
 			// Form1
 			// 
@@ -204,6 +218,7 @@
 		private System.Windows.Forms.ComboBox cmbVideoList;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Panel panel1;
+		private System.Windows.Forms.ComboBox cmbMpsseList;
 	}
 }
 

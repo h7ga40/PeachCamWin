@@ -1,5 +1,4 @@
-﻿using MPSSELight;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,7 +14,6 @@ namespace TestBench
 	public partial class Form1 : Form, IStdio
 	{
 		TestBench testBench;
-		PeachCam peachCam;
 		Graphics graphics;
 		TouchKey touchKey;
 		GpioLED[] leds = new GpioLED[4];
@@ -24,11 +22,6 @@ namespace TestBench
 		public Form1()
 		{
 			InitializeComponent();
-
-			testBench = new TestBench(this);
-
-			peachCam = new PeachCam();
-			peachCam.SetTestBench(testBench);
 		}
 
 		private void Form1_Load(object sender, EventArgs e)
@@ -40,10 +33,12 @@ namespace TestBench
 		{
 			Application.Idle -= Application_Idle1;
 
+			testBench = new TestBench(this);
+			testBench.UpdateDevices();
+
 			string video = cmbVideoList.Text;
 			string audio = cmbAudioList.Text;
-
-			testBench.UpdateDevices();
+			string ftdi = cmbMpsseList.Text;
 
 			cmbVideoList.Items.Clear();
 			cmbVideoList.Items.AddRange(testBench.VideoDevices.ToArray());
@@ -69,6 +64,18 @@ namespace TestBench
 				cmbAudioList.SelectedIndex = 0;
 			}
 
+			cmbMpsseList.Items.Clear();
+			cmbMpsseList.Items.AddRange(testBench.MpsseDevices.ToArray());
+			foreach (var i in cmbMpsseList.Items) {
+				if (i.ToString() == video) {
+					cmbMpsseList.SelectedItem = i;
+					break;
+				}
+			}
+			if (cmbMpsseList.Items.Count > 0 && cmbMpsseList.SelectedIndex == -1) {
+				cmbMpsseList.SelectedIndex = 0;
+			}
+
 			Application.Idle += Application_Idle2;
 		}
 
@@ -76,13 +83,8 @@ namespace TestBench
 		{
 			Application.Idle -= Application_Idle2;
 
-			peachCam.Start();
+			testBench.Load();
 
-			timer1.Enabled = true;
-		}
-
-		private void timer1_Tick(object sender, EventArgs e)
-		{
 			foreach (var i in testBench.Interfaces) {
 				switch (i.InterfaceName) {
 				case "Graphics":
@@ -113,11 +115,12 @@ namespace TestBench
 
 			graphics.VideoCaptureDeviceIndex = cmbVideoList.SelectedIndex;
 
-			timer1.Tick -= timer1_Tick;
-			timer1.Tick += timer1_Tick2;
+			testBench.Start();
+
+			timer1.Enabled = true;
 		}
 
-		private void timer1_Tick2(object sender, EventArgs e)
+		private void timer1_Tick(object sender, EventArgs e)
 		{
 			foreach (var led in leds) {
 				led.Update();
@@ -148,11 +151,6 @@ namespace TestBench
 			if (touchKey != null) {
 				touchKey.MousePos = e.Location;
 			}
-		}
-
-		private void button1_Click(object sender, EventArgs e)
-		{
-
 		}
 
 		public void Stdout(byte[] text)

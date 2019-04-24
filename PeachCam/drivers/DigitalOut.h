@@ -23,6 +23,7 @@ public:
 	}
 private:
 	gpio_t gpio;
+	PinName pin;
 };
 
 }

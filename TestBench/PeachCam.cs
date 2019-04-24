@@ -57,8 +57,8 @@ namespace TestBench
 		private delegate void TARGB8888FromYCBCR422(IntPtr dst, IntPtr src, int width, int height);
 		static TARGB8888FromYCBCR422 m_ARGB8888FromYCBCR422;
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		private delegate void Tenumerate_capture_devices();
-		static Tenumerate_capture_devices m_enumerate_capture_devices;
+		private delegate void TEnumerateDevices();
+		static TEnumerateDevices m_EnumerateDevices;
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		private delegate IntPtr Tvideoio_VideoCapture_new1();
 		static Tvideoio_VideoCapture_new1 m_videoio_VideoCapture_new1;
@@ -77,6 +77,9 @@ namespace TestBench
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		private delegate void TStdin([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] data, int length);
 		static TStdin m_Stdin;
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		private delegate IntPtr TOpenMpsse(int index);
+		static TOpenMpsse m_OpenMpsse;
 
 		public PeachCam()
 		{
@@ -84,7 +87,9 @@ namespace TestBench
 			if (m_InitModule == IntPtr.Zero)
 				return;
 
-			m_SetTestBench = (TSetTestBench)DllImport.GetFunction<TSetTestBench>(m_InitModule, "SetTestBench");
+			m_SetTestBench = DllImport.GetFunction<TSetTestBench>(m_InitModule, "SetTestBench");
+			m_EnumerateDevices = DllImport.GetFunction<TEnumerateDevices>(m_InitModule, "EnumerateDevices");
+			m_OpenMpsse = DllImport.GetFunction<TOpenMpsse>(m_InitModule, "OpenMpsse");
 
 			if (m_SetTestBench == null) {
 				var module = m_InitModule;
@@ -104,7 +109,10 @@ namespace TestBench
 		public void SetTestBench(ITestBench testBench)
 		{
 			m_SetTestBench(testBench);
+		}
 
+		public void Load()
+		{
 			m_Module = DllImport.LoadLibrary("PeachCam.dll");
 			if (m_Module == IntPtr.Zero)
 				return;
@@ -113,7 +121,6 @@ namespace TestBench
 			m_Stop = DllImport.GetFunction<TStop>(m_Module, "Stop");
 			m_ARGB8888FromARGB4444 = DllImport.GetFunction<TARGB8888FromARGB4444>(m_Module, "ARGB8888FromARGB4444");
 			m_ARGB8888FromYCBCR422 = DllImport.GetFunction<TARGB8888FromYCBCR422>(m_Module, "ARGB8888FromYCBCR422");
-			m_enumerate_capture_devices = DllImport.GetFunction<Tenumerate_capture_devices>(m_Module, "enumerate_capture_devices");
 			m_videoio_VideoCapture_new1 = DllImport.GetFunction<Tvideoio_VideoCapture_new1>(m_Module, "videoio_VideoCapture_new1");
 			m_videoio_VideoCapture_open2 = DllImport.GetFunction<Tvideoio_VideoCapture_open2>(m_Module, "videoio_VideoCapture_open2");
 			m_videoio_VideoCapture_release = DllImport.GetFunction<Tvideoio_VideoCapture_release>(m_Module, "videoio_VideoCapture_release");
@@ -144,9 +151,9 @@ namespace TestBench
 			m_ARGB8888FromYCBCR422(dst, src, width, height);
 		}
 
-		public static void enumerate_capture_devices()
+		public static void EnumerateDevices()
 		{
-			m_enumerate_capture_devices();
+			m_EnumerateDevices();
 		}
 
 		public static IntPtr videoio_VideoCapture_new1()
@@ -177,6 +184,11 @@ namespace TestBench
 		internal static void Stdin(byte[] data)
 		{
 			m_Stdin(data, data.Length);
+		}
+
+		public static IntPtr OpenMpsse(int index)
+		{
+			return m_OpenMpsse(index);
 		}
 	}
 }

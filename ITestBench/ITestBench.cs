@@ -8,6 +8,8 @@ namespace TestBench
 	public struct gpio_t
 	{
 		public int id;
+		public IntPtr fthandle;
+		public int ftpin;
 	}
 
 	[ComVisible(true), StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -57,12 +59,16 @@ namespace TestBench
 	public struct i2c_t
 	{
 		public int id;
+		public IntPtr fthandle;
+		public int ftsda;
+		public int ftscl;
 	}
 
 	[ComVisible(true), StructLayout(LayoutKind.Sequential, Pack = 4)]
 	public struct spi_t
 	{
 		public int id;
+		public IntPtr fthandle;
 	}
 
 	[ComVisible(true)]
@@ -347,6 +353,14 @@ namespace TestBench
 	}
 
 	[ComVisible(true)]
+	public enum DeviceType
+	{
+		Video,
+		Audio,
+		MPSSE,
+	}
+
+	[ComVisible(true)]
 	public interface ITestBench
 	{
 		void gpio_init(ref gpio_t obj, PinName pin);
@@ -443,7 +457,7 @@ namespace TestBench
 		int i2s_write([In]ref i2s_t obj,
 			[In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] p_data, int data_size, IntPtr p_notify_func, IntPtr p_app_data);
 
-		void AddDevice(bool video, int index, [MarshalAs(UnmanagedType.BStr)]string description, [MarshalAs(UnmanagedType.BStr)]string friendlyName);
+		void AddDevice(DeviceType deviceType, int index, [MarshalAs(UnmanagedType.BStr)]string description, [MarshalAs(UnmanagedType.BStr)]string friendlyName);
 
 		void ConsoleWrite([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] text, int len);
 	}

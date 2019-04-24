@@ -117,10 +117,12 @@ public:
 	public:
 		enum T {
 			PowerOff,
+			PowerOn,
 			Resets,
 			Capture,
 			UpdateParam,
 			Viewing,
+			GoPowerOff,
 		};
 	};
 public:

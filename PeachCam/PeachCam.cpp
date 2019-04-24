@@ -5,6 +5,7 @@
 #include "opencv2/imgproc/hal/hal.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio.hpp"
+#include "libMPSSE_spi.h"
 
 CRITICAL_SECTION hCs;
 
@@ -18,18 +19,23 @@ void core_util_critical_section_exit()
 	LeaveCriticalSection(&hCs);
 }
 
+static ticker_data_t ticker_data;
+static LARGE_INTEGER ticker_count;
+
 const ticker_data_t * get_us_ticker_data(void)
 {
-	static ticker_data_t ticker_data;
+	core_util_critical_section_enter();
 	QueryPerformanceFrequency(&ticker_data.frequency);
+	core_util_critical_section_exit();
 	return &ticker_data;
 }
 
 us_timestamp_t ticker_read_us(const ticker_data_t *const ticker_data)
 {
-	LARGE_INTEGER count;
-	QueryPerformanceCounter(&count);
-	return (1000000l * *((uint64_t *)&count)) / *((uint64_t *)&ticker_data->frequency);
+	core_util_critical_section_enter();
+	QueryPerformanceCounter(&ticker_count);
+	core_util_critical_section_exit();
+	return (1000000ll * ticker_count.QuadPart) / ticker_data->frequency.QuadPart;
 }
 
 uint32_t osKernelGetTickCount(void)
@@ -168,81 +174,6 @@ extern "C" __declspec(dllexport) void ARGB8888FromYCBCR422(uint32_t *dst, const 
 #else
 	ARGB8888FromRGB565(dst, src, width, height);
 #endif
-}
-
-// https://stackoverflow.com/questions/4286223/how-to-get-a-list-of-video-capture-devices-web-cameras-on-windows-c
-#pragma comment(lib, "strmiids")
-
-HRESULT EnumerateDevices(REFGUID category, IEnumMoniker **ppEnum)
-{
-	// Create the System Device Enumerator.
-	ICreateDevEnum *pDevEnum;
-	HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL,
-		CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pDevEnum));
-
-	if (SUCCEEDED(hr)) {
-		// Create an enumerator for the category.
-		hr = pDevEnum->CreateClassEnumerator(category, ppEnum, 0);
-		if (hr == S_FALSE) {
-			hr = VFW_E_NOT_FOUND;  // The category is empty. Treat as an error.
-		}
-		pDevEnum->Release();
-	}
-	return hr;
-}
-
-void DisplayDeviceInformation(bool video, IEnumMoniker *pEnum)
-{
-	IMoniker *pMoniker = NULL;
-	int index = -1;
-
-	while (pEnum->Next(1, &pMoniker, NULL) == S_OK) {
-		index++;
-		IPropertyBag *pPropBag;
-		HRESULT hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
-		if (FAILED(hr)) {
-			pMoniker->Release();
-			continue;
-		}
-
-		HRESULT hr1, hr2;
-		VARIANT var1, var2;
-		VariantInit(&var1);
-		VariantInit(&var2);
-
-		// Get description or friendly name.
-		hr1 = pPropBag->Read(L"Description", &var1, 0);
-		hr2 = pPropBag->Read(L"FriendlyName", &var2, 0);
-
-		TestBench->AddDevice(video, index, var1.bstrVal, var2.bstrVal);
-
-		if (SUCCEEDED(hr1)) {
-			VariantClear(&var1);
-		}
-		if (SUCCEEDED(hr2)) {
-			VariantClear(&var2);
-		}
-
-		pPropBag->Release();
-		pMoniker->Release();
-	}
-}
-
-extern "C" __declspec(dllexport) void enumerate_capture_devices()
-{
-	HRESULT hr;
-	IEnumMoniker *pEnum;
-
-	hr = EnumerateDevices(CLSID_VideoInputDeviceCategory, &pEnum);
-	if (SUCCEEDED(hr)) {
-		DisplayDeviceInformation(true, pEnum);
-		pEnum->Release();
-	}
-	hr = EnumerateDevices(CLSID_AudioInputDeviceCategory, &pEnum);
-	if (SUCCEEDED(hr)) {
-		DisplayDeviceInformation(false, pEnum);
-		pEnum->Release();
-	}
 }
 
 extern "C" __declspec(dllexport) void *videoio_VideoCapture_new1()

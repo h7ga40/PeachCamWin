@@ -22,13 +22,31 @@ namespace TestBench
 		public IEnumerable<IUnitInterface> Interfaces => interfaces.Values;
 		public List<Tuple<int, string, string>> VideoDevices { get; } = new List<Tuple<int, string, string>>();
 		public List<Tuple<int, string, string>> AudioDevices { get; } = new List<Tuple<int, string, string>>();
+		public List<Tuple<int, string, string>> MpsseDevices { get; } = new List<Tuple<int, string, string>>();
+		public PeachCam PeachCam { get; }
 
 		private Graphics graphics;
 		private IStdio stdio;
+		private IntPtr fthandle;
 
 		public TestBench(IStdio stdio)
 		{
 			this.stdio = stdio;
+
+			PeachCam = new PeachCam();
+
+			fthandle = PeachCam.OpenMpsse(0);
+			PeachCam.SetTestBench(this);
+		}
+
+		internal void Load()
+		{
+			PeachCam.Load();
+		}
+
+		internal void Start()
+		{
+			PeachCam.Start();
 		}
 
 		private IUnitInterface CreateGpio(ref gpio_t obj, PinName pin)
@@ -43,6 +61,11 @@ namespace TestBench
 				uif = new Gpio(pin);
 				obj.id = uif.GetHashCode();
 				interfaces.Add(obj.id, uif);
+
+				if (pin == PinName.P4_5) {
+					obj.fthandle = fthandle;
+					obj.ftpin = 3;
+				}
 			}
 			return uif;
 		}
@@ -153,6 +176,12 @@ namespace TestBench
 				uif = new I2C((I2CName)p, sda, scl);
 				obj.id = uif.GetHashCode();
 				interfaces.Add(obj.id, uif);
+
+				if ((sda == PinName.P1_7) && (scl == PinName.P1_6)) {
+					obj.fthandle = fthandle;
+					obj.ftsda = 5;
+					obj.ftscl = 4;
+				}
 			}
 			return uif;
 		}
@@ -189,6 +218,10 @@ namespace TestBench
 				uif = new SPI((SPIName)p, mosi, miso, sclk, ssel);
 				obj.id = uif.GetHashCode();
 				interfaces.Add(obj.id, uif);
+
+				if ((mosi == PinName.P4_6) && (miso == PinName.P4_7) && (sclk == PinName.P4_4)) {
+					obj.fthandle = fthandle;
+				}
 			}
 			return uif;
 		}
@@ -688,19 +721,27 @@ namespace TestBench
 			return ((I2S)uif).Write(p_data, data_size, p_notify_func, p_app_data);
 		}
 
-		public void AddDevice(bool video, int index, string description, string friendlyName)
+		public void AddDevice(DeviceType deviceType, int index, string description, string friendlyName)
 		{
-			if (video)
+			switch (deviceType) {
+			case DeviceType.Video:
 				VideoDevices.Add(new Tuple<int, string, string>(index, description, friendlyName));
-			else
+				break;
+			case DeviceType.Audio:
 				AudioDevices.Add(new Tuple<int, string, string>(index, description, friendlyName));
+				break;
+			case DeviceType.MPSSE:
+				MpsseDevices.Add(new Tuple<int, string, string>(index, description, friendlyName));
+				break;
+			}
 		}
 
 		public void UpdateDevices()
 		{
 			VideoDevices.Clear();
 			AudioDevices.Clear();
-			PeachCam.enumerate_capture_devices();
+			MpsseDevices.Clear();
+			PeachCam.EnumerateDevices();
 		}
 
 		public void ConsoleWrite(byte[] text, int len)

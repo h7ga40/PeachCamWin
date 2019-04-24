@@ -105,7 +105,7 @@ osEvent Thread::signal_wait(int32_t signals, uint32_t millisec)
 	};
 
 	DWORD ret = WAIT_FAILED, tmo;
-	us_timestamp_t end;
+	int64_t end;
 	uint32_t count = -1, waits;
 
 	if (signals == 0) {
@@ -116,26 +116,44 @@ osEvent Thread::signal_wait(int32_t signals, uint32_t millisec)
 		waits = signals;
 	}
 
-	end = ticker_read_us(get_us_ticker_data()) + millisec * 1000l;
-	while ((result.value.signals & signals) != waits) {
-		tmo = (DWORD)((end - ticker_read_us(get_us_ticker_data())) / 1000);
-		if (tmo <= 0) {
-			result.status = osErrorTimeout;
-			return result;
+	if (millisec == osWaitForever)
+		end = INT64_MAX;
+	else
+		end = ((int64_t)ticker_read_us(get_us_ticker_data())) + ((int64_t)millisec * 1000ll);
+	do {
+		if (millisec != osWaitForever) {
+			int64_t now = (int64_t)ticker_read_us(get_us_ticker_data());
+			if (end <= now) {
+				result.status = osEventTimeout;
+				return result;
+			}
+			tmo = (DWORD)((end - now) / 1000ll);
+			if (tmo > INT32_MAX) {
+				result.status = osEventTimeout;
+				return result;
+			}
+		}
+		else {
+			tmo = INFINITE;
 		}
 		InterlockedIncrement(&_this->_count);
 		ret = WaitForSingleObject(_this->_evf, tmo);
 		count = InterlockedDecrement(&_this->_count);
 		if (ret == WAIT_OBJECT_0) {
+			result.status = osEventSignal;
 			if (count == 0)
 				ResetEvent(_this->_evf);
 		}
-		else if (ret != WAIT_TIMEOUT) {
+		else if (ret == WAIT_TIMEOUT) {
+			result.status = osEventTimeout;
+			continue;
+		}
+		else {
 			result.status = osError;
 			return result;
 		}
 		result.value.signals = _this->_flags;
-	}
+	} while (((result.value.signals & signals) != waits) && (result.value.signals != 0) && (waits != 0));
 
 	if (count == 0) {
 		InterlockedAnd((LONG *)&_this->_flags, ~signals);

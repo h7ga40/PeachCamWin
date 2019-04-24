@@ -15,10 +15,16 @@ public:
 	int write(int data);
 	void start(void);
 	void stop(void);
+	void PPinHigh(int pin);
+	void PPinLow(int pin);
 	virtual void lock(void);
 	virtual void unlock(void);
 private:
 	i2c_t i2c;
+	int sda;
+	int scl;
+	int hz;
+	int wait;
 };
 
 }

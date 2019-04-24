@@ -8,6 +8,7 @@ namespace mbed {
 class SPI {
 public:
 	SPI(PinName mosi, PinName miso, PinName sclk, PinName ssel = NC);
+	void init();
 	void format(int bits, int mode = 0);
 	void frequency(int hz);
 	virtual int write(int value);
@@ -16,6 +17,9 @@ public:
 	virtual void unlock(void);
 private:
 	spi_t spi;
+	int bits;
+	int mode;
+	int hz;
 };
 
 }
