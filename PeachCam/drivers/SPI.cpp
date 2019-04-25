@@ -17,7 +17,7 @@ void SPI::init()
 {
 	FT_STATUS ret;
 	ChannelConfig config;
-	uint8 latency = CS_DBLCLKS;
+	uint8 latency = 1;
 
 	config.ClockRate = hz;
 	config.LatencyTimer = latency;

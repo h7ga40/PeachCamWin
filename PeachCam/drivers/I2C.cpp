@@ -28,9 +28,7 @@ void I2C::frequency(int hz)
 		TestBench->i2c_frequency(&i2c, hz);
 	}
 	else {
-		wait = 1000000 / hz;
-		if ((1000000 % hz) > 0)
-			wait++;
+		wait = 1000 / hz;
 	}
 }
 
@@ -47,9 +45,10 @@ int I2C::read(int address, char *data, int length, bool repeated)
 		start();
 
 		if (write(address | 0x01)) {
-			for (const char *end = &data[length]; pos < end; pos++) {
+			for (const char *end = &data[length - 1]; pos < end; pos++) {
 				*pos = read(1);
 			}
+			*pos++ = read(0);
 		}
 		else
 			repeated = false;
@@ -74,28 +73,28 @@ int I2C::read(int ack)
 
 		ft_pin_mode &= ~(1 << i2c.ftsda);
 		FT_WriteGPIO((FT_HANDLE)i2c.fthandle, ft_pin_mode, ft_pin_onoff);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 
 		for (int i = 0; i < 8; i++) {
 			PPinHigh(i2c.ftscl);
-			Sleep(wait);
+			if (wait > 0) Sleep(wait);
 			val = 0;
 			FT_ReadGPIO((FT_HANDLE)i2c.fthandle, &val);
 			if (val & (1 << i2c.ftsda))
 				data |= 0x80 >> i;
 			PPinLow(i2c.ftscl);
-			Sleep(wait);
+			if (wait > 0) Sleep(wait);
 		}
 		ft_pin_mode |= 1 << i2c.ftsda;
 		if (ack)
 			PPinLow(i2c.ftsda);
 		else
 			PPinHigh(i2c.ftsda);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinHigh(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinLow(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinHigh(i2c.ftsda);
 
 		return data;
@@ -139,22 +138,22 @@ int I2C::write(int data)
 
 		for (int i = 0; i < 8; i++) {
 			PPinLow(i2c.ftscl);
-			Sleep(wait);
+			if (wait > 0) Sleep(wait);
 			if (data & (0x80 >> i))
 				PPinHigh(i2c.ftsda);
 			else
 				PPinLow(i2c.ftsda);
-			Sleep(wait);
+			if (wait > 0) Sleep(wait);
 			PPinHigh(i2c.ftscl);
-			Sleep(wait);
+			if (wait > 0) Sleep(wait);
 		}
 		PPinLow(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinHigh(i2c.ftsda);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		ft_pin_mode &= ~(1 << i2c.ftsda);
 		PPinHigh(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 
 		uint8_t val = 0;
 		FT_ReadGPIO((FT_HANDLE)i2c.fthandle, &val);
@@ -166,7 +165,7 @@ int I2C::write(int data)
 		ft_pin_mode |= 1 << i2c.ftsda;
 		ft_pin_onoff |= 1 << i2c.ftsda;
 		PPinLow(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 
 		return ack;
 	}
@@ -179,9 +178,9 @@ void I2C::start(void)
 	}
 	else {
 		PPinHigh(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinLow(i2c.ftsda);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 	}
 }
 
@@ -192,9 +191,9 @@ void I2C::stop(void)
 	}
 	else {
 		PPinHigh(i2c.ftscl);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 		PPinHigh(i2c.ftsda);
-		Sleep(wait);
+		if (wait > 0) Sleep(wait);
 	}
 }
 
