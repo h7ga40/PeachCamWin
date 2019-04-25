@@ -26,6 +26,7 @@ namespace TestBench
 		public PeachCam PeachCam { get; }
 
 		private Graphics graphics;
+		private ESP32Driver esp;
 		private IStdio stdio;
 		private IntPtr fthandle;
 
@@ -620,7 +621,12 @@ namespace TestBench
 		public IESP32 esp32_init(PinName en, PinName io0, PinName tx, PinName rx, bool debug,
 			PinName rts, PinName cts, int baudrate)
 		{
-			return new ESP32Driver(en, io0, tx, rx, debug, rts, cts, baudrate);
+			if (esp != null)
+				return esp;
+
+			esp = new ESP32Driver(en, io0, tx, rx, debug, rts, cts, baudrate);
+
+			return esp;
 		}
 
 		public void graphics_create()
