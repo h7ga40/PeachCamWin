@@ -7,6 +7,7 @@
 #include "LEPTON_RAD.h"
 #include "Palettes.h"
 #include "EasyAttach_CameraAndLCD.h"
+#include "crc16.h"
 
 #define RESULT_BUFFER_BYTE_PER_PIXEL  (2u)
 #define RESULT_BUFFER_STRIDE          (((LCD_PIXEL_WIDTH * RESULT_BUFFER_BYTE_PER_PIXEL) + 31u) & ~31u)
@@ -43,10 +44,12 @@ LeptonTask::LeptonTask(TaskThread *taskThread) :
 	_spi(P4_6, P4_7, P4_4, NC),
 	_wire(P1_7, P1_6),
 	_ss(P4_5),
-	resets(0),
+	_port(),
+	_resets(0),
 	_minValue(65535), _maxValue(0),
 	_packets_per_frame(60),
 	_frame_packet(),
+	_async(0),
 	_telemetryA(),
 	_telemetryB(),
 	_telemetryC(),
@@ -61,6 +64,11 @@ LeptonTask::LeptonTask(TaskThread *taskThread) :
 {
 	memcpy(_image, BMPHeader, BITMAP_HEADER_SIZE);
 	memset(&_image[BITMAP_HEADER_SIZE / 2], 0xFF, sizeof(_image) - BITMAP_HEADER_SIZE);
+
+	_spotmeterRoi.startRow = 9 * PACKETS_PER_FRAME / 20;
+	_spotmeterRoi.endRow = 11 * PACKETS_PER_FRAME / 20;
+	_spotmeterRoi.startCol = 9 * PIXEL_PER_LINE / 20;
+	_spotmeterRoi.endCol = 11 * PIXEL_PER_LINE / 20;
 }
 
 LeptonTask::~LeptonTask()
@@ -461,7 +469,8 @@ void LeptonTask::Process()
 		break;
 	case State::Resets:
 		_ss = 1;
-		resets = 0;
+		_async = 0;
+		_resets = 0;
 		_state = State::Capture;
 		_timer = 1;
 		break;
@@ -477,51 +486,68 @@ void LeptonTask::Process()
 			_spi.unlock();
 
 			int id = (result[0] << 8) | result[1];
-			if (id == packet_id) {
-				row++;
-				continue;
-			}
-			else if ((id & 0x0F00) == 0x0F00) {
-				if (packet_id != -1) {
-					row++;
-					continue;
-				}
-				resets++;
-				if (resets >= 100) {
-					_ss = 0;
-					printf("reset\n");
-					_state = State::Resets;
-					_timer = 750;
-				}
-				else {
+			if (((id & 0x0F00) == 0x0F00) && (packet_id == -1)) {
+				_async++;
+				if (_async >= 10000) {
+					_resets = 750;
 					_state = State::Viewing;
 					_timer = 0;
+					return;
 				}
-				return;
-			}
-
-			if ((packet_id == -1) && ((id & 0x0FFF) != 0x7FF)) {
-				int r = 2 * (id & 0x00FF);
-				if (r >= _packets_per_frame)
+				else {
+					_state = State::Capture;
+					_timer = 0;
 					continue;
-				row = r;
+				}
 			}
 			packet_id = id;
+
+#if 0
+			CRC16 crc = (result[2] << 8) | result[3];
+			result[0] &= 0x0F;
+			result[2] = 0;
+			result[3] = 0;
+			if (CalcCRC16Words(PACKET_SIZE / 2, (short *)result) != crc) {
+				_async++;
+				if (_async > 20) {
+					_resets = 750;
+					_state = State::Viewing;
+					_timer = 0;
+					return;
+				}
+			}
+			else {
+				if (row != (id & 0xFF)) {
+					_async++;
+					if (_async > 20) {
+						_resets = 750;
+						_state = State::Viewing;
+						_timer = 0;
+						return;
+					}
+				}
+			}
+#endif
 
 			if (row < PACKETS_PER_FRAME) {
 				uint16_t *pixel = &_image[BITMAP_HEADER_SIZE / 2 + PIXEL_PER_LINE * (PACKETS_PER_FRAME - 1 - row)];
 				frameBuffer = (uint16_t *)result;
+				int col = 0;
 				for (int i = 2; i < PACKET_SIZE_UINT16; i++) {
 					value = frameBuffer[i];
 					value = (value >> 8) | (value << 8);
 					//frameBuffer[i] = value;
 
-					if (value > maxValue) {
-						maxValue = value;
+					if ((_spotmeterRoi.startRow <= row) && (_spotmeterRoi.endRow >= row)
+						&& (_spotmeterRoi.startCol <= col) && (_spotmeterRoi.endCol >= col)) {
+						if (value > maxValue) {
+							maxValue = value;
+						}
+						if (value < minValue) {
+							minValue = value;
+						}
 					}
-					if (value < minValue) {
-						minValue = value;
-					}
+					col++;
 					*pixel++ = value;
 				}
 			}
@@ -544,7 +570,7 @@ void LeptonTask::Process()
 		}
 
 		if (packet_id == -1) {
-			_state = State::Capture;
+			_state = State::Viewing;
 			_timer = 0;
 			return;
 		}
@@ -552,7 +578,7 @@ void LeptonTask::Process()
 		_maxValue = maxValue;
 		_minValue = minValue;
 
-		resets++;
+		_resets++;
 		_state = State::UpdateParam;
 		_timer = 0;
 		break;
@@ -696,8 +722,9 @@ void LeptonTask::Process()
 			}
 		}
 
+		// https://lepton.flir.com/application-notes/lepton-with-radiometry/
 		// https://github.com/groupgets/LeptonModule/blob/master/software/raspberrypi_video/LeptonThread.cpp
-		if (resets >= 750) {
+		if (_resets >= 750) {
 			_ss = 0;
 			printf("reset\n");
 			_state = State::Resets;
@@ -705,7 +732,7 @@ void LeptonTask::Process()
 		}
 		else {
 			_state = State::Capture;
-			_timer = 100;
+			_timer = 0;
 		}
 		break;
 	case State::GoPowerOff:
@@ -774,6 +801,9 @@ extern "C" {
 		int error;
 		LEP_UINT8 *data, *pos;
 
+		if (wire == NULL)
+			return LEP_ERROR;
+
 		pos = data = (LEP_UINT8 *)dataPtr;
 		*pos++ = (LEP_UINT8)(subAddress >> 8);
 		*pos++ = (LEP_UINT8)subAddress;
@@ -839,6 +869,9 @@ extern "C" {
 		int error;
 		LEP_UINT8 data[2], *pos;
 
+		if ((wire == NULL) || (data == NULL))
+			return LEP_ERROR;
+
 		pos = data;
 		*pos++ = (LEP_UINT8)(regAddress >> 8);
 		*pos++ = (LEP_UINT8)regAddress;
@@ -867,7 +900,7 @@ extern "C" {
 		LEP_UINT8 data[sizeof(regAddress) + sizeof(regValue)];
 		LEP_UINT8 *pos;
 
-		if (data == NULL)
+		if ((wire == NULL) || (data == NULL))
 			return LEP_ERROR;
 
 		pos = data;
