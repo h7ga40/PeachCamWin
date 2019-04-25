@@ -19,7 +19,8 @@ Thread::Thread(osPriority priority, uint32_t stack_size, unsigned char *stack_me
 
 	_id = CreateThread(NULL, 0, &ThreadProc, (void *)this, CREATE_SUSPENDED, &m_ThreadID);
 
-	SetThreadName(m_ThreadID, name);
+	if (name != NULL)
+		SetThreadName(m_ThreadID, name);
 }
 
 Thread::~Thread()
