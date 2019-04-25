@@ -1,7 +1,12 @@
+# このフォルダについて
 
+FTDIのLibMPSSEのファイルを置きます。
 
+下記のサイトの*LibMPSSE-SPI*のリンクから、ライブラリをダウンロードします。
 https://www.ftdichip.com/Support/SoftwareExamples/MPSSE/LibMPSSE-SPI.htm
 
+展開したファイルを、下記のようなフォルダ構成になるよう配置します。
+```
 LibMPSSE
 ├─include
 │  │  libMPSSE_spi.h
@@ -14,3 +19,4 @@ LibMPSSE
 │      │
 │      └─x64
 │              libMPSSE.lib
+```
