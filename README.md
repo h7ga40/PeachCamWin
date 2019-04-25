@@ -36,6 +36,7 @@ PCとFLiR開発キットとの接続には、[Adafruit FT232H Breakout](https://
 |[libjpeg](http://www.ijg.org/)|opencv-lib/3rdparty/libjpeg|JPEG画像圧縮伸長ライブラリ|独自ライセンス|
 |[libpng](http://www.libpng.org/pub/png/libpng.html)|opencv-lib/3rdparty/libpng|PNG画像圧縮伸長ライブラリ|独自ライセンス|
 |[FLIR Lepton SDK](https://lepton.flir.com/software-sdk/)|liblepton|赤外線放射量計測用|独自ライセンス|
+|[Natural Tiny Shell](https://www.cubeatsystems.com/ntshell/)|PeachCam/ntshell|コマンドシェル用|MITライセンス<br/>他|
 |シミュレータ|TeraTremConsole|C#化した[TeraTerm](https://ja.osdn.net/projects/ttssh2/)のWinFormコントロール|BSDライセンス|
 ||LibMPSSE|FT232Hを使うためのライブラリ<br/>FLIR LeptonとPCのUSBとの接続用||
 ||ITestBench|PeachCamと本体とのインターフェイス||

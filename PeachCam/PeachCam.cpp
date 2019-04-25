@@ -6,6 +6,9 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/videoio.hpp"
 #include "libMPSSE_spi.h"
+#include "ntshell.h"
+#include "ntopt.h"
+#include <queue>
 
 CRITICAL_SECTION hCs;
 
@@ -105,12 +108,108 @@ osMutexId singleton_mutex_id;
 
 int main();
 
-void task()
+void main_task()
 {
 	main();
 }
 
+#define SHELL_STDIN 1
+
+std::queue<char> stdin_queue;
+
+int uart_read(char *buf, int cnt, void *extobj)
+{
+	int result = 0;
+	Thread *thread = (Thread *)extobj;
+
+	core_util_critical_section_enter();
+
+	for (result; result < cnt; result++) {
+		while (stdin_queue.size() == 0) {
+			core_util_critical_section_exit();
+
+			thread->signal_wait(0);
+			thread->signal_clr(SHELL_STDIN);
+
+			core_util_critical_section_enter();
+		}
+
+		*buf = stdin_queue.front();
+		stdin_queue.pop();
+	}
+
+	core_util_critical_section_exit();
+
+	return result;
+}
+
+int uart_write(const char *buf, int cnt, void *extobj)
+{
+	TestBench->ConsoleWrite((uint8_t *)buf, cnt);
+	return cnt;
+}
+
+typedef int(*USRCMDFUNC)(int argc, char **argv);
+
+typedef struct
+{
+	const char *cmd;
+	const char *desc;
+	USRCMDFUNC func;
+} cmd_table_t;
+
+typedef struct
+{
+	const cmd_table_t *table;
+	int count;
+} cmd_table_info_t;
+
+extern "C" int usrcmd_lpt(int argc, char **argv);
+
+static const cmd_table_t cmdlist[] = {
+	{"lpt", "FLIR Lepton cotrol", usrcmd_lpt },
+};
+cmd_table_info_t cmd_table_info = { cmdlist, sizeof(cmdlist) / sizeof(cmdlist[0]) };
+
+int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
+{
+	const cmd_table_t *p = cmd_table_info.table;
+	int result = 0;
+	int found = 0;
+
+	if (argc == 0)
+		return result;
+
+	for (int i = 0; i < cmd_table_info.count; i++) {
+		if (strcmp(*argv, p->cmd) == 0) {
+			found = 1;
+			result = p->func(argc, argv);
+			break;
+		}
+		p++;
+	}
+
+	if ((found == 0) && (argv[0] != '\0'))
+		printf("Unknown command found.\n");
+
+	return result;
+}
+
+int cmd_execute(const char *text, void *extobj)
+{
+	return ntopt_parse(text, usrcmd_ntopt_callback, extobj);
+}
+
+ntshell_t ntshell;
 Thread mainThread(osPriorityNormal, 0, NULL, "mainThread");
+Thread shelThread(osPriorityNormal, 0, NULL, "shelThread");
+
+void shell_task()
+{
+	ntshell_init(&ntshell, uart_read, uart_write, cmd_execute, &shelThread);
+	ntshell_set_prompt(&ntshell, "NTShell>");
+	ntshell_execute(&ntshell);
+}
 
 extern "C" __declspec(dllexport) void Start(void)
 {
@@ -120,11 +219,13 @@ extern "C" __declspec(dllexport) void Start(void)
 
 	singleton_mutex_id = osMutexNew(&attr);
 
-	mainThread.start(task);
+	mainThread.start(main_task);
+	shelThread.start(shell_task);
 }
 
 extern "C" __declspec(dllexport) void Stop(void)
 {
+	shelThread.terminate();
 	mainThread.terminate();
 
 	osMutexDelete(singleton_mutex_id);
@@ -469,6 +570,13 @@ extern "C" __declspec(dllexport) bool AudioCapture_Stop()
 
 extern "C" __declspec(dllexport) void Stdin(uint8_t *data, int len)
 {
+	core_util_critical_section_enter();
+	for (int i = 0; i < len; i++) {
+		stdin_queue.push(*(char *)data++);
+	}
+	core_util_critical_section_exit();
+
+	shelThread.signal_set(SHELL_STDIN);
 }
 
 int printf(const char *format, ...)

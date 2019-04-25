@@ -90,7 +90,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;ntshell\core;ntshell\util;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -109,7 +109,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;ntshell\core;ntshell\util;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -129,7 +129,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;ntshell\core;ntshell\util;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -151,7 +151,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;PEACHCAM_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;XML_STATIC;WOLFSSL_USER_SETTINGS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;drivers;events;rtos;mbed-http;mbed-http\http_parser;netsocket;gr_libs;ntshell\core;ntshell\util;..\libexpat\src;..\opencv-lib;..\opencv-lib\3rdparty\libjpeg;..\opencv-lib\calib3d\include;..\opencv-lib\core\include;..\opencv-lib\features2d\include;..\opencv-lib\flann\include;..\opencv-lib\imgcodecs\include;..\opencv-lib\imgproc\include;..\opencv-lib\ml\include;..\opencv-lib\objdetect\include;..\opencv-lib\opencv_contrib\modules\face\include;..\opencv-lib\photo\include;..\opencv-lib\shape\include;..\opencv-lib\stitching\include;..\opencv-lib\superres\include;..\opencv-lib\video\include;..\opencv-lib\videoio\include;..\opencv-lib\videostab\include;..\libzlib;..\libwolfssl\wolfssl;..\libwolfssl\wolfssl\wolfcrypt;..\libwolfssl;..\libcurl;..\libcurl\include;..\liblepton;..\LibMPSSE\include;..\LibMPSSE\include\windows</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderFile>mbed.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -221,6 +221,16 @@
     <ClInclude Include="netsocket\UDPSocket.h" />
     <ClInclude Include="netsocket\WiFiAccessPoint.h" />
     <ClInclude Include="netsocket\WiFiInterface.h" />
+    <ClInclude Include="ntshell\core\ntconf.h" />
+    <ClInclude Include="ntshell\core\ntint.h" />
+    <ClInclude Include="ntshell\core\ntlibc.h" />
+    <ClInclude Include="ntshell\core\ntshell.h" />
+    <ClInclude Include="ntshell\core\text_editor.h" />
+    <ClInclude Include="ntshell\core\text_history.h" />
+    <ClInclude Include="ntshell\core\vtrecv.h" />
+    <ClInclude Include="ntshell\core\vtsend.h" />
+    <ClInclude Include="ntshell\util\ntopt.h" />
+    <ClInclude Include="ntshell\util\ntstdio.h" />
     <ClInclude Include="platform\Callback.h" />
     <ClInclude Include="platform\CriticalSectionLock.h" />
     <ClInclude Include="platform\mbed_assert.h" />
@@ -282,6 +292,14 @@
     <ClCompile Include="netsocket\TCPServer.cpp" />
     <ClCompile Include="netsocket\TCPSocket.cpp" />
     <ClCompile Include="netsocket\UDPSocket.cpp" />
+    <ClCompile Include="ntshell\core\ntlibc.cpp" />
+    <ClCompile Include="ntshell\core\ntshell.cpp" />
+    <ClCompile Include="ntshell\core\text_editor.cpp" />
+    <ClCompile Include="ntshell\core\text_history.cpp" />
+    <ClCompile Include="ntshell\core\vtrecv.cpp" />
+    <ClCompile Include="ntshell\core\vtsend.cpp" />
+    <ClCompile Include="ntshell\util\ntopt.cpp" />
+    <ClCompile Include="ntshell\util\ntstdio.cpp" />
     <ClCompile Include="PeachCam.cpp" />
     <ClCompile Include="rtos\EventFlags.cpp" />
     <ClCompile Include="rtos\Kernel.cpp" />
