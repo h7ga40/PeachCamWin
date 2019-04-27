@@ -14,7 +14,10 @@ __declspec(dllexport) ITestBench *TestBench;
 
 extern "C" __declspec(dllexport) void SetTestBench(ITestBench *testBench)
 {
+	if (TestBench != NULL)
+		TestBench->Release();
 	TestBench = testBench;
+	TestBench->AddRef();
 }
 
 #include "strmif.h"
