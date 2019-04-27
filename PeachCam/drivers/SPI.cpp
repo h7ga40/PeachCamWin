@@ -17,12 +17,45 @@ void SPI::init()
 {
 	FT_STATUS ret;
 	ChannelConfig config;
-	uint8 latency = 1;
+	uint8 latency = 2;
+	uint32 options = SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
+	uint32 pin = 0;
+
+	switch (mode) {
+	// 正パルス ラッチ先行
+	case 0:
+		// IN_POS_OUT_NEG_EDGE
+		options |= SPI_CONFIG_OPTION_MODE0;
+		// SCLKは始めと終わりでLOWとする
+		pin = 0x000B000B;
+		break;
+	// 正パルス シフト先行
+	case 1:
+		// IN_NEG_OUT_POS_EDGE
+		options |= SPI_CONFIG_OPTION_MODE1;
+		// SCLKは始めと終わりでLOWとする
+		pin = 0x000B000B;
+		break;
+	// 負パルス ラッチ先行
+	case 2:
+		// IN_NEG_OUT_POS_EDGE
+		options |= SPI_CONFIG_OPTION_MODE2;
+		// SCLKは始めと終わりでHIGHとする
+		pin = 0x0B0B0B0B;
+		break;
+	// 負パルス シフト先行
+	case 3:
+		// IN_POS_OUT_NEG_EDGE
+		options |= SPI_CONFIG_OPTION_MODE3;
+		// SCLKは始めと終わりでHIGHとする
+		pin = 0x0B0B0B0B;
+		break;
+	}
 
 	config.ClockRate = hz;
 	config.LatencyTimer = latency;
-	config.configOptions = mode | SPI_CONFIG_OPTION_CS_DBUS3 | SPI_CONFIG_OPTION_CS_ACTIVELOW;
-	config.Pin = 0x0B0B0B0B;
+	config.configOptions = options;
+	config.Pin = pin;
 	config.reserved = 0;
 
 	ret = SPI_InitChannel((FT_HANDLE)spi.fthandle, &config);
