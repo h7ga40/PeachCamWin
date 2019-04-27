@@ -18,6 +18,7 @@ namespace TestBench
 		TouchKey touchKey;
 		GpioLED[] leds = new GpioLED[4];
 		GpioButton sw1;
+		AnalogInSlider grip;
 
 		public Form1()
 		{
@@ -108,6 +109,9 @@ namespace TestBench
 				case "USER_BUTTON0":
 					sw1 = new GpioButton((Gpio)i, button1);
 					break;
+				case "AN0":
+					grip = new AnalogInSlider((AnalogIn)i, trackBar1);
+					break;
 				}
 			}
 			if (graphics == null)
@@ -163,57 +167,6 @@ namespace TestBench
 		private void vtWindow1_DataReceive(object sender, byte[] data)
 		{
 			testBench.Stdin(data);
-		}
-	}
-
-	class GpioLED
-	{
-		private Gpio gpio;
-		private Label label;
-		Color on;
-		Color off;
-
-		public GpioLED(Gpio gpio, Label label, Color on, Color off)
-		{
-			this.gpio = gpio;
-			this.label = label;
-			this.on = on;
-			this.off = off;
-		}
-
-		public void Update()
-		{
-			if (gpio.Value) {
-				label.BackColor = on;
-			}
-			else {
-				label.BackColor = off;
-			}
-		}
-	}
-
-	class GpioButton
-	{
-		private Gpio gpio;
-		private Button button;
-
-		public GpioButton(Gpio gpio, Button button)
-		{
-			this.gpio = gpio;
-			this.button = button;
-
-			button.MouseDown += Button_MouseDown;
-			button.MouseUp += Button_MouseUp;
-		}
-
-		private void Button_MouseDown(object sender, MouseEventArgs e)
-		{
-			gpio.Value = true;
-		}
-
-		private void Button_MouseUp(object sender, MouseEventArgs e)
-		{
-			gpio.Value = false;
 		}
 	}
 }

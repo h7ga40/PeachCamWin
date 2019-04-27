@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalogIn.cs" />
+    <Compile Include="AnalogInSlider.cs" />
     <Compile Include="Dac.cs" />
     <Compile Include="ESP32Driver.cs" />
     <Compile Include="Form1.cs">
@@ -58,6 +59,8 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Gpio.cs" />
+    <Compile Include="GpioButton.cs" />
+    <Compile Include="GpioLED.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="I2C.cs" />
     <Compile Include="I2S.cs" />

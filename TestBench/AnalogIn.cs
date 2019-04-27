@@ -15,9 +15,11 @@
 
 		public string InterfaceName => adc.ToString();
 
+		public ushort Value { get; internal set; }
+
 		internal ushort Read()
 		{
-			return 0;
+			return Value;
 		}
 	}
 }

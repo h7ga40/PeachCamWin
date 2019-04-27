@@ -40,10 +40,12 @@
 			this.cmbVideoList = new System.Windows.Forms.ComboBox();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.trackBar1 = new System.Windows.Forms.TrackBar();
 			this.cmbMpsseList = new System.Windows.Forms.ComboBox();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pictureBox1
@@ -100,7 +102,7 @@
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(75, 23);
 			this.button1.TabIndex = 5;
-			this.button1.Text = "user_btn1";
+			this.button1.Text = "shutter";
 			this.button1.UseVisualStyleBackColor = true;
 			// 
 			// vtWindow1
@@ -160,6 +162,7 @@
 			// 
 			// panel1
 			// 
+			this.panel1.Controls.Add(this.trackBar1);
 			this.panel1.Controls.Add(this.cmbMpsseList);
 			this.panel1.Controls.Add(this.cmbAudioList);
 			this.panel1.Controls.Add(this.label1);
@@ -175,7 +178,17 @@
 			this.panel1.Size = new System.Drawing.Size(143, 272);
 			this.panel1.TabIndex = 10;
 			// 
-			// cmbFtdiList
+			// trackBar1
+			// 
+			this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.trackBar1.AutoSize = false;
+			this.trackBar1.Location = new System.Drawing.Point(4, 194);
+			this.trackBar1.Name = "trackBar1";
+			this.trackBar1.Size = new System.Drawing.Size(130, 26);
+			this.trackBar1.TabIndex = 10;
+			// 
+			// cmbMpsseList
 			// 
 			this.cmbMpsseList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -183,7 +196,7 @@
 			this.cmbMpsseList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cmbMpsseList.FormattingEnabled = true;
 			this.cmbMpsseList.Location = new System.Drawing.Point(8, 60);
-			this.cmbMpsseList.Name = "cmbFtdiList";
+			this.cmbMpsseList.Name = "cmbMpsseList";
 			this.cmbMpsseList.Size = new System.Drawing.Size(126, 20);
 			this.cmbMpsseList.TabIndex = 9;
 			// 
@@ -200,6 +213,7 @@
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -219,6 +233,7 @@
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.ComboBox cmbMpsseList;
+		private System.Windows.Forms.TrackBar trackBar1;
 	}
 }
 
