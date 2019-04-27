@@ -13,7 +13,9 @@
     <radiometry>1</radiometry>
     <ffcnorm>0</ffcnorm>
     <telemetry>1</telemetry>
-    <offset>30000</offset>
+    <slope>2600</slope>
+    <offset>0</offset>
+    <reference>1</reference>
     <color>3</color>
-  </lepton>
+</lepton>
 </hoiku_cam>
