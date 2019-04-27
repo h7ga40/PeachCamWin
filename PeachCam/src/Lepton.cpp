@@ -447,6 +447,10 @@ void LeptonTask::ProcessEvent(InterTaskSignals::T signals)
 	}
 }
 
+//const uint8_t discard_frame[] = {
+//	0xdc, 0xd0, 0xdc, 0xad, 0xdc, 0xd2, 0xdc, 0xad, 0xdc, 0xd4, 0xdc, 0xad, 0xdc, 0xd6, 0xdc, 0xad
+//};
+
 void LeptonTask::Process()
 {
 	uint8_t *result = _frame_packet;
@@ -487,6 +491,9 @@ void LeptonTask::Process()
 
 			int id = (result[0] << 8) | result[1];
 			if (((id & 0x0F00) == 0x0F00) && (packet_id == -1)) {
+				// Discard Packetなら
+				//if (memcmp(&result[4], discard_frame, sizeof(discard_frame)) == 0) {
+				//}
 				_async++;
 				if (_async >= 10000) {
 					_resets = 750;
@@ -497,7 +504,7 @@ void LeptonTask::Process()
 				else {
 					_state = State::Capture;
 					_timer = 0;
-					continue;
+					return;
 				}
 			}
 			packet_id = id;

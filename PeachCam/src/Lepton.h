@@ -97,6 +97,8 @@ struct lepton_config_t {
 	int ffcnorm;
 	int telemetry;
 	int offset;
+	int slope;
+	int reference;
 	int color;
 };
 
