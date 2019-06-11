@@ -8,6 +8,7 @@
 #include "SensorTask.h"
 #include <expat.h>
 #include "draw_font.h"
+#include "adafruit_gfx.h"
 #include "bh1792.h"
 #include "TouchKey.h"
 #include "EasyAttach_CameraAndLCD.h"
@@ -17,6 +18,11 @@ using namespace cv;
 
 #define FACE_DETECTOR_MODEL     ".\\lbpcascade_frontalface.xml"
 #define TOUCH_NUM               (1u)
+
+extern uint8_t user_frame_buffer_result[];
+LCD_Handler_t lcd = { LCD_PIXEL_WIDTH, LCD_PIXEL_HEIGHT, user_frame_buffer_result };
+uint16_t lcd_init_width = LCD_PIXEL_WIDTH;
+uint16_t lcd_init_height = LCD_PIXEL_HEIGHT;
 
 /* Application variables */
 DigitalOut led1(LED1);
@@ -492,36 +498,36 @@ int main()
 				temp = std::string(config.wifi.ssid) + std::string(" Connected    ");
 			else
 				temp = std::string("Connecting to ") + std::string(config.wifi.ssid);
-			lcd_drawString(temp.c_str(), 0, 248, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, temp.c_str(), 0, 248, 0xFCCC, 0x0000);
 
 			if (netTask.IsDetectedServer())
 				temp = std::string(config.upload.server) + std::string(" detected, IP address ") + std::string(netTask.GetServerAddr().get_ip_address());
 			else
 				temp = std::string(config.upload.server) + std::string(" no detected                          ");
-			lcd_drawString(temp.c_str(), 0, 260, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, temp.c_str(), 0, 260, 0xFCCC, 0x0000);
 
 			temp = std::string(ctime(&tm));
-			lcd_drawString(temp.c_str(), 330, 0, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, temp.c_str(), 330, 0, 0xFCCC, 0x0000);
 #if 0
 			uint16_t *data = lepton->GetTelemetryA();
 			snprintf(textbuf, sizeof(textbuf), "TmA:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-			lcd_drawString(textbuf, 72, 148, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 72, 148, 0xFCCC, 0x0000);
 
 			data = lepton->GetTelemetryB();
 			snprintf(textbuf, sizeof(textbuf), "TmB:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-			lcd_drawString(textbuf, 72, 160, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 72, 160, 0xFCCC, 0x0000);
 
 			data = lepton->GetTelemetryC();
 			snprintf(textbuf, sizeof(textbuf), "TmC:%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X%04X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-			lcd_drawString(textbuf, 72, 172, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 72, 172, 0xFCCC, 0x0000);
 #endif
 			int fpatemp = lepton->GetFpaTemperature() - 27315;
 			snprintf(textbuf, sizeof(textbuf), "FPA:%4d.%02u℃", fpatemp / 100, (fpatemp > 0) ? (fpatemp % 100) : -(fpatemp % 100));
-			lcd_drawString(textbuf, 400, 160, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 400, 160, 0xFCCC, 0x0000);
 
 			int auxtemp = lepton->GetAuxTemperature() - 27315;
 			snprintf(textbuf, sizeof(textbuf), "AUX:%4d.%02u℃", auxtemp / 100, (auxtemp > 0) ? (auxtemp % 100) : -(auxtemp % 100));
-			lcd_drawString(textbuf, 400, 172, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 400, 172, 0xFCCC, 0x0000);
 
 			int reference = fpatemp;
 			if (config.lepton.reference != 0)
@@ -529,11 +535,11 @@ int main()
 
 			int minValue = (int)((config.lepton.slope / 1000.0) * (lepton->GetMinValue() - 8192)) + config.lepton.offset + reference;
 			snprintf(textbuf, sizeof(textbuf), "min:%4d.%02u℃", minValue / 100, (minValue > 0) ? (minValue % 100) : -(minValue % 100));
-			lcd_drawString(textbuf, 400, 184, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 400, 184, 0xFCCC, 0x0000);
 
 			int maxValue = (int)((config.lepton.slope / 1000.0) * (lepton->GetMaxValue() - 8192)) + config.lepton.offset + reference;
 			snprintf(textbuf, sizeof(textbuf), "max:%4d.%02u℃", maxValue / 100, (maxValue > 0) ? (maxValue % 100) : -(maxValue % 100));
-			lcd_drawString(textbuf, 400, 196, 0xFCCC, 0x0000);
+			lcd_drawString(&lcd, textbuf, 400, 196, 0xFCCC, 0x0000);
 		}
 		/* Get coordinates */
 		touch_num = touch.GetCoordinates(TOUCH_NUM, touch_pos);
@@ -541,7 +547,7 @@ int main()
 			snprintf(textbuf, sizeof(textbuf), "x:%4d, y:%4d", touch_pos[0].x, touch_pos[0].y);
 		else
 			strncpy(textbuf, "              ", sizeof(textbuf));
-		lcd_drawString(textbuf, 0, 100, 0xFCCC, 0x0000);
+		lcd_drawString(&lcd, textbuf, 0, 100, 0xFCCC, 0x0000);
 
 		led2 = netTask.IsConnected();
 		led3 = netTask.IsActive();
