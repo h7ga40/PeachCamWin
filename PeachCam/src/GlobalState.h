@@ -11,6 +11,7 @@ class NetTask;
 class MediaTask;
 class FaceDetectTask;
 class LeptonTaskThread;
+class ZXingTask;
 
 class GlobalState
 {
@@ -25,6 +26,7 @@ public:
 	MediaTask *mediaTask;
 	FaceDetectTask *faceDetectTask;
 	LeptonTaskThread *leptonTask;
+	ZXingTask *zxingTask;
 	std::string _path;
 public:
 	bool IsActive();

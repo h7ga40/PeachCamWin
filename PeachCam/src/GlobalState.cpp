@@ -3,6 +3,7 @@
 #include "SensorTask.h"
 #include "NetTask.h"
 #include "MediaTask.h"
+#include "ZXingTask.h"
 
 GlobalState::GlobalState() :
 	storage(NULL),
@@ -10,7 +11,9 @@ GlobalState::GlobalState() :
 	sensorTask(NULL),
 	netTask(NULL),
 	mediaTask(NULL),
-	faceDetectTask(NULL)
+	faceDetectTask(NULL),
+	leptonTask(NULL),
+	zxingTask(NULL)
 {
 }
 
@@ -65,6 +68,7 @@ void GlobalState::PowerOff()
 	sensorTask->Signal(InterTaskSignals::PowerOff);
 	faceDetectTask->Signal(InterTaskSignals::PowerOff);
 	leptonTask->Signal(InterTaskSignals::PowerOff);
+	zxingTask->Signal(InterTaskSignals::PowerOff);
 }
 
 void GlobalState::PowerOn()
@@ -74,6 +78,7 @@ void GlobalState::PowerOn()
 	sensorTask->Signal(InterTaskSignals::PowerOn);
 	faceDetectTask->Signal(InterTaskSignals::PowerOn);
 	leptonTask->Signal(InterTaskSignals::PowerOn);
+	zxingTask->Signal(InterTaskSignals::PowerOn);
 }
 
 void GlobalState::TriggerOn()

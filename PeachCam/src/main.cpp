@@ -10,6 +10,7 @@
 #include "draw_font.h"
 #include "adafruit_gfx.h"
 #include "bh1792.h"
+#include "ZXingTask.h"
 #include "TouchKey.h"
 #include "EasyAttach_CameraAndLCD.h"
 #include "SocketInterface.h"
@@ -40,6 +41,7 @@ SocketInterface socketif;
 ESP32Interface wifi(P3_10, P3_9, P2_14, P2_15);
 static NetTask netTask(&globalState, &wifi);
 static LeptonTaskThread leptonTask(&globalState);
+static ZXingTask zxingTask(&globalState);
 
 NetworkInterface * NetworkInterface::get_default_instance(void)
 {
@@ -472,15 +474,20 @@ extern "C" int usrcmd_lpt(int argc, char **argv)
 	return 0;
 }
 
-void view_qrcode(const char *str)
+void zxing_callback(const char *addr, int size)
 {
+	if (size > 0)
+		lcd_drawString(&lcd, addr, 0, 0, 0xFCCC, 0x0000);
+	else
+		lcd_fillRect(&lcd, 0, 0, lcd._width, 12, 0x0000);
+
 	// The structure to manage the QR code
 	QRCode qrcode;
 
 	// Allocate a chunk of memory to store the QR code
 	uint8_t *qrcodeBytes = new uint8_t[qrcode_getBufferSize(3)];
 
-	qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, str);
+	qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, addr);
 
 	for (int y = 0; y < qrcode.size; y++) {
 		for (int x = 0; x < qrcode.size; x++) {
@@ -503,6 +510,7 @@ int main()
 	globalState.faceDetectTask = &faceDetectTask;
 	globalState.sensorTask = &sensorTask;
 	globalState.leptonTask = &leptonTask;
+	globalState.zxingTask = &zxingTask;
 
 	uint8_t touch_num = 0;
 	TouchKey::touch_pos_t touch_pos[TOUCH_NUM];
@@ -520,14 +528,14 @@ int main()
 	faceDetectTask.Init(FACE_DETECTOR_MODEL);
 	lepton = leptonTask.GetLeptonTask();
 	lepton->SetConfig(&config.lepton);
+	zxingTask.Init(zxing_callback);
 
 	netTask.Start();
 	sensorTask.Start();
 	mediaTask.Start();
 	faceDetectTask.Start();
 	leptonTask.Start();
-
-	view_qrcode("HELLO WORLD");
+	zxingTask.Start();
 
 	us_timestamp_t now, org = ticker_read_us(get_us_ticker_data());
 	while (true) {

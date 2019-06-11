@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.438
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29001.49
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBench", "TestBench\TestBench.csproj", "{73AF6D4F-DD99-446A-8350-8B25C095751E}"
 EndProject
@@ -69,6 +69,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing", "libzxing\libzxing.vcxproj", "{89AFB09B-93FA-4215-9B69-686C455F0005}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-aztec", "libzxing\zxing\aztec\libzxing-aztec.vcxproj", "{150E9AB8-A424-4B54-9286-F6F25E54038D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-datamatrix", "libzxing\zxing\datamatrix\libzxing-datamatrix.vcxproj", "{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-pdf417", "libzxing\zxing\pdf417\libzxing-pdf417.vcxproj", "{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-qrcode", "libzxing\zxing\qrcode\libzxing-qrcode.vcxproj", "{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -277,6 +287,41 @@ Global
 		{AEE4C17F-5E62-4B9E-A402-A10606A4EFA2}.Release|Any CPU.ActiveCfg = Release|Win32
 		{AEE4C17F-5E62-4B9E-A402-A10606A4EFA2}.Release|x86.ActiveCfg = Release|Win32
 		{AEE4C17F-5E62-4B9E-A402-A10606A4EFA2}.Release|x86.Build.0 = Release|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Debug|Any CPU.Build.0 = Debug|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Debug|x86.ActiveCfg = Debug|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Debug|x86.Build.0 = Debug|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Release|Any CPU.ActiveCfg = Release|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Release|x86.ActiveCfg = Release|Win32
+		{89AFB09B-93FA-4215-9B69-686C455F0005}.Release|x86.Build.0 = Release|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Debug|Any CPU.Build.0 = Debug|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Debug|x86.ActiveCfg = Debug|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Debug|x86.Build.0 = Debug|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Release|x86.ActiveCfg = Release|Win32
+		{150E9AB8-A424-4B54-9286-F6F25E54038D}.Release|x86.Build.0 = Release|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Debug|Any CPU.Build.0 = Debug|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Debug|x86.ActiveCfg = Debug|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Debug|x86.Build.0 = Debug|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Release|x86.ActiveCfg = Release|Win32
+		{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}.Release|x86.Build.0 = Release|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Debug|Any CPU.Build.0 = Debug|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Debug|x86.ActiveCfg = Debug|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Debug|x86.Build.0 = Debug|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Release|Any CPU.ActiveCfg = Release|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Release|x86.ActiveCfg = Release|Win32
+		{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}.Release|x86.Build.0 = Release|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Debug|Any CPU.Build.0 = Debug|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Debug|x86.ActiveCfg = Debug|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Debug|x86.Build.0 = Debug|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Release|x86.ActiveCfg = Release|Win32
+		{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
