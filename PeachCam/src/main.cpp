@@ -13,6 +13,7 @@
 #include "TouchKey.h"
 #include "EasyAttach_CameraAndLCD.h"
 #include "SocketInterface.h"
+#include "qrcode.h"
 
 using namespace cv;
 
@@ -471,6 +472,26 @@ extern "C" int usrcmd_lpt(int argc, char **argv)
 	return 0;
 }
 
+void view_qrcode(const char *str)
+{
+	// The structure to manage the QR code
+	QRCode qrcode;
+
+	// Allocate a chunk of memory to store the QR code
+	uint8_t *qrcodeBytes = new uint8_t[qrcode_getBufferSize(3)];
+
+	qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, str);
+
+	for (int y = 0; y < qrcode.size; y++) {
+		for (int x = 0; x < qrcode.size; x++) {
+			if (qrcode_getModule(&qrcode, x, y)) {
+				lcd_fillRect(&lcd, 2 * x + 12, 2 * y + 12, 2, 2, 0xFFFF);
+				//lcd_drawPixel(&lcd, x, y, 0xFFFF);
+			}
+		}
+	}
+}
+
 int main()
 {
 	char textbuf[80];
@@ -505,6 +526,8 @@ int main()
 	mediaTask.Start();
 	faceDetectTask.Start();
 	leptonTask.Start();
+
+	view_qrcode("HELLO WORLD");
 
 	us_timestamp_t now, org = ticker_read_us(get_us_ticker_data());
 	while (true) {

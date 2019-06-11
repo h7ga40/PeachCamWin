@@ -256,6 +256,7 @@
     <ClInclude Include="src\MediaTask.h" />
     <ClInclude Include="src\NetTask.h" />
     <ClInclude Include="src\Palettes.h" />
+    <ClInclude Include="src\qrcode.h" />
     <ClInclude Include="src\SensorTask.h" />
     <ClInclude Include="src\shnm12_font.h" />
     <ClInclude Include="src\SocketInterface.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="src\mock.cpp" />
     <ClCompile Include="src\NetTask.cpp" />
     <ClCompile Include="src\Palettes.cpp" />
+    <ClCompile Include="src\qrcode.cpp" />
     <ClCompile Include="src\SensorTask.cpp" />
     <ClCompile Include="src\shnm12_font.cpp" />
     <ClCompile Include="src\SocketInterface.cpp" />
