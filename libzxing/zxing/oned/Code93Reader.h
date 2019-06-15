@@ -34,22 +34,20 @@ namespace oned {
  */
 class Code93Reader : public OneDReader {
 public:
-  Code93Reader();
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
+	Code93Reader();
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
 
 private:
-  std::string decodeRowResult;
-  std::vector<int> counters;
+	std::string decodeRowResult;
+	std::vector<int> counters;
 
-  Range findAsteriskPattern(Ref<BitArray> row);
+	int findAsteriskPattern(Ref<BitArray> row, Range &result);
 
-  static int toPattern(std::vector<int>& counters);
-  static char patternToChar(int pattern);
-  static Ref<String> decodeExtended(std::string const& encoded);
-  static void checkChecksums(std::string const& result);
-  static void checkOneChecksum(std::string const& result,
-                               int checkPosition,
-                               int weightMax);
+	static int toPattern(std::vector<int> &counters);
+	static char patternToChar(int pattern);
+	static int decodeExtended(std::string const &encoded, Ref<String> &result);
+	static int checkChecksums(std::string const &result);
+	static int checkOneChecksum(std::string const &result, int checkPosition, int weightMax);
 };
 
 }

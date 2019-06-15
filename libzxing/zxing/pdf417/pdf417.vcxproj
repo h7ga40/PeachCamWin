@@ -12,46 +12,33 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="decoder\BitMatrixParser.h" />
-    <ClInclude Include="decoder\DataBlock.h" />
-    <ClInclude Include="decoder\DataMask.h" />
     <ClInclude Include="decoder\DecodedBitStreamParser.h" />
     <ClInclude Include="decoder\Decoder.h" />
-    <ClInclude Include="decoder\Mode.h" />
-    <ClInclude Include="detector\AlignmentPattern.h" />
-    <ClInclude Include="detector\AlignmentPatternFinder.h" />
+    <ClInclude Include="decoder\ec\ErrorCorrection.h" />
+    <ClInclude Include="decoder\ec\ModulusGF.h" />
+    <ClInclude Include="decoder\ec\ModulusPoly.h" />
     <ClInclude Include="detector\Detector.h" />
-    <ClInclude Include="detector\FinderPattern.h" />
-    <ClInclude Include="detector\FinderPatternFinder.h" />
-    <ClInclude Include="detector\FinderPatternInfo.h" />
-    <ClInclude Include="ErrorCorrectionLevel.h" />
-    <ClInclude Include="FormatInformation.h" />
-    <ClInclude Include="QRCodeReader.h" />
-    <ClInclude Include="Version.h" />
+    <ClInclude Include="detector\LinesSampler.h" />
+    <ClInclude Include="PDF417Reader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="decoder\BitMatrixParser.cpp" />
-    <ClCompile Include="decoder\DataBlock.cpp" />
-    <ClCompile Include="decoder\DataMask.cpp" />
     <ClCompile Include="decoder\DecodedBitStreamParser.cpp" />
     <ClCompile Include="decoder\Decoder.cpp" />
-    <ClCompile Include="decoder\Mode.cpp" />
-    <ClCompile Include="detector\AlignmentPattern.cpp" />
-    <ClCompile Include="detector\AlignmentPatternFinder.cpp" />
+    <ClCompile Include="decoder\ec\ErrorCorrection.cpp" />
+    <ClCompile Include="decoder\ec\ModulusGF.cpp" />
+    <ClCompile Include="decoder\ec\ModulusPoly.cpp" />
     <ClCompile Include="detector\Detector.cpp" />
-    <ClCompile Include="detector\FinderPattern.cpp" />
-    <ClCompile Include="detector\FinderPatternFinder.cpp" />
-    <ClCompile Include="detector\FinderPatternInfo.cpp" />
-    <ClCompile Include="ErrorCorrectionLevel.cpp" />
-    <ClCompile Include="FormatInformation.cpp" />
-    <ClCompile Include="QRCodeReader.cpp" />
-    <ClCompile Include="Version.cpp" />
+    <ClCompile Include="detector\LinesSampler.cpp" />
+    <ClCompile Include="PDF417Reader.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}</ProjectGuid>
+    <ProjectGuid>{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>libzxingqrcode</RootNamespace>
+    <RootNamespace>pdf417</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>libzxing-pdf417</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -95,6 +82,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\..\PeachCam;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4002;4003;4005;4007;4010;4013;4015;4020;4022;4024;4028;4029;4031;4033;4034;4042;4047;4048;4049;4056;4067;4074;4079;4083;4088;4089;4090;4091;4094;4096;4098;4099;4113;4133;4715;4716</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -113,6 +101,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\..\PeachCam;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4002;4003;4005;4007;4010;4013;4015;4020;4022;4024;4028;4029;4031;4033;4034;4042;4047;4048;4049;4056;4067;4074;4079;4083;4088;4089;4090;4091;4094;4096;4098;4099;4113;4133;4715;4716</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

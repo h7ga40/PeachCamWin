@@ -31,24 +31,24 @@ namespace zxing {
 
 class Result : public Counted {
 private:
-  Ref<String> text_;
-  ArrayRef<char> rawBytes_;
-  ArrayRef< Ref<ResultPoint> > resultPoints_;
-  BarcodeFormat format_;
+	Ref<String> text_;
+	ArrayRef<char> rawBytes_;
+	ArrayRef< Ref<ResultPoint> > resultPoints_;
+	BarcodeFormat format_;
 
 public:
-  Result(Ref<String> text,
-         ArrayRef<char> rawBytes,
-         ArrayRef< Ref<ResultPoint> > resultPoints,
-         BarcodeFormat format);
-  ~Result();
-  Ref<String> getText();
-  ArrayRef<char> getRawBytes();
-  ArrayRef< Ref<ResultPoint> > const& getResultPoints() const;
-  ArrayRef< Ref<ResultPoint> >& getResultPoints();
-  BarcodeFormat getBarcodeFormat() const;
+	Result(Ref<String> text,
+		ArrayRef<char> rawBytes,
+		ArrayRef< Ref<ResultPoint> > resultPoints,
+		BarcodeFormat format);
+	~Result();
+	Ref<String> getText();
+	ArrayRef<char> getRawBytes();
+	ArrayRef< Ref<ResultPoint> > const &getResultPoints() const;
+	ArrayRef< Ref<ResultPoint> > &getResultPoints();
+	BarcodeFormat getBarcodeFormat() const;
 
-  friend std::ostream& operator<<(std::ostream &out, Result& result);
+	friend std::ostream &operator<<(std::ostream &out, Result &result);
 };
 
 }

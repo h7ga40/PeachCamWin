@@ -32,25 +32,26 @@ namespace datamatrix {
 
 class BitMatrixParser : public Counted {
 private:
-  Ref<BitMatrix> bitMatrix_;
-  Ref<Version> parsedVersion_;
-  Ref<BitMatrix> readBitMatrix_;
+	Ref<BitMatrix> bitMatrix_;
+	Ref<Version> parsedVersion_;
+	Ref<BitMatrix> readBitMatrix_;
 
-  int copyBit(size_t x, size_t y, int versionBits);
+	int copyBit(size_t x, size_t y, int versionBits);
 
 public:
-  BitMatrixParser(Ref<BitMatrix> bitMatrix);
-  Ref<Version> readVersion(Ref<BitMatrix> bitMatrix);
-  ArrayRef<char> readCodewords();
-  bool readModule(int row, int column, int numRows, int numColumns);
+	BitMatrixParser(Ref<BitMatrix> bitMatrix);
+	bool IsActive() { return readBitMatrix_ != NULL; }
+	int readVersion(Ref<BitMatrix> bitMatrix, Ref<Version> &result);
+	int readCodewords(ArrayRef<char> &result);
+	bool readModule(int row, int column, int numRows, int numColumns);
 
 private:
-  int readUtah(int row, int column, int numRows, int numColumns);
-  int readCorner1(int numRows, int numColumns);
-  int readCorner2(int numRows, int numColumns);
-  int readCorner3(int numRows, int numColumns);
-  int readCorner4(int numRows, int numColumns);
-  Ref<BitMatrix> extractDataRegion(Ref<BitMatrix> bitMatrix);
+	int readUtah(int row, int column, int numRows, int numColumns);
+	int readCorner1(int numRows, int numColumns);
+	int readCorner2(int numRows, int numColumns);
+	int readCorner3(int numRows, int numColumns);
+	int readCorner4(int numRows, int numColumns);
+	int extractDataRegion(Ref<BitMatrix> bitMatrix, Ref<BitMatrix> &result);
 };
 
 }

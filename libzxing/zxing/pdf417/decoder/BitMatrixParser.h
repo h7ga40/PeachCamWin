@@ -33,50 +33,46 @@ namespace decoder {
 
 class BitMatrixParser : public Counted {
 private:
-  static const int MAX_ROWS;
-  // Maximum Codewords (Data + Error)
-  static const int MAX_CW_CAPACITY;
-  static const int MODULES_IN_SYMBOL;
+	static const int MAX_ROWS;
+	// Maximum Codewords (Data + Error)
+	static const int MAX_CW_CAPACITY;
+	static const int MODULES_IN_SYMBOL;
 
-  Ref<BitMatrix> bitMatrix_;
-  int rows_; /* = 0 */
-  int leftColumnECData_; /* = 0 */
-  int rightColumnECData_; /* = 0 */
-  /* added 2012-06-22 HFN */
-  int aLeftColumnTriple_[3];
-  int aRightColumnTriple_[3];
-  int eraseCount_; /* = 0 */
-  ArrayRef<int> erasures_;
-  int ecLevel_; /* = -1 */
+	Ref<BitMatrix> bitMatrix_;
+	int rows_; /* = 0 */
+	int leftColumnECData_; /* = 0 */
+	int rightColumnECData_; /* = 0 */
+	/* added 2012-06-22 HFN */
+	int aLeftColumnTriple_[3];
+	int aRightColumnTriple_[3];
+	int eraseCount_; /* = 0 */
+	ArrayRef<int> erasures_;
+	int ecLevel_; /* = -1 */
 
 public:
-  static const int SYMBOL_TABLE[];
-  static const int SYMBOL_TABLE_LENGTH;
-  static const int CODEWORD_TABLE[];
-  
+	static const int SYMBOL_TABLE[];
+	static const int SYMBOL_TABLE_LENGTH;
+	static const int CODEWORD_TABLE[];
+
 public:
-  BitMatrixParser(Ref<BitMatrix> bitMatrix);
-  ArrayRef<int> getErasures() const {return erasures_;}
-  int getECLevel() const {return ecLevel_;}
-  int getEraseCount() const {return eraseCount_;}
-  ArrayRef<int> readCodewords(); /* throw(FormatException) */
-  static int getCodeword(int64_t symbol, int *pi = NULL);
+	BitMatrixParser(Ref<BitMatrix> bitMatrix);
+	ArrayRef<int> getErasures() const { return erasures_; }
+	int getECLevel() const { return ecLevel_; }
+	int getEraseCount() const { return eraseCount_; }
+	int readCodewords(ArrayRef<int> &result); /* throw(FormatException) */
+	static int getCodeword(int64_t symbol, int *pi = NULL);
 
 private:
-  bool VerifyOuterColumns(int rownumber);
-  static ArrayRef<int> trimArray(ArrayRef<int> array, int size);
-  static int findCodewordIndex(int64_t symbol);
+	bool VerifyOuterColumns(int rownumber);
+	static int trimArray(ArrayRef<int> array, int size, ArrayRef<int> &result);
+	static int findCodewordIndex(int64_t symbol);
 
-  
-  int processRow(int rowNumber,
-                ArrayRef<int> codewords, int next);
-  
-  int processRow(ArrayRef<int> rowCounters, int rowNumber, int rowHeight,
-    ArrayRef<int> codewords, int next); /* throw(FormatException)  */ 
+	int processRow(int rowNumber,
+		ArrayRef<int> codewords, int next);
 protected:
-  bool IsEqual(int &a, int &b, int rownumber);
+	bool IsEqual(int &a, int &b, int rownumber);
 };
- 
+
 }
 }
 }

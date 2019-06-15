@@ -29,10 +29,10 @@ class UPCEANReader;
 
 class MultiFormatUPCEANReader : public OneDReader {
 private:
-    std::vector< Ref<UPCEANReader> > readers;
+	std::vector< Ref<UPCEANReader> > readers;
 public:
-    MultiFormatUPCEANReader(DecodeHints hints);
-    Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
+	MultiFormatUPCEANReader(DecodeHints hints);
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
 };
 
 }

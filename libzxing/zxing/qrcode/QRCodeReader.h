@@ -27,19 +27,19 @@
 
 namespace zxing {
 namespace qrcode {
-		
-class QRCodeReader : public Reader {
- private:
-  Decoder decoder_;
-			
- protected:
-  Decoder& getDecoder();
 
- public:
-  QRCodeReader();
-  virtual ~QRCodeReader();
-			
-  Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
+class QRCodeReader : public Reader {
+private:
+	Decoder decoder_;
+
+protected:
+	Decoder &getDecoder();
+
+public:
+	QRCodeReader();
+	virtual ~QRCodeReader();
+
+	int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
 };
 
 }

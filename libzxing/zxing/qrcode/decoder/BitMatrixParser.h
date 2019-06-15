@@ -32,22 +32,23 @@ namespace qrcode {
 
 class BitMatrixParser : public Counted {
 private:
-  Ref<BitMatrix> bitMatrix_;
-  Version *parsedVersion_;
-  Ref<FormatInformation> parsedFormatInfo_;
+	Ref<BitMatrix> bitMatrix_;
+	Version *parsedVersion_;
+	Ref<FormatInformation> parsedFormatInfo_;
 
-  int copyBit(size_t x, size_t y, int versionBits);
+	int copyBit(size_t x, size_t y, int versionBits);
 
 public:
-  BitMatrixParser(Ref<BitMatrix> bitMatrix);
-  Ref<FormatInformation> readFormatInformation();
-  Version *readVersion();
-  ArrayRef<char> readCodewords();
+	BitMatrixParser(Ref<BitMatrix> bitMatrix);
+	bool IsActive() { return bitMatrix_ != NULL; }
+	int readFormatInformation(Ref<FormatInformation> &result);
+	Version *readVersion();
+	int readCodewords(ArrayRef<char> &result);
 
 private:
-  BitMatrixParser(const BitMatrixParser&);
-  BitMatrixParser& operator =(const BitMatrixParser&);
-  
+	BitMatrixParser(const BitMatrixParser &);
+	BitMatrixParser &operator =(const BitMatrixParser &);
+
 };
 
 }

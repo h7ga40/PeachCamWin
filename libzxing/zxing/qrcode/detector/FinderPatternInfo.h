@@ -30,16 +30,16 @@ namespace qrcode {
 
 class FinderPatternInfo : public Counted {
 private:
-  Ref<FinderPattern> bottomLeft_;
-  Ref<FinderPattern> topLeft_;
-  Ref<FinderPattern> topRight_;
+	Ref<FinderPattern> bottomLeft_;
+	Ref<FinderPattern> topLeft_;
+	Ref<FinderPattern> topRight_;
 
 public:
-  FinderPatternInfo(std::vector<Ref<FinderPattern> > patternCenters);
+	FinderPatternInfo(std::vector<Ref<FinderPattern> > patternCenters);
 
-  Ref<FinderPattern> getBottomLeft();
-  Ref<FinderPattern> getTopLeft();
-  Ref<FinderPattern> getTopRight();
+	Ref<FinderPattern> getBottomLeft();
+	Ref<FinderPattern> getTopLeft();
+	Ref<FinderPattern> getTopRight();
 };
 }
 }

@@ -28,21 +28,21 @@
 namespace zxing {
 
 class Binarizer : public Counted {
- private:
-  Ref<LuminanceSource> source_;
+private:
+	Ref<LuminanceSource> source_;
 
- public:
-  Binarizer(Ref<LuminanceSource> source);
-  virtual ~Binarizer();
+public:
+	Binarizer(Ref<LuminanceSource> source);
+	virtual ~Binarizer();
 
-  virtual Ref<BitArray> getBlackRow(int y, Ref<BitArray> row) = 0;
-  virtual Ref<BitMatrix> getBlackMatrix() = 0;
+	virtual int getBlackRow(int y, Ref<BitArray> row, Ref<BitArray> &result) = 0;
+	virtual int getBlackMatrix(Ref<BitMatrix> &matrix) = 0;
 
-  Ref<LuminanceSource> getLuminanceSource() const ;
-  virtual Ref<Binarizer> createBinarizer(Ref<LuminanceSource> source) = 0;
+	Ref<LuminanceSource> getLuminanceSource() const;
+	virtual Ref<Binarizer> createBinarizer(Ref<LuminanceSource> source) = 0;
 
-  int getWidth() const;
-  int getHeight() const;
+	int getWidth() const;
+	int getHeight() const;
 
 };
 

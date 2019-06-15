@@ -22,17 +22,17 @@
 #include <zxing/oned/OneDReader.h>
 
 namespace zxing {
-  namespace oned {
-    class MultiFormatOneDReader : public OneDReader {
+namespace oned {
+class MultiFormatOneDReader : public OneDReader {
 
-    private:
-      std::vector<Ref<OneDReader> > readers;
-    public:
-      MultiFormatOneDReader(DecodeHints hints);
+private:
+	std::vector<Ref<OneDReader> > readers;
+public:
+	MultiFormatOneDReader(DecodeHints hints);
 
-      Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
-    };
-  }
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
+};
+}
 }
 
 #endif

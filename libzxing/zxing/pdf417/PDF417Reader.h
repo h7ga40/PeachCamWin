@@ -30,17 +30,17 @@ namespace pdf417 {
 
 
 class PDF417Reader : public Reader {
- private:
-  decoder::Decoder decoder;
-			
-  static Ref<BitMatrix> extractPureBits(Ref<BitMatrix> image);
-  static int moduleSize(ArrayRef<int> leftTopBlack, Ref<BitMatrix> image);
-  static int findPatternStart(int x, int y, Ref<BitMatrix> image);
-  static int findPatternEnd(int x, int y, Ref<BitMatrix> image);
+private:
+	decoder::Decoder decoder;
 
- public:
-  Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
-  void reset();
+	static int extractPureBits(Ref<BitMatrix> image, Ref<BitMatrix> &result);
+	static int moduleSize(ArrayRef<int> leftTopBlack, Ref<BitMatrix> image);
+	static int findPatternStart(int x, int y, Ref<BitMatrix> image);
+	static int findPatternEnd(int x, int y, Ref<BitMatrix> image);
+
+public:
+	int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
+	void reset();
 };
 
 }

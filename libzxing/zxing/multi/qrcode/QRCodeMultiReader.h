@@ -23,11 +23,11 @@
 namespace zxing {
 namespace multi {
 
-class QRCodeMultiReader: public zxing::qrcode::QRCodeReader, public MultipleBarcodeReader {
-  public:
-    QRCodeMultiReader();
-    virtual ~QRCodeMultiReader();
-    virtual std::vector<Ref<Result> > decodeMultiple(Ref<BinaryBitmap> image, DecodeHints hints);
+class QRCodeMultiReader : public zxing::qrcode::QRCodeReader, public MultipleBarcodeReader {
+public:
+	QRCodeMultiReader();
+	virtual ~QRCodeMultiReader();
+	virtual int decodeMultiple(Ref<BinaryBitmap> image, DecodeHints hints, std::vector<Ref<Result>> &results);
 };
 
 }

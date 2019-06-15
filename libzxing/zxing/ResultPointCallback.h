@@ -28,10 +28,10 @@ class ResultPoint;
 
 class ResultPointCallback : public Counted {
 protected:
-  ResultPointCallback() {}
+	ResultPointCallback() {}
 public:
-  virtual void foundPossibleResultPoint(ResultPoint const& point) = 0;
-  virtual ~ResultPointCallback();
+	virtual void foundPossibleResultPoint(ResultPoint const &point) = 0;
+	virtual ~ResultPointCallback();
 };
 
 }

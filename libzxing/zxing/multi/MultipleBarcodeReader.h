@@ -27,12 +27,12 @@ namespace zxing {
 namespace multi {
 
 class MultipleBarcodeReader : public Counted {
-  protected:
-    MultipleBarcodeReader() {}
-  public:
-    virtual std::vector<Ref<Result> > decodeMultiple(Ref<BinaryBitmap> image);
-    virtual std::vector<Ref<Result> > decodeMultiple(Ref<BinaryBitmap> image, DecodeHints hints) = 0;
-    virtual ~MultipleBarcodeReader();
+protected:
+	MultipleBarcodeReader() {}
+public:
+	virtual int decodeMultiple(Ref<BinaryBitmap> image, std::vector<Ref<Result>> &results);
+	virtual int decodeMultiple(Ref<BinaryBitmap> image, DecodeHints hints, std::vector<Ref<Result>> &results) = 0;
+	virtual ~MultipleBarcodeReader();
 };
 
 }

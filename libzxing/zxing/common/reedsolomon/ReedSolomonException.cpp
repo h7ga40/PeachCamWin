@@ -22,9 +22,11 @@
 
 namespace zxing {
 ReedSolomonException::ReedSolomonException(const char *msg) throw() :
-    Exception(msg) {
+	Exception(msg)
+{
 }
-ReedSolomonException::~ReedSolomonException() throw() {
+ReedSolomonException::~ReedSolomonException() throw()
+{
 }
 
 }

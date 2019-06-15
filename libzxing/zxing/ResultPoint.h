@@ -28,26 +28,26 @@ namespace zxing {
 
 class ResultPoint : public Counted {
 protected:
-  const float posX_;
-  const float posY_;
-  
+	const float posX_;
+	const float posY_;
+
 public:
-  ResultPoint();
-  ResultPoint(float x, float y);
-  ResultPoint(int x, int y);
-  virtual ~ResultPoint();
+	ResultPoint();
+	ResultPoint(float x, float y);
+	ResultPoint(int x, int y);
+	virtual ~ResultPoint();
 
-  virtual float getX() const;
-  virtual float getY() const;
+	virtual float getX() const;
+	virtual float getY() const;
 
-  bool equals(Ref<ResultPoint> other);
+	bool equals(Ref<ResultPoint> other);
 
-  static void orderBestPatterns(std::vector<Ref<ResultPoint> > &patterns);
-  static float distance(Ref<ResultPoint> point1, Ref<ResultPoint> point2);
-  static float distance(float x1, float x2, float y1, float y2);
+	static void orderBestPatterns(std::vector<Ref<ResultPoint> > &patterns);
+	static float distance(Ref<ResultPoint> point1, Ref<ResultPoint> point2);
+	static float distance(float x1, float x2, float y1, float y2);
 
 private:
-  static float crossProductZ(Ref<ResultPoint> pointA, Ref<ResultPoint> pointB, Ref<ResultPoint> pointC);
+	static float crossProductZ(Ref<ResultPoint> pointA, Ref<ResultPoint> pointB, Ref<ResultPoint> pointC);
 };
 
 }

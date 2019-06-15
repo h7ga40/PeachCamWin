@@ -26,19 +26,19 @@
 namespace zxing {
 
 class GreyscaleRotatedLuminanceSource : public LuminanceSource {
- private:
-  typedef LuminanceSource Super;
-  ArrayRef<char> greyData_;
-  const int dataWidth_;
-  const int left_;
-  const int top_;
+private:
+	typedef LuminanceSource Super;
+	ArrayRef<char> greyData_;
+	const int dataWidth_;
+	const int left_;
+	const int top_;
 
 public:
-  GreyscaleRotatedLuminanceSource(ArrayRef<char> greyData, int dataWidth, int dataHeight,
-      int left, int top, int width, int height);
+	GreyscaleRotatedLuminanceSource(ArrayRef<char> greyData, int dataWidth, int dataHeight,
+		int left, int top, int width, int height);
 
-  ArrayRef<char> getRow(int y, ArrayRef<char> row) const;
-  ArrayRef<char> getMatrix() const;
+	int getRow(int y, ArrayRef<char> row, ArrayRef<char> &result) const;
+	ArrayRef<char> getMatrix() const;
 };
 
 }

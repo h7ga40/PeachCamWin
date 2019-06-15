@@ -31,17 +31,17 @@ namespace qrcode {
 
 class DataMask : public Counted {
 private:
-  static std::vector<Ref<DataMask> > DATA_MASKS;
+	static std::vector<Ref<DataMask> > DATA_MASKS;
 
 protected:
 
 public:
-  static int buildDataMasks();
-  DataMask();
-  virtual ~DataMask();
-  void unmaskBitMatrix(BitMatrix& matrix, size_t dimension);
-  virtual bool isMasked(size_t x, size_t y) = 0;
-  static DataMask& forReference(int reference);
+	static int buildDataMasks();
+	DataMask();
+	virtual ~DataMask();
+	void unmaskBitMatrix(BitMatrix &matrix, size_t dimension);
+	virtual bool isMasked(size_t x, size_t y) = 0;
+	static DataMask &forReference(int reference);
 };
 
 }

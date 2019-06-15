@@ -27,31 +27,31 @@
 namespace zxing {
 
 class LuminanceSource : public Counted {
- private:
-  const int width;
-  const int height;
+private:
+	const int width;
+	const int height;
 
- public:
-  LuminanceSource(int width, int height);
-  virtual ~LuminanceSource();
+public:
+	LuminanceSource(int width, int height);
+	virtual ~LuminanceSource();
 
-  int getWidth() const { return width; }
-  int getHeight() const { return height; }
+	int getWidth() const { return width; }
+	int getHeight() const { return height; }
 
-  // Callers take ownership of the returned memory and must call delete [] on it themselves.
-  virtual ArrayRef<char> getRow(int y, ArrayRef<char> row) const = 0;
-  virtual ArrayRef<char> getMatrix() const = 0;
+	// Callers take ownership of the returned memory and must call delete [] on it themselves.
+	virtual int getRow(int y, ArrayRef<char> row, ArrayRef<char> &result) const = 0;
+	virtual ArrayRef<char> getMatrix() const = 0;
 
-  virtual bool isCropSupported() const;
-  virtual Ref<LuminanceSource> crop(int left, int top, int width, int height) const;
+	virtual bool isCropSupported() const;
+	virtual Ref<LuminanceSource> crop(int left, int top, int width, int height) const;
 
-  virtual bool isRotateSupported() const;
+	virtual bool isRotateSupported() const;
 
-  virtual Ref<LuminanceSource> invert() const;
-  
-  virtual Ref<LuminanceSource> rotateCounterClockwise() const;
+	virtual Ref<LuminanceSource> invert() const;
 
-  operator std::string () const;
+	virtual Ref<LuminanceSource> rotateCounterClockwise() const;
+
+	operator std::string() const;
 };
 
 }

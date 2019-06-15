@@ -20,9 +20,10 @@
 #include "OneDResultPoint.h"
 
 namespace zxing {
-	namespace oned {
+namespace oned {
 
-		OneDResultPoint::OneDResultPoint(float posX, float posY) : ResultPoint(posX,posY) {
-		}
-	}
+OneDResultPoint::OneDResultPoint(float posX, float posY) : ResultPoint(posX, posY)
+{
+}
+}
 }

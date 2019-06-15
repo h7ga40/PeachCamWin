@@ -1,8 +1,9 @@
 #include "BigUnsignedInABase.hh"
 
 BigUnsignedInABase::BigUnsignedInABase(const Digit *d, Index l, Base base)
-	: NumberlikeArray<Digit>(d, l), base(base) {
-	// Check the base
+	: NumberlikeArray<Digit>(d, l), base(base)
+{
+// Check the base
 	if (base < 2)
 		throw "BigUnsignedInABase::BigUnsignedInABase(const Digit *, Index, Base): The base must be at least 2";
 
@@ -16,21 +17,24 @@ BigUnsignedInABase::BigUnsignedInABase(const Digit *d, Index l, Base base)
 }
 
 namespace {
-	unsigned int bitLen(unsigned int x) {
-		unsigned int len = 0;
-		while (x > 0) {
-			x >>= 1;
-			len++;
-		}
-		return len;
+unsigned int bitLen(unsigned int x)
+{
+	unsigned int len = 0;
+	while (x > 0) {
+		x >>= 1;
+		len++;
 	}
-	unsigned int ceilingDiv(unsigned int a, unsigned int b) {
-		return (a + b - 1) / b;
-	}
+	return len;
+}
+unsigned int ceilingDiv(unsigned int a, unsigned int b)
+{
+	return (a + b - 1) / b;
+}
 }
 
-BigUnsignedInABase::BigUnsignedInABase(const BigUnsigned &x, Base base) {
-	// Check the base
+BigUnsignedInABase::BigUnsignedInABase(const BigUnsigned &x, Base base)
+{
+// Check the base
 	if (base < 2)
 		throw "BigUnsignedInABase(BigUnsigned, Base): The base must be at least 2";
 	this->base = base;
@@ -59,7 +63,8 @@ BigUnsignedInABase::BigUnsignedInABase(const BigUnsigned &x, Base base) {
 	len = digitNum;
 }
 
-BigUnsignedInABase::operator BigUnsigned() const {
+BigUnsignedInABase::operator BigUnsigned() const
+{
 	BigUnsigned ans(0), buBase(base), temp;
 	Index digitNum = len;
 	while (digitNum > 0) {
@@ -70,8 +75,9 @@ BigUnsignedInABase::operator BigUnsigned() const {
 	return ans;
 }
 
-BigUnsignedInABase::BigUnsignedInABase(const std::string &s, Base base) {
-	// Check the base.
+BigUnsignedInABase::BigUnsignedInABase(const std::string &s, Base base)
+{
+// Check the base.
 	if (base > 36)
 		throw "BigUnsignedInABase(std::string, Base): The default string conversion routines use the symbol set 0-9, A-Z and therefore support only up to base 36.  You tried a conversion with a base over 36; write your own string conversion routine.";
 	// Save the base.
@@ -102,7 +108,8 @@ BigUnsignedInABase::BigUnsignedInABase(const std::string &s, Base base) {
 	zapLeadingZeros();
 }
 
-BigUnsignedInABase::operator std::string() const {
+BigUnsignedInABase::operator std::string() const
+{
 	if (base > 36)
 		throw "BigUnsignedInABase ==> std::string: The default string conversion routines use the symbol set 0-9, A-Z and therefore support only up to base 36.  You tried a conversion with a base over 36; write your own string conversion routine.";
 	if (len == 0)
@@ -120,6 +127,6 @@ BigUnsignedInABase::operator std::string() const {
 			s[symbolNumInString] = char('A' + theDigit - 10);
 	}
 	std::string s2(s);
-	delete [] s;
+	delete[] s;
 	return s2;
 }

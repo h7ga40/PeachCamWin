@@ -29,19 +29,19 @@ namespace oned {
 class UPCAReader : public UPCEANReader {
 
 private:
-  EAN13Reader ean13Reader;
-  static Ref<Result> maybeReturnResult(Ref<Result> result);
+	EAN13Reader ean13Reader;
+	static int maybeReturnResult(Ref<Result> result, Ref<Result> &result2);
 
 public:
-  UPCAReader();
+	UPCAReader();
 
-  int decodeMiddle(Ref<BitArray> row, Range const& startRange, std::string& resultString);
+	int decodeMiddle(Ref<BitArray> row, Range const &startRange, std::string &resultString);
 
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row, Range const& startGuardRange);
-  Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
+	int decodeRow(int rowNumber, Ref<BitArray> row, Range const &startGuardRange, Ref<Result> &result);
+	int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
 
-  BarcodeFormat getBarcodeFormat();
+	BarcodeFormat getBarcodeFormat();
 };
 
 }

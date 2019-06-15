@@ -32,71 +32,71 @@ namespace detector {
 
 class Detector {
 protected:
-  static const int INTEGER_MATH_SHIFT = 8;
-  static const int PATTERN_MATCH_RESULT_SCALE_FACTOR = 1 << INTEGER_MATH_SHIFT;
-  static const int MAX_AVG_VARIANCE;
-  static const int MAX_INDIVIDUAL_VARIANCE;
+	static const int INTEGER_MATH_SHIFT = 8;
+	static const int PATTERN_MATCH_RESULT_SCALE_FACTOR = 1 << INTEGER_MATH_SHIFT;
+	static const int MAX_AVG_VARIANCE;
+	static const int MAX_INDIVIDUAL_VARIANCE;
 
-  static const int START_PATTERN[];
-  static const int START_PATTERN_LENGTH;
-  static const int START_PATTERN_REVERSE[];
-  static const int START_PATTERN_REVERSE_LENGTH;
-  static const int STOP_PATTERN[];
-  static const int STOP_PATTERN_LENGTH;
-  static const int STOP_PATTERN_REVERSE[];
-  static const int STOP_PATTERN_REVERSE_LENGTH;
+	static const int START_PATTERN[];
+	static const int START_PATTERN_LENGTH;
+	static const int START_PATTERN_REVERSE[];
+	static const int START_PATTERN_REVERSE_LENGTH;
+	static const int STOP_PATTERN[];
+	static const int STOP_PATTERN_LENGTH;
+	static const int STOP_PATTERN_REVERSE[];
+	static const int STOP_PATTERN_REVERSE_LENGTH;
 
-  Ref<BinaryBitmap> image_;
-  
-  static ArrayRef< Ref<ResultPoint> > findVertices(Ref<BitMatrix> matrix, int rowStep);
-  static ArrayRef< Ref<ResultPoint> > findVertices180(Ref<BitMatrix> matrix, int rowStep);
+	Ref<BinaryBitmap> image_;
 
-  static ArrayRef<int> findGuardPattern(Ref<BitMatrix> matrix,
-                                        int column,
-                                        int row,
-                                        int width,
-                                        bool whiteFirst,
-                                        const int pattern[],
-                                        int patternSize,
-                                        ArrayRef<int>& counters);
-  static int patternMatchVariance(ArrayRef<int>& counters, const int pattern[],
-                                  int maxIndividualVariance);
+	static ArrayRef< Ref<ResultPoint> > findVertices(Ref<BitMatrix> matrix, int rowStep);
+	static ArrayRef< Ref<ResultPoint> > findVertices180(Ref<BitMatrix> matrix, int rowStep);
 
-  static void correctVertices(Ref<BitMatrix> matrix,
-                              ArrayRef< Ref<ResultPoint> >& vertices,
-                              bool upsideDown);
-  static void findWideBarTopBottom(Ref<BitMatrix> matrix,
-                                   ArrayRef< Ref<ResultPoint> >& vertices,
-                                   int offsetVertice,
-                                   int startWideBar,
-                                   int lenWideBar,
-                                   int lenPattern,
-                                   int nIncrement);
-  static void findCrossingPoint(ArrayRef< Ref<ResultPoint> >& vertices,
-                                int idxResult,
-                                int idxLineA1,int idxLineA2,
-                                int idxLineB1,int idxLineB2,
-                                Ref<BitMatrix>& matrix);
-  static Point intersection(Line a, Line b);
-  static float computeModuleWidth(ArrayRef< Ref<ResultPoint> >& vertices);
-  static int computeDimension(Ref<ResultPoint> const& topLeft,
-                              Ref<ResultPoint> const& topRight,
-                              Ref<ResultPoint> const& bottomLeft,
-                              Ref<ResultPoint> const& bottomRight,
-                              float moduleWidth);
-  int computeYDimension(Ref<ResultPoint> const& topLeft,
-                        Ref<ResultPoint> const& topRight,
-                        Ref<ResultPoint> const& bottomLeft,
-                        Ref<ResultPoint> const& bottomRight,
-                        float moduleWidth);
+	static ArrayRef<int> findGuardPattern(Ref<BitMatrix> matrix,
+		int column,
+		int row,
+		int width,
+		bool whiteFirst,
+		const int pattern[],
+		int patternSize,
+		ArrayRef<int> &counters);
+	static int patternMatchVariance(ArrayRef<int> &counters, const int pattern[],
+		int maxIndividualVariance);
 
-  Ref<BitMatrix> sampleLines(ArrayRef< Ref<ResultPoint> > const& vertices, int dimensionY, int dimension);
+	static int correctVertices(Ref<BitMatrix> matrix,
+		ArrayRef< Ref<ResultPoint> > &vertices,
+		bool upsideDown);
+	static void findWideBarTopBottom(Ref<BitMatrix> matrix,
+		ArrayRef< Ref<ResultPoint> > &vertices,
+		int offsetVertice,
+		int startWideBar,
+		int lenWideBar,
+		int lenPattern,
+		int nIncrement);
+	static int findCrossingPoint(ArrayRef< Ref<ResultPoint> > &vertices,
+		int idxResult,
+		int idxLineA1, int idxLineA2,
+		int idxLineB1, int idxLineB2,
+		Ref<BitMatrix> &matrix);
+	static Point intersection(Line a, Line b);
+	static float computeModuleWidth(ArrayRef< Ref<ResultPoint> > &vertices);
+	static int computeDimension(Ref<ResultPoint> const &topLeft,
+		Ref<ResultPoint> const &topRight,
+		Ref<ResultPoint> const &bottomLeft,
+		Ref<ResultPoint> const &bottomRight,
+		float moduleWidth);
+	int computeYDimension(Ref<ResultPoint> const &topLeft,
+		Ref<ResultPoint> const &topRight,
+		Ref<ResultPoint> const &bottomLeft,
+		Ref<ResultPoint> const &bottomRight,
+		float moduleWidth);
+
+	int sampleLines(ArrayRef< Ref<ResultPoint> > const &vertices, int dimensionY, int dimension, Ref<BitMatrix> &result);
 
 public:
-  Detector(Ref<BinaryBitmap> image);
-  Ref<BinaryBitmap> getImage();
-  Ref<DetectorResult> detect();
-  Ref<DetectorResult> detect(DecodeHints const& hints);
+	Detector(Ref<BinaryBitmap> image);
+	Ref<BinaryBitmap> getImage();
+	int detect(Ref<DetectorResult> &result);
+	int detect(DecodeHints const &hints, Ref<DetectorResult> &result);
 };
 
 }

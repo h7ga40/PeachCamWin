@@ -31,17 +31,17 @@ namespace qrcode {
 
 class DataBlock : public Counted {
 private:
-  int numDataCodewords_;
-  ArrayRef<char> codewords_;
+	int numDataCodewords_;
+	ArrayRef<char> codewords_;
 
-  DataBlock(int numDataCodewords, ArrayRef<char> codewords);
+	DataBlock(int numDataCodewords, ArrayRef<char> codewords);
 
 public:
-  static std::vector<Ref<DataBlock> >
-  getDataBlocks(ArrayRef<char> rawCodewords, Version *version, ErrorCorrectionLevel &ecLevel);
+	static int getDataBlocks(ArrayRef<char> rawCodewords, Version *version, ErrorCorrectionLevel &ecLevel,
+		std::vector<Ref<DataBlock>> &result);
 
-  int getNumDataCodewords();
-  ArrayRef<char> getCodewords();
+	int getNumDataCodewords();
+	ArrayRef<char> getCodewords();
 };
 
 }

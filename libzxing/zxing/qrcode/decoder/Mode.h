@@ -29,27 +29,27 @@ namespace qrcode {
 
 class Mode {
 private:
-  int characterCountBitsForVersions0To9_;
-  int characterCountBitsForVersions10To26_;
-  int characterCountBitsForVersions27AndHigher_;
-  std::string name_;
+	int characterCountBitsForVersions0To9_;
+	int characterCountBitsForVersions10To26_;
+	int characterCountBitsForVersions27AndHigher_;
+	std::string name_;
 
-  Mode(int cbv0_9, int cbv10_26, int cbv27, int bits, char const* name);
+	Mode(int cbv0_9, int cbv10_26, int cbv27, int bits, char const *name);
 
 public:
-  static Mode TERMINATOR;
-  static Mode NUMERIC;
-  static Mode ALPHANUMERIC;
-  static Mode STRUCTURED_APPEND;
-  static Mode BYTE;
-  static Mode ECI;
-  static Mode KANJI;
-  static Mode FNC1_FIRST_POSITION;
-  static Mode FNC1_SECOND_POSITION;
-  static Mode HANZI;
+	static Mode TERMINATOR;
+	static Mode NUMERIC;
+	static Mode ALPHANUMERIC;
+	static Mode STRUCTURED_APPEND;
+	static Mode BYTE;
+	static Mode ECI;
+	static Mode KANJI;
+	static Mode FNC1_FIRST_POSITION;
+	static Mode FNC1_SECOND_POSITION;
+	static Mode HANZI;
 
-  static Mode& forBits(int bits);
-  int getCharacterCountBits(Version *version);
+	static Mode &forBits(int bits);
+	int getCharacterCountBits(Version *version);
 };
 }
 }

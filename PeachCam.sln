@@ -72,13 +72,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing", "libzxing\libzxing.vcxproj", "{89AFB09B-93FA-4215-9B69-686C455F0005}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-aztec", "libzxing\zxing\aztec\libzxing-aztec.vcxproj", "{150E9AB8-A424-4B54-9286-F6F25E54038D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-aztec", "libzxing\zxing\aztec\aztec.vcxproj", "{150E9AB8-A424-4B54-9286-F6F25E54038D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-datamatrix", "libzxing\zxing\datamatrix\libzxing-datamatrix.vcxproj", "{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-datamatrix", "libzxing\zxing\datamatrix\datamatrix.vcxproj", "{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-pdf417", "libzxing\zxing\pdf417\libzxing-pdf417.vcxproj", "{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-pdf417", "libzxing\zxing\pdf417\pdf417.vcxproj", "{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-qrcode", "libzxing\zxing\qrcode\libzxing-qrcode.vcxproj", "{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzxing-qrcode", "libzxing\zxing\qrcode\qrcode.vcxproj", "{6DA3660B-DC59-4B11-B9EE-E20F2F2A431F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -25,28 +25,41 @@
 #include <iostream>
 
 namespace zxing {
-	namespace qrcode {
-		
-		using namespace std;
-		
-		QRCodeReader::QRCodeReader() :decoder_() {
-		}
-		//TODO: see if any of the other files in the qrcode tree need tryHarder
-		Ref<Result> QRCodeReader::decode(Ref<BinaryBitmap> image, DecodeHints hints) {
-			Detector detector(image->getBlackMatrix());
-			Ref<DetectorResult> detectorResult(detector.detect(hints));
-			ArrayRef< Ref<ResultPoint> > points (detectorResult->getPoints());
-			Ref<DecoderResult> decoderResult(decoder_.decode(detectorResult->getBits()));
-			Ref<Result> result(
-							   new Result(decoderResult->getText(), decoderResult->getRawBytes(), points, BarcodeFormat::QR_CODE));
-			return result;
-		}
-		
-		QRCodeReader::~QRCodeReader() {
-		}
-		
-    Decoder& QRCodeReader::getDecoder() {
-        return decoder_;
-    }
-	}
+namespace qrcode {
+
+using namespace std;
+
+QRCodeReader::QRCodeReader() :
+	decoder_()
+{
+}
+
+//TODO: see if any of the other files in the qrcode tree need tryHarder
+int QRCodeReader::decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result)
+{
+	int ret;
+	Ref<BitMatrix> matrix;
+	if ((ret = image->getBlackMatrix(matrix)) < 0)
+		return ret;
+	Detector detector(matrix);
+	Ref<DetectorResult> detectorResult;
+	if ((ret = detector.detect(hints, detectorResult)) < 0)
+		return ret;
+	ArrayRef< Ref<ResultPoint> > points(detectorResult->getPoints());
+	Ref<DecoderResult> decoderResult;
+	if ((ret = decoder_.decode(detectorResult->getBits(), decoderResult)) < 0)
+		return ret;
+	result = new Result(decoderResult->getText(), decoderResult->getRawBytes(), points, BarcodeFormat::QR_CODE);
+	return 0;
+}
+
+QRCodeReader::~QRCodeReader()
+{
+}
+
+Decoder &QRCodeReader::getDecoder()
+{
+	return decoder_;
+}
+}
 }

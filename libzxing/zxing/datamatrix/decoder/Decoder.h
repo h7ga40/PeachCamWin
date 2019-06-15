@@ -33,14 +33,14 @@ namespace datamatrix {
 
 class Decoder {
 private:
-  ReedSolomonDecoder rsDecoder_;
+	ReedSolomonDecoder rsDecoder_;
 
-  void correctErrors(ArrayRef<char> bytes, int numDataCodewords);
+	int correctErrors(ArrayRef<char> bytes, int numDataCodewords);
 
 public:
-  Decoder();
+	Decoder();
 
-  Ref<DecoderResult> decode(Ref<BitMatrix> bits);
+	int decode(Ref<BitMatrix> bits, Ref<DecoderResult> &result);
 };
 
 }

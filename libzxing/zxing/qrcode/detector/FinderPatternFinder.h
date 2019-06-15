@@ -36,39 +36,39 @@ namespace qrcode {
 
 class FinderPatternFinder {
 private:
-  static int CENTER_QUORUM;
+	static int CENTER_QUORUM;
 
 protected:
-  static int MIN_SKIP;
-  static int MAX_MODULES;
+	static int MIN_SKIP;
+	static int MAX_MODULES;
 
-  Ref<BitMatrix> image_;
-  std::vector<Ref<FinderPattern> > possibleCenters_;
-  bool hasSkipped_;
+	Ref<BitMatrix> image_;
+	std::vector<Ref<FinderPattern> > possibleCenters_;
+	bool hasSkipped_;
 
-  Ref<ResultPointCallback> callback_;
+	Ref<ResultPointCallback> callback_;
 
-  /** stateCount must be int[5] */
-  static float centerFromEnd(int* stateCount, int end);
-  static bool foundPatternCross(int* stateCount);
+	/** stateCount must be int[5] */
+	static float centerFromEnd(int *stateCount, int end);
+	static bool foundPatternCross(int *stateCount);
 
-  float crossCheckVertical(size_t startI, size_t centerJ, int maxCount, int originalStateCountTotal);
-  float crossCheckHorizontal(size_t startJ, size_t centerI, int maxCount, int originalStateCountTotal);
+	float crossCheckVertical(size_t startI, size_t centerJ, int maxCount, int originalStateCountTotal);
+	float crossCheckHorizontal(size_t startJ, size_t centerI, int maxCount, int originalStateCountTotal);
 
-  /** stateCount must be int[5] */
-  bool handlePossibleCenter(int* stateCount, size_t i, size_t j);
-  int findRowSkip();
-  bool haveMultiplyConfirmedCenters();
-  std::vector<Ref<FinderPattern> > selectBestPatterns();
-  static std::vector<Ref<FinderPattern> > orderBestPatterns(std::vector<Ref<FinderPattern> > patterns);
+	/** stateCount must be int[5] */
+	bool handlePossibleCenter(int *stateCount, size_t i, size_t j);
+	int findRowSkip();
+	bool haveMultiplyConfirmedCenters();
+	int selectBestPatterns(std::vector<Ref<FinderPattern>> &result);
+	static std::vector<Ref<FinderPattern> > orderBestPatterns(std::vector<Ref<FinderPattern> > patterns);
 
-  Ref<BitMatrix> getImage();
-  std::vector<Ref<FinderPattern> >& getPossibleCenters();
+	Ref<BitMatrix> getImage();
+	std::vector<Ref<FinderPattern> > &getPossibleCenters();
 
 public:
-  static float distance(Ref<ResultPoint> p1, Ref<ResultPoint> p2);
-  FinderPatternFinder(Ref<BitMatrix> image, Ref<ResultPointCallback>const&);
-  Ref<FinderPatternInfo> find(DecodeHints const& hints);
+	static float distance(Ref<ResultPoint> p1, Ref<ResultPoint> p2);
+	FinderPatternFinder(Ref<BitMatrix> image, Ref<ResultPointCallback>const &);
+	int find(DecodeHints const &hints, Ref<FinderPatternInfo> &result);
 };
 }
 }

@@ -33,40 +33,43 @@ namespace zxing {
  * @author christian.brunschen@gmail.com (Christian Brunschen)
  */
 class BitSource : public Counted {
-  typedef char byte;
+	typedef char byte;
 private:
-  ArrayRef<byte> bytes_;
-  int byteOffset_;
-  int bitOffset_;
+	ArrayRef<byte> bytes_;
+	int byteOffset_;
+	int bitOffset_;
 public:
   /**
    * @param bytes bytes from which this will read bits. Bits will be read from the first byte first.
    * Bits are read within a byte from most-significant to least-significant bit.
    */
-  BitSource(ArrayRef<byte> &bytes) :
-      bytes_(bytes), byteOffset_(0), bitOffset_(0) {
-  }
+	BitSource(ArrayRef<byte> &bytes) :
+		bytes_(bytes), byteOffset_(0), bitOffset_(0)
+	{
+	}
 
-  int getBitOffset() {
-    return bitOffset_;
-  }
+	int getBitOffset()
+	{
+		return bitOffset_;
+	}
 
-  int getByteOffset() {
-    return byteOffset_;
-  }
+	int getByteOffset()
+	{
+		return byteOffset_;
+	}
 
-  /**
-   * @param numBits number of bits to read
-   * @return int representing the bits read. The bits will appear as the least-significant
-   *         bits of the int
-   * @throws IllegalArgumentException if numBits isn't in [1,32]
-   */
-  int readBits(int numBits);
+	/**
+	 * @param numBits number of bits to read
+	 * @return int representing the bits read. The bits will appear as the least-significant
+	 *         bits of the int
+	 * @throws IllegalArgumentException if numBits isn't in [1,32]
+	 */
+	int readBits(int numBits);
 
-  /**
-   * @return number of bits that can be read successfully
-   */
-  int available();
+	/**
+	 * @return number of bits that can be read successfully
+	 */
+	int available();
 };
 
 }

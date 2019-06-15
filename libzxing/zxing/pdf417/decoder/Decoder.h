@@ -43,16 +43,16 @@ namespace decoder {
 
 class Decoder {
 private:
-  static const int MAX_ERRORS;
-  static const int MAX_EC_CODEWORDS;
+	static const int MAX_ERRORS;
+	static const int MAX_EC_CODEWORDS;
 
-  void correctErrors(ArrayRef<int> codewords,
+	int correctErrors(ArrayRef<int> codewords,
 		ArrayRef<int> erasures, int numECCodewords);
-  static void verifyCodewordCount(ArrayRef<int> codewords, int numECCodewords);
+	static int verifyCodewordCount(ArrayRef<int> codewords, int numECCodewords);
 
 public:
 
-  Ref<DecoderResult> decode(Ref<BitMatrix> bits, DecodeHints const &hints);
+	int decode(Ref<BitMatrix> bits, DecodeHints const &hints, Ref<DecoderResult> &result);
 };
 
 }

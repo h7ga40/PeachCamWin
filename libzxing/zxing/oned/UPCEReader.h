@@ -26,19 +26,19 @@ namespace oned {
 
 class UPCEReader : public UPCEANReader {
 private:
-  std::vector<int> decodeMiddleCounters;
-  static bool determineNumSysAndCheckDigit(std::string& resultString, int lgPatternFound);
+	std::vector<int> decodeMiddleCounters;
+	static bool determineNumSysAndCheckDigit(std::string &resultString, int lgPatternFound);
 
 protected:
-  Range decodeEnd(Ref<BitArray> row, int endStart);
-  bool checkChecksum(Ref<String> const& s);
+	int decodeEnd(Ref<BitArray> row, int endStart, Range &result);
+	bool checkChecksum(Ref<String> const &s);
 public:
-  UPCEReader();
+	UPCEReader();
 
-  int decodeMiddle(Ref<BitArray> row, Range const& startRange, std::string& resultString);
-  static Ref<String> convertUPCEtoUPCA(Ref<String> const& upce);
+	int decodeMiddle(Ref<BitArray> row, Range const &startRange, std::string &resultString);
+	static Ref<String> convertUPCEtoUPCA(Ref<String> const &upce);
 
-  BarcodeFormat getBarcodeFormat();
+	BarcodeFormat getBarcodeFormat();
 };
 
 }

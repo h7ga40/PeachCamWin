@@ -11,33 +11,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataMatrixReader.h" />
     <ClInclude Include="decoder\BitMatrixParser.h" />
+    <ClInclude Include="decoder\DataBlock.h" />
     <ClInclude Include="decoder\DecodedBitStreamParser.h" />
     <ClInclude Include="decoder\Decoder.h" />
-    <ClInclude Include="decoder\ec\ErrorCorrection.h" />
-    <ClInclude Include="decoder\ec\ModulusGF.h" />
-    <ClInclude Include="decoder\ec\ModulusPoly.h" />
+    <ClInclude Include="detector\CornerPoint.h" />
     <ClInclude Include="detector\Detector.h" />
-    <ClInclude Include="detector\LinesSampler.h" />
-    <ClInclude Include="PDF417Reader.h" />
+    <ClInclude Include="detector\DetectorException.h" />
+    <ClInclude Include="Version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataMatrixReader.cpp" />
     <ClCompile Include="decoder\BitMatrixParser.cpp" />
+    <ClCompile Include="decoder\DataBlock.cpp" />
     <ClCompile Include="decoder\DecodedBitStreamParser.cpp" />
     <ClCompile Include="decoder\Decoder.cpp" />
-    <ClCompile Include="decoder\ec\ErrorCorrection.cpp" />
-    <ClCompile Include="decoder\ec\ModulusGF.cpp" />
-    <ClCompile Include="decoder\ec\ModulusPoly.cpp" />
+    <ClCompile Include="detector\CornerPoint.cpp" />
     <ClCompile Include="detector\Detector.cpp" />
-    <ClCompile Include="detector\LinesSampler.cpp" />
-    <ClCompile Include="PDF417Reader.cpp" />
+    <ClCompile Include="detector\DetectorException.cpp" />
+    <ClCompile Include="Version.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{60D69AD9-4A13-4E8E-8DC2-95E1FBDFC0C5}</ProjectGuid>
+    <ProjectGuid>{C417BCD9-D5AD-46DC-96CC-4E41C971F9AF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>libzxingpdf417</RootNamespace>
+    <RootNamespace>datamatrix</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>libzxing-datamatrix</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -81,6 +82,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\..\PeachCam;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4002;4003;4005;4007;4010;4013;4015;4020;4022;4024;4028;4029;4031;4033;4034;4042;4047;4048;4049;4056;4067;4074;4079;4083;4088;4089;4090;4091;4094;4096;4098;4099;4113;4133;4715;4716</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -99,6 +101,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\..\PeachCam;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatSpecificWarningsAsErrors>4002;4003;4005;4007;4010;4013;4015;4020;4022;4024;4028;4029;4031;4033;4034;4042;4047;4048;4049;4056;4067;4074;4079;4083;4088;4089;4090;4091;4094;4096;4098;4099;4113;4133;4715;4716</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -24,15 +24,16 @@ namespace common {
 namespace detector {
 
 class Math {
- private:
-  Math();
-  ~Math();
- public:
+private:
+	Math();
+	~Math();
+public:
 
-  // Java standard Math.round
-  static inline int round(float a) {
-    return (int)std::floor(a +0.5f);
-  }
+ // Java standard Math.round
+	static inline int round(float a)
+	{
+		return (int)std::floor(a + 0.5f);
+	}
 
 };
 

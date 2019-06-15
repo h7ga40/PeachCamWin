@@ -27,55 +27,55 @@ namespace zxing {
 namespace pdf417 {
 
 class DecodedBitStreamParser {
- protected:
-  enum Mode {
-    ALPHA,
-    LOWER,
-    MIXED,
-    PUNCT,
-    ALPHA_SHIFT,
-    PUNCT_SHIFT
-  };
+protected:
+	enum Mode {
+		ALPHA,
+		LOWER,
+		MIXED,
+		PUNCT,
+		ALPHA_SHIFT,
+		PUNCT_SHIFT
+	};
 
- private:
-  
-  static const int TEXT_COMPACTION_MODE_LATCH;
-  static const int BYTE_COMPACTION_MODE_LATCH;
-  static const int NUMERIC_COMPACTION_MODE_LATCH;
-  static const int BYTE_COMPACTION_MODE_LATCH_6;
-  static const int BEGIN_MACRO_PDF417_CONTROL_BLOCK;
-  static const int BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
-  static const int MACRO_PDF417_TERMINATOR;
-  static const int MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
-  static const int MAX_NUMERIC_CODEWORDS;
+private:
 
-  static const int PL;
-  static const int LL;
-  static const int AS;
-  static const int ML;
-  static const int AL;
-  static const int PS;
-  static const int PAL;
-  static const int EXP900_SIZE;
+	static const int TEXT_COMPACTION_MODE_LATCH;
+	static const int BYTE_COMPACTION_MODE_LATCH;
+	static const int NUMERIC_COMPACTION_MODE_LATCH;
+	static const int BYTE_COMPACTION_MODE_LATCH_6;
+	static const int BEGIN_MACRO_PDF417_CONTROL_BLOCK;
+	static const int BEGIN_MACRO_PDF417_OPTIONAL_FIELD;
+	static const int MACRO_PDF417_TERMINATOR;
+	static const int MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
+	static const int MAX_NUMERIC_CODEWORDS;
 
-  static const char PUNCT_CHARS[];
-  static const char MIXED_CHARS[];
- 
-  static ArrayRef<BigInteger> EXP900;
-  static ArrayRef<BigInteger> initEXP900();
-  
-  static int textCompaction(ArrayRef<int> codewords, int codeIndex, Ref<String> result);
-  static void decodeTextCompaction(ArrayRef<int> textCompactionData,
-                                   ArrayRef<int> byteCompactionData,
-                                   int length,
-                                   Ref<String> result);
-  static int byteCompaction(int mode, ArrayRef<int> codewords, int codeIndex, Ref<String> result);
-  static int numericCompaction(ArrayRef<int> codewords, int codeIndex, Ref<String> result);
-  static Ref<String> decodeBase900toBase10(ArrayRef<int> codewords, int count);
+	static const int PL;
+	static const int LL;
+	static const int AS;
+	static const int ML;
+	static const int AL;
+	static const int PS;
+	static const int PAL;
+	static const int EXP900_SIZE;
 
- public:
-  DecodedBitStreamParser();
-  static Ref<DecoderResult> decode(ArrayRef<int> codewords);
+	static const char PUNCT_CHARS[];
+	static const char MIXED_CHARS[];
+
+	static ArrayRef<BigInteger> EXP900;
+	static ArrayRef<BigInteger> initEXP900();
+
+	static int textCompaction(ArrayRef<int> codewords, int codeIndex, Ref<String> result);
+	static void decodeTextCompaction(ArrayRef<int> textCompactionData,
+		ArrayRef<int> byteCompactionData,
+		int length,
+		Ref<String> result);
+	static int byteCompaction(int mode, ArrayRef<int> codewords, int codeIndex, Ref<String> result);
+	static int numericCompaction(ArrayRef<int> codewords, int codeIndex, Ref<String> result);
+	static int decodeBase900toBase10(ArrayRef<int> codewords, int count, Ref<String> &result);
+
+public:
+	DecodedBitStreamParser();
+	static int decode(ArrayRef<int> codewords, Ref<DecoderResult> &result);
 };
 
 } /* namespace pdf417 */

@@ -33,16 +33,16 @@ class GenericGF;
 
 class ReedSolomonDecoder {
 private:
-  Ref<GenericGF> field;
+	Ref<GenericGF> field;
 public:
-  ReedSolomonDecoder(Ref<GenericGF> fld);
-  ~ReedSolomonDecoder();
-  void decode(ArrayRef<int> received, int twoS);
-  std::vector<Ref<GenericGFPoly> > runEuclideanAlgorithm(Ref<GenericGFPoly> a, Ref<GenericGFPoly> b, int R);
+	ReedSolomonDecoder(Ref<GenericGF> fld);
+	~ReedSolomonDecoder();
+	int decode(ArrayRef<int> received, int twoS);
+	int runEuclideanAlgorithm(Ref<GenericGFPoly> a, Ref<GenericGFPoly> b, int R, std::vector<Ref<GenericGFPoly>> &result);
 
 private:
-  ArrayRef<int> findErrorLocations(Ref<GenericGFPoly> errorLocator);
-  ArrayRef<int> findErrorMagnitudes(Ref<GenericGFPoly> errorEvaluator, ArrayRef<int> errorLocations);
+	int findErrorLocations(Ref<GenericGFPoly> errorLocator, ArrayRef<int> &result);
+	ArrayRef<int> findErrorMagnitudes(Ref<GenericGFPoly> errorEvaluator, ArrayRef<int> errorLocations);
 };
 }
 

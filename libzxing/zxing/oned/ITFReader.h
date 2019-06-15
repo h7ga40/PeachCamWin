@@ -27,26 +27,25 @@ namespace oned {
 
 class ITFReader : public OneDReader {
 private:
-  static const float MAX_AVG_VARIANCE;
-  static const float MAX_INDIVIDUAL_VARIANCE;
+	static const float MAX_AVG_VARIANCE;
+	static const float MAX_INDIVIDUAL_VARIANCE;
 
-  // Stores the actual narrow line width of the image being decoded.
-  int narrowLineWidth;
-			
-  Range decodeStart(Ref<BitArray> row);
-  Range decodeEnd(Ref<BitArray> row);
-  static void decodeMiddle(Ref<BitArray> row, int payloadStart, int payloadEnd, std::string& resultString);
-  void validateQuietZone(Ref<BitArray> row, int startPattern);
-  static int skipWhiteSpace(Ref<BitArray> row);
-			
-  static Range findGuardPattern(Ref<BitArray> row, int rowOffset, std::vector<int> const& pattern);
-  static int decodeDigit(std::vector<int>& counters);
-			
-  void append(char* s, char c);
+	// Stores the actual narrow line width of the image being decoded.
+	int narrowLineWidth;
+
+	int decodeStart(Ref<BitArray> row, Range &result);
+	int decodeEnd(Ref<BitArray> row, Range &result);
+	static int decodeMiddle(Ref<BitArray> row, int payloadStart, int payloadEnd, std::string &resultString);
+	int validateQuietZone(Ref<BitArray> row, int startPattern);
+	static int skipWhiteSpace(Ref<BitArray> row);
+
+	static int findGuardPattern(Ref<BitArray> row, int rowOffset, std::vector<int> const &pattern, Range &result);
+	static int decodeDigit(std::vector<int> &counters);
+
 public:
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
-  ITFReader();
-  ~ITFReader();
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
+	ITFReader();
+	~ITFReader();
 };
 
 }

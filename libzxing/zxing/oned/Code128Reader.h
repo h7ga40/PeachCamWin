@@ -26,20 +26,20 @@ namespace oned {
 
 class Code128Reader : public OneDReader {
 private:
-  static const float MAX_AVG_VARIANCE;
-  static const float MAX_INDIVIDUAL_VARIANCE;
+	static const float MAX_AVG_VARIANCE;
+	static const float MAX_INDIVIDUAL_VARIANCE;
 
-  static std::vector<int> findStartPattern(Ref<BitArray> row);
-  static int decodeCode(Ref<BitArray> row,
-                        std::vector<int>& counters,
-                        int rowOffset);
-			
+	static int findStartPattern(Ref<BitArray> row, std::vector<int> &result);
+	static int decodeCode(Ref<BitArray> row,
+		std::vector<int> &counters,
+		int rowOffset);
+
 public:
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
-  Code128Reader();
-  ~Code128Reader();
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
+	Code128Reader();
+	~Code128Reader();
 
-  BarcodeFormat getBarcodeFormat();
+	BarcodeFormat getBarcodeFormat();
 };
 
 }

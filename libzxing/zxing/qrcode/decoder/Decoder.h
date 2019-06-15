@@ -31,13 +31,13 @@ namespace qrcode {
 
 class Decoder {
 private:
-  ReedSolomonDecoder rsDecoder_;
+	ReedSolomonDecoder rsDecoder_;
 
-  void correctErrors(ArrayRef<char> bytes, int numDataCodewords);
+	int correctErrors(ArrayRef<char> bytes, int numDataCodewords);
 
 public:
-  Decoder();
-  Ref<DecoderResult> decode(Ref<BitMatrix> bits);
+	Decoder();
+	int decode(Ref<BitMatrix> bits, Ref<DecoderResult> &result);
 };
 
 }

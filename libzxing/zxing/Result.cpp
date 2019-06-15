@@ -31,31 +31,38 @@ using zxing::ResultPoint;
 using zxing::BarcodeFormat;
 
 Result::Result(Ref<String> text,
-               ArrayRef<char> rawBytes,
-               ArrayRef< Ref<ResultPoint> > resultPoints,
-               BarcodeFormat format) :
-  text_(text), rawBytes_(rawBytes), resultPoints_(resultPoints), format_(format) {
+	ArrayRef<char> rawBytes,
+	ArrayRef< Ref<ResultPoint> > resultPoints,
+	BarcodeFormat format) :
+	text_(text), rawBytes_(rawBytes), resultPoints_(resultPoints), format_(format)
+{
 }
 
-Result::~Result() {
+Result::~Result()
+{
 }
 
-Ref<String> Result::getText() {
-  return text_;
+Ref<String> Result::getText()
+{
+	return text_;
 }
 
-ArrayRef<char> Result::getRawBytes() {
-  return rawBytes_;
+ArrayRef<char> Result::getRawBytes()
+{
+	return rawBytes_;
 }
 
-ArrayRef< Ref<ResultPoint> > const& Result::getResultPoints() const {
-  return resultPoints_;
+ArrayRef< Ref<ResultPoint> > const &Result::getResultPoints() const
+{
+	return resultPoints_;
 }
 
-ArrayRef< Ref<ResultPoint> >& Result::getResultPoints() {
-  return resultPoints_;
+ArrayRef< Ref<ResultPoint> > &Result::getResultPoints()
+{
+	return resultPoints_;
 }
 
-zxing::BarcodeFormat Result::getBarcodeFormat() const {
-  return format_;
+zxing::BarcodeFormat Result::getBarcodeFormat() const
+{
+	return format_;
 }

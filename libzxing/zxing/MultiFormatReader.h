@@ -20,29 +20,29 @@
  * limitations under the License.
  */
 
- 
+
 #include <zxing/Reader.h>
 #include <zxing/common/BitArray.h>
 #include <zxing/Result.h>
 #include <zxing/DecodeHints.h>
 
 namespace zxing {
-  class MultiFormatReader : public Reader {
-  private:
-    Ref<Result> decodeInternal(Ref<BinaryBitmap> image);
-  
-    std::vector<Ref<Reader> > readers_;
-    DecodeHints hints_;
+class MultiFormatReader : public Reader {
+private:
+	int decodeInternal(Ref<BinaryBitmap> image, Ref<Result> &result);
 
-  public:
-    MultiFormatReader();
-    
-    Ref<Result> decode(Ref<BinaryBitmap> image);
-    Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
-    Ref<Result> decodeWithState(Ref<BinaryBitmap> image);
-    void setHints(DecodeHints hints);
-    ~MultiFormatReader();
-  };
+	std::vector<Ref<Reader> > readers_;
+	DecodeHints hints_;
+
+public:
+	MultiFormatReader();
+
+	int decode(Ref<BinaryBitmap> image, Ref<Result> &result);
+	int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
+	int decodeWithState(Ref<BinaryBitmap> image, Ref<Result> &result);
+	void setHints(DecodeHints hints);
+	~MultiFormatReader();
+};
 }
 
 #endif

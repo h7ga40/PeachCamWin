@@ -28,17 +28,17 @@ namespace zxing {
 namespace oned {
 
 class EAN8Reader : public UPCEANReader {
- private:
-  std::vector<int> decodeMiddleCounters;
+private:
+	std::vector<int> decodeMiddleCounters;
 
- public:
-  EAN8Reader();
+public:
+	EAN8Reader();
 
-  int decodeMiddle(Ref<BitArray> row,
-                   Range const& startRange,
-                   std::string& resultString);
+	int decodeMiddle(Ref<BitArray> row,
+		Range const &startRange,
+		std::string &resultString);
 
-  BarcodeFormat getBarcodeFormat();
+	BarcodeFormat getBarcodeFormat();
 };
 
 }

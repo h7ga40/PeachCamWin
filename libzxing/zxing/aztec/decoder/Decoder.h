@@ -29,40 +29,40 @@
 namespace zxing {
 
 class DecoderResult;
-        
+
 namespace aztec {
 
 class Decoder : public Counted {
- private:
-  enum Table {
-    UPPER,
-    LOWER,
-    MIXED,
-    DIGIT,
-    PUNCT,
-    BINARY
-  };
-            
-  static Table getTable(char t);
-  static const char* getCharacter(Table table, int code);
-            
-  int numCodewords_;
-  int codewordSize_;
-  Ref<AztecDetectorResult> ddata_;
-  int invertedBitCount_;
-            
-  Ref<String> getEncodedData(Ref<BitArray> correctedBits);
-  Ref<BitArray> correctBits(Ref<BitArray> rawbits);
-  Ref<BitArray> extractBits(Ref<BitMatrix> matrix);
-  static Ref<BitMatrix> removeDashedLines(Ref<BitMatrix> matrix);
-  static int readCode(Ref<BitArray> rawbits, int startIndex, int length);
-            
-            
- public:
-  Decoder();
-  Ref<DecoderResult> decode(Ref<AztecDetectorResult> detectorResult);
+private:
+	enum Table {
+		UPPER,
+		LOWER,
+		MIXED,
+		DIGIT,
+		PUNCT,
+		BINARY
+	};
+
+	static Table getTable(char t);
+	static const char *getCharacter(Table table, int code);
+
+	int numCodewords_;
+	int codewordSize_;
+	Ref<AztecDetectorResult> ddata_;
+	int invertedBitCount_;
+
+	int getEncodedData(Ref<BitArray> correctedBits, Ref<String> &result);
+	int correctBits(Ref<BitArray> rawbits, Ref<BitArray> &result);
+	int extractBits(Ref<BitMatrix> matrix, Ref<BitArray> &result);
+	static Ref<BitMatrix> removeDashedLines(Ref<BitMatrix> matrix);
+	static int readCode(Ref<BitArray> rawbits, int startIndex, int length);
+
+
+public:
+	Decoder();
+	int decode(Ref<AztecDetectorResult> detectorResult, Ref<DecoderResult> &result);
 };
-        
+
 }
 }
 

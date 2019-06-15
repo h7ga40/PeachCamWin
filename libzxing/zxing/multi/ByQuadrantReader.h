@@ -26,14 +26,14 @@ namespace zxing {
 namespace multi {
 
 class ByQuadrantReader : public Reader {
-  private:
-    Reader& delegate_;
+private:
+	Reader &delegate_;
 
-  public:
-    ByQuadrantReader(Reader& delegate);
-    virtual ~ByQuadrantReader();
-    virtual Ref<Result> decode(Ref<BinaryBitmap> image);
-    virtual Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
+public:
+	ByQuadrantReader(Reader &delegate);
+	virtual ~ByQuadrantReader();
+	virtual int decode(Ref<BinaryBitmap> image, Ref<Result> &result);
+	virtual int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
 };
 
 }

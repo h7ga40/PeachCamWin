@@ -32,37 +32,51 @@ using zxing::aztec::AztecReader;
 // VC++
 using zxing::BinaryBitmap;
 using zxing::DecodeHints;
-        
-AztecReader::AztecReader() : decoder_() {
-  // nothing
+
+AztecReader::AztecReader() :
+	decoder_()
+{
+	// nothing
 }
-        
-Ref<Result> AztecReader::decode(Ref<zxing::BinaryBitmap> image) {
-  Detector detector(image->getBlackMatrix());
-            
-  Ref<AztecDetectorResult> detectorResult(detector.detect());
-            
-  ArrayRef< Ref<ResultPoint> > points(detectorResult->getPoints());
-            
-  Ref<DecoderResult> decoderResult(decoder_.decode(detectorResult));
-            
-  Ref<Result> result(new Result(decoderResult->getText(),
-                                decoderResult->getRawBytes(),
-                                points,
-                                BarcodeFormat::AZTEC));
-            
-  return result;
+
+int AztecReader::decode(Ref<zxing::BinaryBitmap> image, Ref<Result> &result)
+{
+	int ret;
+	Ref<BitMatrix> matrix;
+	if ((ret = image->getBlackMatrix(matrix)) < 0)
+		return ret;
+	Detector detector(matrix);
+
+	Ref<AztecDetectorResult> detectorResult;
+	if ((ret = detector.detect(detectorResult)) < 0)
+		return ret;
+
+	ArrayRef< Ref<ResultPoint> > points(detectorResult->getPoints());
+
+	Ref<DecoderResult> decoderResult;
+	if ((ret = decoder_.decode(detectorResult, decoderResult)) < 0)
+		return ret;
+
+	result = new Result(decoderResult->getText(),
+		decoderResult->getRawBytes(),
+		points,
+		BarcodeFormat::AZTEC);
+
+	return 0;
 }
-        
-Ref<Result> AztecReader::decode(Ref<BinaryBitmap> image, DecodeHints) {
-  //cout << "decoding with hints not supported for aztec" << "\n" << flush;
-  return this->decode(image);
+
+int AztecReader::decode(Ref<BinaryBitmap> image, DecodeHints, Ref<Result> &result)
+{
+	//cout << "decoding with hints not supported for aztec" << "\n" << flush;
+	return this->decode(image, result);
 }
-        
-AztecReader::~AztecReader() {
-  // nothing
+
+AztecReader::~AztecReader()
+{
+	// nothing
 }
-        
-zxing::aztec::Decoder& AztecReader::getDecoder() {
-  return decoder_;
+
+zxing::aztec::Decoder &AztecReader::getDecoder()
+{
+	return decoder_;
 }

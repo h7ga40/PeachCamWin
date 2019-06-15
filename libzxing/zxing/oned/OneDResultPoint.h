@@ -22,14 +22,14 @@
 #include <cmath>
 
 namespace zxing {
-	namespace oned {
-		
-		class OneDResultPoint : public ResultPoint {
-			
-		public:
-			OneDResultPoint(float posX, float posY);
-		};
-	}
+namespace oned {
+
+class OneDResultPoint : public ResultPoint {
+
+public:
+	OneDResultPoint(float posX, float posY);
+};
+}
 }
 
 #endif

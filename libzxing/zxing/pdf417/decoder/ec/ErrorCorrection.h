@@ -43,24 +43,22 @@ namespace ec {
  * @author Sean Owen
  * @see com.google.zxing.common.reedsolomon.ReedSolomonDecoder
  */
-class ErrorCorrection: public Counted {
+class ErrorCorrection : public Counted {
 
- private:
-  ModulusGF &field_;
+private:
+	ModulusGF &field_;
 
- public:
-  ErrorCorrection();
-  void decode(ArrayRef<int> received,
-              int numECCodewords,
-              ArrayRef<int> erasures);
+public:
+	ErrorCorrection();
+	int decode(ArrayRef<int> received, int numECCodewords, ArrayRef<int> erasures);
 
- private:
-  std::vector<Ref<ModulusPoly> > runEuclideanAlgorithm(Ref<ModulusPoly> a, Ref<ModulusPoly> b, int R);
+private:
+	int runEuclideanAlgorithm(Ref<ModulusPoly> a, Ref<ModulusPoly> b, int R, std::vector<Ref<ModulusPoly>> &result);
 
-  ArrayRef<int> findErrorLocations(Ref<ModulusPoly> errorLocator);
-  ArrayRef<int> findErrorMagnitudes(Ref<ModulusPoly> errorEvaluator,
-                                    Ref<ModulusPoly> errorLocator,
-                                    ArrayRef<int> errorLocations);
+	int findErrorLocations(Ref<ModulusPoly> errorLocator, ArrayRef<int> &result);
+	ArrayRef<int> findErrorMagnitudes(Ref<ModulusPoly> errorEvaluator,
+		Ref<ModulusPoly> errorLocator,
+		ArrayRef<int> errorLocations);
 };
 
 }

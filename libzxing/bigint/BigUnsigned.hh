@@ -27,7 +27,8 @@ protected:
 	BigUnsigned(int, Index c) : NumberlikeArray<Blk>(0, c) {}
 
 	// Decreases len to eliminate any leading zero blocks.
-	void zapLeadingZeros() { 
+	void zapLeadingZeros()
+	{
 		while (len > 0 && blk[len - 1] == 0)
 			len--;
 	}
@@ -40,45 +41,47 @@ public:
 	BigUnsigned(const BigUnsigned &x) : NumberlikeArray<Blk>(x) {}
 
 	// Assignment operator
-	void operator=(const BigUnsigned &x) {
+	void operator=(const BigUnsigned &x)
+	{
 		NumberlikeArray<Blk>::operator =(x);
 	}
 
 	// Constructor that copies from a given array of blocks.
-	BigUnsigned(const Blk *b, Index blen) : NumberlikeArray<Blk>(b, blen) {
-		// Eliminate any leading zeros we may have been passed.
+	BigUnsigned(const Blk *b, Index blen) : NumberlikeArray<Blk>(b, blen)
+	{
+// Eliminate any leading zeros we may have been passed.
 		zapLeadingZeros();
 	}
 
 	// Destructor.  NumberlikeArray does the delete for us.
 	~BigUnsigned() {}
-	
+
 	// Constructors from primitive integer types
 	BigUnsigned(unsigned long  x);
-	BigUnsigned(         long  x);
+	BigUnsigned(long  x);
 	BigUnsigned(unsigned int   x);
-	BigUnsigned(         int   x);
+	BigUnsigned(int   x);
 	BigUnsigned(unsigned short x);
-	BigUnsigned(         short x);
+	BigUnsigned(short x);
 protected:
 	// Helpers
-	template <class X> void initFromPrimitive      (X x);
+	template <class X> void initFromPrimitive(X x);
 	template <class X> void initFromSignedPrimitive(X x);
 public:
 
 	/* Converters to primitive integer types
 	 * The implicit conversion operators caused trouble, so these are now
 	 * named. */
-	unsigned long  toUnsignedLong () const;
-	long           toLong         () const;
-	unsigned int   toUnsignedInt  () const;
-	int            toInt          () const;
+	unsigned long  toUnsignedLong() const;
+	long           toLong() const;
+	unsigned int   toUnsignedInt() const;
+	int            toInt() const;
 	unsigned short toUnsignedShort() const;
-	short          toShort        () const;
+	short          toShort() const;
 protected:
 	// Helpers
 	template <class X> X convertToSignedPrimitive() const;
-	template <class X> X convertToPrimitive      () const;
+	template <class X> X convertToPrimitive() const;
 public:
 
 	// BIT/BLOCK ACCESSORS
@@ -102,7 +105,8 @@ public:
 	Index bitLength() const;
 	/* Get the state of bit bi, which has value 2^bi.  Bits beyond the
 	 * number's length are considered to be 0. */
-	bool getBit(Index bi) const {
+	bool getBit(Index bi) const
+	{
 		return (getBlock(bi / N) & (Blk(1) << (bi % N))) != 0;
 	}
 	/* Sets the state of bit bi to newBit.  The number grows or shrinks as
@@ -115,15 +119,17 @@ public:
 	CmpRes compareTo(const BigUnsigned &x) const;
 
 	// Ordinary comparison operators
-	bool operator ==(const BigUnsigned &x) const {
+	bool operator ==(const BigUnsigned &x) const
+	{
 		return NumberlikeArray<Blk>::operator ==(x);
 	}
-	bool operator !=(const BigUnsigned &x) const {
+	bool operator !=(const BigUnsigned &x) const
+	{
 		return NumberlikeArray<Blk>::operator !=(x);
 	}
-	bool operator < (const BigUnsigned &x) const { return compareTo(x) == less   ; }
+	bool operator < (const BigUnsigned &x) const { return compareTo(x) == less; }
 	bool operator <=(const BigUnsigned &x) const { return compareTo(x) != greater; }
-	bool operator >=(const BigUnsigned &x) const { return compareTo(x) != less   ; }
+	bool operator >=(const BigUnsigned &x) const { return compareTo(x) != less; }
 	bool operator > (const BigUnsigned &x) const { return compareTo(x) == greater; }
 
 	/*
@@ -157,7 +163,7 @@ public:
 	 * object in which to store the quotient.  NOTE: If you are wondering
 	 * why these don't return a value, you probably mean to use the
 	 * overloaded return-by-value operators instead.
-	 * 
+	 *
 	 * Examples:
 	 *     BigInteger a(43), b(7), c, d;
 	 *
@@ -169,7 +175,7 @@ public:
 	 *
 	 *     // ``Aliased'' calls now do the right thing using a temporary
 	 *     // copy, but see note on `divideWithRemainder'.
-	 *     a.add(a, b); 
+	 *     a.add(a, b);
 	 */
 
 	// COPY-LESS OPERATIONS
@@ -226,16 +232,16 @@ public:
 	/* INCREMENT/DECREMENT OPERATORS
 	 * To discourage messy coding, these do not return *this, so prefix
 	 * and postfix behave the same. */
-	void operator ++(   );
+	void operator ++();
 	void operator ++(int);
-	void operator --(   );
+	void operator --();
 	void operator --(int);
 
 	// Helper function that needs access to BigUnsigned internals
 	friend Blk getShiftedBlock(const BigUnsigned &num, Index x,
-			unsigned int y);
+		unsigned int y);
 
-	// See BigInteger.cc.
+// See BigInteger.cc.
 	template <class X>
 	friend X convertBigUnsignedToPrimitiveAccess(const BigUnsigned &a);
 };
@@ -244,71 +250,85 @@ public:
  * copy-less operations.  The copy-less operations are responsible for making
  * any necessary temporary copies to work around aliasing. */
 
-inline BigUnsigned BigUnsigned::operator +(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator +(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.add(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator -(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator -(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.subtract(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator *(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator *(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.multiply(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator /(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator /(const BigUnsigned &x) const
+{
 	if (x.isZero()) throw "BigUnsigned::operator /: division by zero";
 	BigUnsigned q, r;
 	r = *this;
 	r.divideWithRemainder(x, q);
 	return q;
 }
-inline BigUnsigned BigUnsigned::operator %(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator %(const BigUnsigned &x) const
+{
 	if (x.isZero()) throw "BigUnsigned::operator %: division by zero";
 	BigUnsigned q, r;
 	r = *this;
 	r.divideWithRemainder(x, q);
 	return r;
 }
-inline BigUnsigned BigUnsigned::operator &(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator &(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.bitAnd(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator |(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator |(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.bitOr(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator ^(const BigUnsigned &x) const {
+inline BigUnsigned BigUnsigned::operator ^(const BigUnsigned &x) const
+{
 	BigUnsigned ans;
 	ans.bitXor(*this, x);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator <<(int b) const {
+inline BigUnsigned BigUnsigned::operator <<(int b) const
+{
 	BigUnsigned ans;
 	ans.bitShiftLeft(*this, b);
 	return ans;
 }
-inline BigUnsigned BigUnsigned::operator >>(int b) const {
+inline BigUnsigned BigUnsigned::operator >>(int b) const
+{
 	BigUnsigned ans;
 	ans.bitShiftRight(*this, b);
 	return ans;
 }
 
-inline void BigUnsigned::operator +=(const BigUnsigned &x) {
+inline void BigUnsigned::operator +=(const BigUnsigned &x)
+{
 	add(*this, x);
 }
-inline void BigUnsigned::operator -=(const BigUnsigned &x) {
+inline void BigUnsigned::operator -=(const BigUnsigned &x)
+{
 	subtract(*this, x);
 }
-inline void BigUnsigned::operator *=(const BigUnsigned &x) {
+inline void BigUnsigned::operator *=(const BigUnsigned &x)
+{
 	multiply(*this, x);
 }
-inline void BigUnsigned::operator /=(const BigUnsigned &x) {
+inline void BigUnsigned::operator /=(const BigUnsigned &x)
+{
 	if (x.isZero()) throw "BigUnsigned::operator /=: division by zero";
 	/* The following technique is slightly faster than copying *this first
 	 * when x is large. */
@@ -317,25 +337,31 @@ inline void BigUnsigned::operator /=(const BigUnsigned &x) {
 	// *this contains the remainder, but we overwrite it with the quotient.
 	*this = q;
 }
-inline void BigUnsigned::operator %=(const BigUnsigned &x) {
+inline void BigUnsigned::operator %=(const BigUnsigned &x)
+{
 	if (x.isZero()) throw "BigUnsigned::operator %=: division by zero";
 	BigUnsigned q;
 	// Mods *this by x.  Don't care about quotient left in q.
 	divideWithRemainder(x, q);
 }
-inline void BigUnsigned::operator &=(const BigUnsigned &x) {
+inline void BigUnsigned::operator &=(const BigUnsigned &x)
+{
 	bitAnd(*this, x);
 }
-inline void BigUnsigned::operator |=(const BigUnsigned &x) {
+inline void BigUnsigned::operator |=(const BigUnsigned &x)
+{
 	bitOr(*this, x);
 }
-inline void BigUnsigned::operator ^=(const BigUnsigned &x) {
+inline void BigUnsigned::operator ^=(const BigUnsigned &x)
+{
 	bitXor(*this, x);
 }
-inline void BigUnsigned::operator <<=(int b) {
+inline void BigUnsigned::operator <<=(int b)
+{
 	bitShiftLeft(*this, b);
 }
-inline void BigUnsigned::operator >>=(int b) {
+inline void BigUnsigned::operator >>=(int b)
+{
 	bitShiftRight(*this, b);
 }
 
@@ -353,7 +379,8 @@ inline void BigUnsigned::operator >>=(int b) {
  * it only with primitive integer types.)  Type X could be signed, but x is
  * known to be nonnegative. */
 template <class X>
-void BigUnsigned::initFromPrimitive(X x) {
+void BigUnsigned::initFromPrimitive(X x)
+{
 	if (x == 0)
 		; // NumberlikeArray already initialized us to zero.
 	else {
@@ -370,10 +397,11 @@ void BigUnsigned::initFromPrimitive(X x) {
  * instantiations, but I wanted to avoid the warning stupidly issued by g++ for
  * a condition that is constant in *any* instantiation, even if not in all. */
 template <class X>
-void BigUnsigned::initFromSignedPrimitive(X x) {
+void BigUnsigned::initFromSignedPrimitive(X x)
+{
 	if (x < 0)
 		throw "BigUnsigned constructor: "
-			"Cannot construct a BigUnsigned from a negative number";
+		"Cannot construct a BigUnsigned from a negative number";
 	else
 		initFromPrimitive(x);
 }
@@ -384,7 +412,8 @@ void BigUnsigned::initFromSignedPrimitive(X x) {
  * slower than the previous version with the masks, but it's much shorter and
  * clearer, which is the library's stated goal. */
 template <class X>
-X BigUnsigned::convertToPrimitive() const {
+X BigUnsigned::convertToPrimitive() const
+{
 	if (len == 0)
 		// The number is zero; return zero.
 		return 0;
@@ -406,13 +435,14 @@ X BigUnsigned::convertToPrimitive() const {
  * one.  (E.g., catch incorrect conversion of 2^31 to the long -2^31.)  Again,
  * separated to avoid a g++ warning. */
 template <class X>
-X BigUnsigned::convertToSignedPrimitive() const {
+X BigUnsigned::convertToSignedPrimitive() const
+{
 	X x = convertToPrimitive<X>();
 	if (x >= 0)
 		return x;
 	else
 		throw "BigUnsigned::to(Primitive): "
-			"Value is too big to fit in the requested type";
+		"Value is too big to fit in the requested type";
 }
 
 #endif

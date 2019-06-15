@@ -30,12 +30,12 @@ namespace datamatrix {
 
 class DataMatrixReader : public Reader {
 private:
-  Decoder decoder_;
+	Decoder decoder_;
 
 public:
-  DataMatrixReader();
-  virtual Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
-  virtual ~DataMatrixReader();
+	DataMatrixReader();
+	virtual int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
+	virtual ~DataMatrixReader();
 
 };
 

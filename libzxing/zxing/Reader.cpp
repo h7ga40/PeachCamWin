@@ -22,10 +22,11 @@
 
 namespace zxing {
 
-Reader::~Reader() { }
+Reader::~Reader() {}
 
-Ref<Result> Reader::decode(Ref<BinaryBitmap> image) {
-  return decode(image, DecodeHints::DEFAULT_HINT);
+int Reader::decode(Ref<BinaryBitmap> image, Ref<Result> &result)
+{
+	return decode(image, DecodeHints::DEFAULT_HINT, result);
 }
 
 }

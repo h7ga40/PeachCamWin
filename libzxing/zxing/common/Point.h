@@ -23,25 +23,25 @@
 namespace zxing {
 class PointI {
 public:
-  int x;
-  int y;
+	int x;
+	int y;
 };
 
 class Point {
 public:
-  Point() : x(0.0f), y(0.0f) {};
-  Point(float x_, float y_) : x(x_), y(y_) {};
+	Point() : x(0.0f), y(0.0f) {};
+	Point(float x_, float y_) : x(x_), y(y_) {};
 
-  float x;
-  float y;
+	float x;
+	float y;
 };
 
 class Line {
 public:
-  Line(Point start_, Point end_) : start(start_), end(end_) {};
+	Line(Point start_, Point end_) : start(start_), end(end_) {};
 
-  Point start;
-  Point end;
+	Point start;
+	Point end;
 };
 }
 #endif // POINT_H_

@@ -29,22 +29,29 @@ namespace datamatrix {
 using namespace std;
 
 DataMatrixReader::DataMatrixReader() :
-    decoder_() {
+	decoder_() {
 }
 
-Ref<Result> DataMatrixReader::decode(Ref<BinaryBitmap> image, DecodeHints hints) {
-  (void)hints;
-  Detector detector(image->getBlackMatrix());
-  Ref<DetectorResult> detectorResult(detector.detect());
-  ArrayRef< Ref<ResultPoint> > points(detectorResult->getPoints());
+int DataMatrixReader::decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result) {
+	(void)hints;
+	int ret;
+	Ref<BitMatrix> matrix;
+	if ((ret = image->getBlackMatrix(matrix)) < 0)
+		return ret;
+	Detector detector(matrix);
+	Ref<DetectorResult> detectorResult;
+	if ((ret = detector.detect(detectorResult)) < 0)
+		return ret;
+	ArrayRef< Ref<ResultPoint> > points(detectorResult->getPoints());
 
 
-  Ref<DecoderResult> decoderResult(decoder_.decode(detectorResult->getBits()));
+	Ref<DecoderResult> decoderResult;
+	if ((ret = decoder_.decode(detectorResult->getBits(), decoderResult)) < 0)
+		return ret;
 
-  Ref<Result> result(
-    new Result(decoderResult->getText(), decoderResult->getRawBytes(), points, BarcodeFormat::DATA_MATRIX));
+	result = new Result(decoderResult->getText(), decoderResult->getRawBytes(), points, BarcodeFormat::DATA_MATRIX);
 
-  return result;
+	return 0;
 }
 
 DataMatrixReader::~DataMatrixReader() {

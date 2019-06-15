@@ -29,13 +29,13 @@ namespace zxing {
 
 class DetectorResult : public Counted {
 private:
-  Ref<BitMatrix> bits_;
-  ArrayRef< Ref<ResultPoint> > points_;
+	Ref<BitMatrix> bits_;
+	ArrayRef< Ref<ResultPoint> > points_;
 
 public:
-  DetectorResult(Ref<BitMatrix> bits, ArrayRef< Ref<ResultPoint> > points);
-  Ref<BitMatrix> getBits();
-  ArrayRef< Ref<ResultPoint> > getPoints();
+	DetectorResult(Ref<BitMatrix> bits, ArrayRef< Ref<ResultPoint> > points);
+	Ref<BitMatrix> getBits();
+	ArrayRef< Ref<ResultPoint> > getPoints();
 };
 
 }

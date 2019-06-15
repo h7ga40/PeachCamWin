@@ -27,31 +27,35 @@ namespace qrcode {
 
 using namespace std;
 
-DataMask::DataMask() {
+DataMask::DataMask()
+{
 }
 
-DataMask::~DataMask() {
+DataMask::~DataMask()
+{
 }
 
 vector<Ref<DataMask> > DataMask::DATA_MASKS;
 static int N_DATA_MASKS = DataMask::buildDataMasks();
 
-DataMask &DataMask::forReference(int reference) {
-  if (reference < 0 || reference > 7) {
-    throw IllegalArgumentException("reference must be between 0 and 7");
-  }
-  return *DATA_MASKS[reference];
+DataMask &DataMask::forReference(int reference)
+{
+	if (reference < 0 || reference > 7) {
+		return *(DataMask *)NULL;
+	}
+	return *DATA_MASKS[reference];
 }
 
-void DataMask::unmaskBitMatrix(BitMatrix& bits, size_t dimension) {
-  for (size_t y = 0; y < dimension; y++) {
-    for (size_t x = 0; x < dimension; x++) {
-      // TODO: check why the coordinates have to be swapped
-      if (isMasked(y, x)) {
-        bits.flip(x, y);
-      }
-    }
-  }
+void DataMask::unmaskBitMatrix(BitMatrix &bits, size_t dimension)
+{
+	for (size_t y = 0; y < dimension; y++) {
+		for (size_t x = 0; x < dimension; x++) {
+		  // TODO: check why the coordinates have to be swapped
+			if (isMasked(y, x)) {
+				bits.flip(x, y);
+			}
+		}
+	}
 }
 
 /**
@@ -59,10 +63,11 @@ void DataMask::unmaskBitMatrix(BitMatrix& bits, size_t dimension) {
  */
 class DataMask000 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    //		return ((x + y) & 0x01) == 0;
-    return ((x + y) % 2) == 0;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+//		return ((x + y) & 0x01) == 0;
+		return ((x + y) % 2) == 0;
+	}
 };
 
 /**
@@ -70,10 +75,11 @@ public:
  */
 class DataMask001 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t) {
-    //		return (x & 0x01) == 0;
-    return (x % 2) == 0;
-  }
+	bool isMasked(size_t x, size_t)
+	{
+//		return (x & 0x01) == 0;
+		return (x % 2) == 0;
+	}
 };
 
 /**
@@ -81,9 +87,10 @@ public:
  */
 class DataMask010 : public DataMask {
 public:
-  bool isMasked(size_t, size_t y) {
-    return y % 3 == 0;
-  }
+	bool isMasked(size_t, size_t y)
+	{
+		return y % 3 == 0;
+	}
 };
 
 /**
@@ -91,9 +98,10 @@ public:
  */
 class DataMask011 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    return (x + y) % 3 == 0;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+		return (x + y) % 3 == 0;
+	}
 };
 
 /**
@@ -101,10 +109,11 @@ public:
  */
 class DataMask100 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    //		return (((x >> 1) + (y / 3)) & 0x01) == 0;
-    return (((x >> 1) + (y / 3)) % 2) == 0;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+//		return (((x >> 1) + (y / 3)) & 0x01) == 0;
+		return (((x >> 1) + (y / 3)) % 2) == 0;
+	}
 };
 
 /**
@@ -113,20 +122,22 @@ public:
  */
 class DataMask101 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    return ((x * y) % 6) == 0;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+		return ((x * y) % 6) == 0;
+	}
 };
-      
+
 /**
  * 110: mask bits for which (xy mod 2 + xy mod 3) mod 2 == 0
  * equivalently, such that xy mod 6 < 3
  */
 class DataMask110 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    return ((x * y) % 6) < 3;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+		return ((x * y) % 6) < 3;
+	}
 };
 /**
  * 111: mask bits for which ((x+y)mod 2 + xy mod 3) mod 2 == 0
@@ -134,22 +145,24 @@ public:
  */
 class DataMask111 : public DataMask {
 public:
-  bool isMasked(size_t x, size_t y) {
-    return ((x + y + ((x * y) % 3)) & 0x01) == 0;
-  }
+	bool isMasked(size_t x, size_t y)
+	{
+		return ((x + y + ((x * y) % 3)) & 0x01) == 0;
+	}
 };
 
 
-int DataMask::buildDataMasks() {
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask000()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask001()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask010()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask011()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask100()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask101()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask110()));
-  DATA_MASKS.push_back(Ref<DataMask> (new DataMask111()));
-  return DATA_MASKS.size();
+int DataMask::buildDataMasks()
+{
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask000()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask001()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask010()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask011()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask100()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask101()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask110()));
+	DATA_MASKS.push_back(Ref<DataMask>(new DataMask111()));
+	return DATA_MASKS.size();
 }
 
 }

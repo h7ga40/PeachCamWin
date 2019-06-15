@@ -26,29 +26,29 @@ namespace oned {
 
 class CodaBarReader : public OneDReader {
 private:
-  static const float MAX_ACCEPTABLE;
-  static const float PADDING;
+	static const float MAX_ACCEPTABLE;
+	static const float PADDING;
 
-  // Keep some instance variables to avoid reallocations
-  std::string decodeRowResult;
-  std::vector<int> counters;
-  int counterLength;
+	// Keep some instance variables to avoid reallocations
+	std::string decodeRowResult;
+	std::vector<int> counters;
+	int counterLength;
 
 public:
-  CodaBarReader();
+	CodaBarReader();
 
-  Ref<Result> decodeRow(int rowNumber, Ref<BitArray> row);
-  
-  void validatePattern(int start);
+	int decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result);
+
+	int validatePattern(int start);
 
 private:
-  void setCounters(Ref<BitArray> row);
-  void counterAppend(int e);
-  int findStartPattern();
-  
-  static bool arrayContains(char const array[], char key);
+	int setCounters(Ref<BitArray> row);
+	void counterAppend(int e);
+	int findStartPattern();
 
-  int toNarrowWidePattern(int position);
+	static bool arrayContains(char const array[], char key);
+
+	int toNarrowWidePattern(int position);
 };
 
 }

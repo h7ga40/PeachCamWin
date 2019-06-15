@@ -26,16 +26,19 @@ namespace zxing {
 FormatException::FormatException() {}
 
 FormatException::FormatException(const char *msg) :
-    ReaderException(msg) {
+	ReaderException(msg)
+{
 }
 
-FormatException::~FormatException() throw() {
+FormatException::~FormatException() throw()
+{
 }
 
-FormatException const&
-FormatException::getFormatInstance() {
-  static FormatException instance;
-  return instance;
+FormatException const &
+FormatException::getFormatInstance()
+{
+	static FormatException instance;
+	return instance;
 }
 
 }

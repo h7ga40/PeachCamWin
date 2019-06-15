@@ -27,31 +27,33 @@ namespace zxing {
 class GreyscaleLuminanceSource : public LuminanceSource {
 
 private:
-  typedef LuminanceSource Super;
-  ArrayRef<char> greyData_;
-  const int dataWidth_;
-  const int dataHeight_;
-  const int left_;
-  const int top_;
+	typedef LuminanceSource Super;
+	ArrayRef<char> greyData_;
+	const int dataWidth_;
+	const int dataHeight_;
+	const int left_;
+	const int top_;
 
 public:
-  GreyscaleLuminanceSource(ArrayRef<char> greyData, int dataWidth, int dataHeight, int left,
-                           int top, int width, int height);
+	GreyscaleLuminanceSource(ArrayRef<char> greyData, int dataWidth, int dataHeight, int left,
+		int top, int width, int height);
 
-  ArrayRef<char> getRow(int y, ArrayRef<char> row) const;
-  ArrayRef<char> getMatrix() const;
+	int getRow(int y, ArrayRef<char> row, ArrayRef<char> &result) const;
+	ArrayRef<char> getMatrix() const;
 
-  bool isCropSupported() const {
-    return true;
-  }
+	bool isCropSupported() const
+	{
+		return true;
+	}
 
-  Ref<LuminanceSource> crop(int left, int top, int width, int height) const;
+	Ref<LuminanceSource> crop(int left, int top, int width, int height) const;
 
-  bool isRotateSupported() const {
-    return true;
-  }
+	bool isRotateSupported() const
+	{
+		return true;
+	}
 
-  Ref<LuminanceSource> rotateCounterClockwise() const;
+	Ref<LuminanceSource> rotateCounterClockwise() const;
 };
 
 }

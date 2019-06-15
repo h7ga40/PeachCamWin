@@ -32,52 +32,52 @@ namespace qrcode {
 
 class ECB {
 private:
-  int count_;
-  int dataCodewords_;
+	int count_;
+	int dataCodewords_;
 public:
-  ECB(int count, int dataCodewords);
-  int getCount();
-  int getDataCodewords();
+	ECB(int count, int dataCodewords);
+	int getCount();
+	int getDataCodewords();
 };
 
 class ECBlocks {
 private:
-  int ecCodewords_;
-  std::vector<ECB*> ecBlocks_;
+	int ecCodewords_;
+	std::vector<ECB *> ecBlocks_;
 public:
-  ECBlocks(int ecCodewords, ECB *ecBlocks);
-  ECBlocks(int ecCodewords, ECB *ecBlocks1, ECB *ecBlocks2);
-  int getECCodewords();
-  std::vector<ECB*>& getECBlocks();
-  ~ECBlocks();
+	ECBlocks(int ecCodewords, ECB *ecBlocks);
+	ECBlocks(int ecCodewords, ECB *ecBlocks1, ECB *ecBlocks2);
+	int getECCodewords();
+	std::vector<ECB *> &getECBlocks();
+	~ECBlocks();
 };
 
 class Version : public Counted {
 
 private:
-  int versionNumber_;
-  std::vector<int> &alignmentPatternCenters_;
-  std::vector<ECBlocks*> ecBlocks_;
-  int totalCodewords_;
-  Version(int versionNumber, std::vector<int> *alignmentPatternCenters, ECBlocks *ecBlocks1, ECBlocks *ecBlocks2,
-          ECBlocks *ecBlocks3, ECBlocks *ecBlocks4);
+	int versionNumber_;
+	std::vector<int> &alignmentPatternCenters_;
+	std::vector<ECBlocks *> ecBlocks_;
+	int totalCodewords_;
+	Version(int versionNumber, std::vector<int> *alignmentPatternCenters, ECBlocks *ecBlocks1, ECBlocks *ecBlocks2,
+		ECBlocks *ecBlocks3, ECBlocks *ecBlocks4);
 
 public:
-  static unsigned int VERSION_DECODE_INFO[];
-  static int N_VERSION_DECODE_INFOS;
-  static std::vector<Ref<Version> > VERSIONS;
+	static unsigned int VERSION_DECODE_INFO[];
+	static int N_VERSION_DECODE_INFOS;
+	static std::vector<Ref<Version> > VERSIONS;
 
-  ~Version();
-  int getVersionNumber();
-  std::vector<int> &getAlignmentPatternCenters();
-  int getTotalCodewords();
-  int getDimensionForVersion();
-  ECBlocks &getECBlocksForLevel(ErrorCorrectionLevel &ecLevel);
-  static Version *getProvisionalVersionForDimension(int dimension);
-  static Version *getVersionForNumber(int versionNumber);
-  static Version *decodeVersionInformation(unsigned int versionBits);
-  Ref<BitMatrix> buildFunctionPattern();
-  static int buildVersions();
+	~Version();
+	int getVersionNumber();
+	std::vector<int> &getAlignmentPatternCenters();
+	int getTotalCodewords();
+	int getDimensionForVersion();
+	ECBlocks &getECBlocksForLevel(ErrorCorrectionLevel &ecLevel);
+	static Version *getProvisionalVersionForDimension(int dimension);
+	static Version *getVersionForNumber(int versionNumber);
+	static Version *decodeVersionInformation(unsigned int versionBits);
+	Ref<BitMatrix> buildFunctionPattern();
+	static int buildVersions();
 };
 }
 }

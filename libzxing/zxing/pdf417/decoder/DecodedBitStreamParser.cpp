@@ -51,69 +51,72 @@ const int DecodedBitStreamParser::EXP900_SIZE = 16;
 const char DecodedBitStreamParser::PUNCT_CHARS[] = {
   ';', '<', '>', '@', '[', '\\', '}', '_', '`', '~', '!',
   '\r', '\t', ',', ':', '\n', '-', '.', '$', '/', '"', '|', '*',
-  '(', ')', '?', '{', '}', '\''};
+  '(', ')', '?', '{', '}', '\'' };
 
 const char DecodedBitStreamParser::MIXED_CHARS[] = {
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '&',
   '\r', '\t', ',', ':', '#', '-', '.', '$', '/', '+', '%', '*',
-  '=', '^'};
+  '=', '^' };
 
-ArrayRef<BigInteger> DecodedBitStreamParser::initEXP900() {
-  ArrayRef<BigInteger> EXP900 (16);
-  EXP900[0] = BigInteger(1);
-  BigInteger nineHundred (900);
-  EXP900[1] = nineHundred;
-  for (int i = 2; i < EXP900->size(); i++) {
-    EXP900[i] = EXP900[i - 1] * nineHundred;
-  }
-  return EXP900;
+ArrayRef<BigInteger> DecodedBitStreamParser::initEXP900()
+{
+	ArrayRef<BigInteger> EXP900(16);
+	EXP900[0] = BigInteger(1);
+	BigInteger nineHundred(900);
+	EXP900[1] = nineHundred;
+	for (int i = 2; i < EXP900->size(); i++) {
+		EXP900[i] = EXP900[i - 1] * nineHundred;
+	}
+	return EXP900;
 }
 
 ArrayRef<BigInteger> DecodedBitStreamParser::EXP900 = initEXP900();
 
-DecodedBitStreamParser::DecodedBitStreamParser(){}
+DecodedBitStreamParser::DecodedBitStreamParser() {}
 
 /**
  * PDF417 main decoder.
  **/
-Ref<DecoderResult> DecodedBitStreamParser::decode(ArrayRef<int> codewords)
+int DecodedBitStreamParser::decode(ArrayRef<int> codewords, Ref<DecoderResult> &rresult)
 {
-  Ref<String> result (new String(100));
-  // Get compaction mode
-  int codeIndex = 1;
-  int code = codewords[codeIndex++];
-  while (codeIndex < codewords[0]) {
-    switch (code) {
-      case TEXT_COMPACTION_MODE_LATCH:
-        codeIndex = textCompaction(codewords, codeIndex, result);
-        break;
-      case BYTE_COMPACTION_MODE_LATCH:
-        codeIndex = byteCompaction(code, codewords, codeIndex, result);
-        break;
-      case NUMERIC_COMPACTION_MODE_LATCH:
-        codeIndex = numericCompaction(codewords, codeIndex, result);
-        break;
-      case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-        codeIndex = byteCompaction(code, codewords, codeIndex, result);
-        break;
-      case BYTE_COMPACTION_MODE_LATCH_6:
-        codeIndex = byteCompaction(code, codewords, codeIndex, result);
-        break;
-      default:
-        // Default to text compaction. During testing numerous barcodes
-        // appeared to be missing the starting mode. In these cases defaulting
-        // to text compaction seems to work.
-        codeIndex--;
-        codeIndex = textCompaction(codewords, codeIndex, result);
-        break;
-    }
-    if (codeIndex < codewords->size()) {
-      code = codewords[codeIndex++];
-    } else {
-      throw FormatException();
-    }
-  }
-  return Ref<DecoderResult>(new DecoderResult(ArrayRef<char>(), result));
+	Ref<String> result(new String(100));
+	// Get compaction mode
+	int codeIndex = 1;
+	int code = codewords[codeIndex++];
+	while (codeIndex < codewords[0]) {
+		switch (code) {
+		case TEXT_COMPACTION_MODE_LATCH:
+			codeIndex = textCompaction(codewords, codeIndex, result);
+			break;
+		case BYTE_COMPACTION_MODE_LATCH:
+			codeIndex = byteCompaction(code, codewords, codeIndex, result);
+			break;
+		case NUMERIC_COMPACTION_MODE_LATCH:
+			codeIndex = numericCompaction(codewords, codeIndex, result);
+			break;
+		case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
+			codeIndex = byteCompaction(code, codewords, codeIndex, result);
+			break;
+		case BYTE_COMPACTION_MODE_LATCH_6:
+			codeIndex = byteCompaction(code, codewords, codeIndex, result);
+			break;
+		default:
+		  // Default to text compaction. During testing numerous barcodes
+		  // appeared to be missing the starting mode. In these cases defaulting
+		  // to text compaction seems to work.
+			codeIndex--;
+			codeIndex = textCompaction(codewords, codeIndex, result);
+			break;
+		}
+		if (codeIndex < codewords->size()) {
+			code = codewords[codeIndex++];
+		}
+		else {
+			return -1;
+		}
+	}
+	rresult = new DecoderResult(ArrayRef<char>(), result);
+	return 0;
 }
 
 /**
@@ -127,55 +130,57 @@ Ref<DecoderResult> DecodedBitStreamParser::decode(ArrayRef<int> codewords)
  * @return The next index into the codeword array.
  */
 int DecodedBitStreamParser::textCompaction(ArrayRef<int> codewords,
-                                           int codeIndex,
-                                           Ref<String> result) {
-  // 2 character per codeword
-  ArrayRef<int> textCompactionData (codewords[0] << 1);
-  // Used to hold the byte compaction value if there is a mode shift
-  ArrayRef<int> byteCompactionData (codewords[0] << 1);
-  
-  int index = 0;
-  bool end = false;
-  while ((codeIndex < codewords[0]) && !end) {
-    int code = codewords[codeIndex++];
-    if (code < TEXT_COMPACTION_MODE_LATCH) {
-      textCompactionData[index] = code / 30;
-      textCompactionData[index + 1] = code % 30;
-      index += 2;
-    } else {
-      switch (code) {
-        case TEXT_COMPACTION_MODE_LATCH:
-          textCompactionData[index++] = TEXT_COMPACTION_MODE_LATCH;
-          break;
-        case BYTE_COMPACTION_MODE_LATCH:
-          codeIndex--;
-          end = true;
-          break;
-        case NUMERIC_COMPACTION_MODE_LATCH:
-          codeIndex--;
-          end = true;
-          break;
-        case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
-          // The Mode Shift codeword 913 shall cause a temporary
-          // switch from Text Compaction mode to Byte Compaction mode.
-          // This switch shall be in effect for only the next codeword,
-          // after which the mode shall revert to the prevailing sub-mode
-          // of the Text Compaction mode. Codeword 913 is only available
-          // in Text Compaction mode; its use is described in 5.4.2.4.
-          textCompactionData[index] = MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
-          code = codewords[codeIndex++];
-          byteCompactionData[index] = code; //Integer.toHexString(code);
-          index++;
-          break;
-        case BYTE_COMPACTION_MODE_LATCH_6:
-          codeIndex--;
-          end = true;
-          break;
-      }
-    }
-  }
-  decodeTextCompaction(textCompactionData, byteCompactionData, index, result);
-  return codeIndex;
+	int codeIndex,
+	Ref<String> result)
+{
+// 2 character per codeword
+	ArrayRef<int> textCompactionData(codewords[0] << 1);
+	// Used to hold the byte compaction value if there is a mode shift
+	ArrayRef<int> byteCompactionData(codewords[0] << 1);
+
+	int index = 0;
+	bool end = false;
+	while ((codeIndex < codewords[0]) && !end) {
+		int code = codewords[codeIndex++];
+		if (code < TEXT_COMPACTION_MODE_LATCH) {
+			textCompactionData[index] = code / 30;
+			textCompactionData[index + 1] = code % 30;
+			index += 2;
+		}
+		else {
+			switch (code) {
+			case TEXT_COMPACTION_MODE_LATCH:
+				textCompactionData[index++] = TEXT_COMPACTION_MODE_LATCH;
+				break;
+			case BYTE_COMPACTION_MODE_LATCH:
+				codeIndex--;
+				end = true;
+				break;
+			case NUMERIC_COMPACTION_MODE_LATCH:
+				codeIndex--;
+				end = true;
+				break;
+			case MODE_SHIFT_TO_BYTE_COMPACTION_MODE:
+			  // The Mode Shift codeword 913 shall cause a temporary
+			  // switch from Text Compaction mode to Byte Compaction mode.
+			  // This switch shall be in effect for only the next codeword,
+			  // after which the mode shall revert to the prevailing sub-mode
+			  // of the Text Compaction mode. Codeword 913 is only available
+			  // in Text Compaction mode; its use is described in 5.4.2.4.
+				textCompactionData[index] = MODE_SHIFT_TO_BYTE_COMPACTION_MODE;
+				code = codewords[codeIndex++];
+				byteCompactionData[index] = code; //Integer.toHexString(code);
+				index++;
+				break;
+			case BYTE_COMPACTION_MODE_LATCH_6:
+				codeIndex--;
+				end = true;
+				break;
+			}
+		}
+	}
+	decodeTextCompaction(textCompactionData, byteCompactionData, index, result);
+	return codeIndex;
 }
 
 /**
@@ -195,153 +200,181 @@ int DecodedBitStreamParser::textCompaction(ArrayRef<int> codewords,
  * @param result             The decoded data is appended to the result.
  */
 void DecodedBitStreamParser::decodeTextCompaction(ArrayRef<int> textCompactionData,
-                                                  ArrayRef<int> byteCompactionData,
-                                                  int length,
-                                                  Ref<String> result)
+	ArrayRef<int> byteCompactionData,
+	int length,
+	Ref<String> result)
 {
   // Beginning from an initial state of the Alpha sub-mode
   // The default compaction mode for PDF417 in effect at the start of each symbol shall always be Text
   // Compaction mode Alpha sub-mode (uppercase alphabetic). A latch codeword from another mode to the Text
   // Compaction mode shall always switch to the Text Compaction Alpha sub-mode.
-  Mode subMode = ALPHA;
-  Mode priorToShiftMode = ALPHA;
-  int i = 0;
-  while (i < length) {
-    int subModeCh = textCompactionData[i];
-    char ch = 0;
-    switch (subMode) {
-      case ALPHA:
-        // Alpha (uppercase alphabetic)
-        if (subModeCh < 26) {
-          // Upper case Alpha Character
-          ch = (char) ('A' + subModeCh);
-        } else {
-          if (subModeCh == 26) {
-            ch = ' ';
-          } else if (subModeCh == LL) {
-            subMode = LOWER;
-          } else if (subModeCh == ML) {
-            subMode = MIXED;
-          } else if (subModeCh == PS) {
-            // Shift to punctuation
-            priorToShiftMode = subMode;
-            subMode = PUNCT_SHIFT;
-          } else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-            result->append((char) byteCompactionData[i]);
-          } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-            subMode = ALPHA;
-          }
-        }
-        break;
-      
-      case LOWER:
-        // Lower (lowercase alphabetic)
-        if (subModeCh < 26) {
-          ch = (char) ('a' + subModeCh);
-        } else {
-          if (subModeCh == 26) {
-            ch = ' ';
-          } else if (subModeCh == AS) {
-            // Shift to alpha
-            priorToShiftMode = subMode;
-            subMode = ALPHA_SHIFT;
-          } else if (subModeCh == ML) {
-            subMode = MIXED;
-          } else if (subModeCh == PS) {
-            // Shift to punctuation
-            priorToShiftMode = subMode;
-            subMode = PUNCT_SHIFT;
-          } else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-            result->append((char) byteCompactionData[i]);
-          } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-            subMode = ALPHA;
-          }
-        }
-        break;
-      
-      case MIXED:
-        // Mixed (numeric and some punctuation)
-        if (subModeCh < PL) {
-          ch = MIXED_CHARS[subModeCh];
-        } else {
-          if (subModeCh == PL) {
-            subMode = PUNCT;
-          } else if (subModeCh == 26) {
-            ch = ' ';
-          } else if (subModeCh == LL) {
-            subMode = LOWER;
-          } else if (subModeCh == AL) {
-            subMode = ALPHA;
-          } else if (subModeCh == PS) {
-            // Shift to punctuation
-            priorToShiftMode = subMode;
-            subMode = PUNCT_SHIFT;
-          } else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-            result->append((char) byteCompactionData[i]);
-          } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-            subMode = ALPHA;
-          }
-        }
-        break;
-      
-      case PUNCT:
-        // Punctuation
-        if (subModeCh < PAL) {
-          ch = PUNCT_CHARS[subModeCh];
-        } else {
-          if (subModeCh == PAL) {
-            subMode = ALPHA;
-          } else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-            result->append((char) byteCompactionData[i]);
-          } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-            subMode = ALPHA;
-          }
-        }
-        break;
-      
-      case ALPHA_SHIFT:
-        // Restore sub-mode
-        subMode = priorToShiftMode;
-        if (subModeCh < 26) {
-          ch = (char) ('A' + subModeCh);
-        } else {
-          if (subModeCh == 26) {
-            ch = ' ';
-          } else {
-            if (subModeCh == 26) {
-              ch = ' ';
-            } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-              subMode = ALPHA;
-            }
-          }
-        }
-        break;
-      
-      case PUNCT_SHIFT:
-        // Restore sub-mode
-        subMode = priorToShiftMode;
-        if (subModeCh < PAL) {
-          ch = PUNCT_CHARS[subModeCh];
-        } else {
-          if (subModeCh == PAL) {
-            subMode = ALPHA;
-            // 2012-11-27 added from recent java code:
-          } else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
-            // PS before Shift-to-Byte is used as a padding character,
-            // see 5.4.2.4 of the specification
-            result->append((char) byteCompactionData[i]);
-          } else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
-            subMode = ALPHA;
-          }
-        }
-        break;
-    }
-    if (ch != 0) {
-      // Append decoded character to result
-      result->append(ch);
-    }
-    i++;
-  }
+	Mode subMode = ALPHA;
+	Mode priorToShiftMode = ALPHA;
+	int i = 0;
+	while (i < length) {
+		int subModeCh = textCompactionData[i];
+		char ch = 0;
+		switch (subMode) {
+		case ALPHA:
+		  // Alpha (uppercase alphabetic)
+			if (subModeCh < 26) {
+			  // Upper case Alpha Character
+				ch = (char)('A' + subModeCh);
+			}
+			else {
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == LL) {
+					subMode = LOWER;
+				}
+				else if (subModeCh == ML) {
+					subMode = MIXED;
+				}
+				else if (subModeCh == PS) {
+			   // Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result->append((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = ALPHA;
+				}
+			}
+			break;
+
+		case LOWER:
+		  // Lower (lowercase alphabetic)
+			if (subModeCh < 26) {
+				ch = (char)('a' + subModeCh);
+			}
+			else {
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == AS) {
+			   // Shift to alpha
+					priorToShiftMode = subMode;
+					subMode = ALPHA_SHIFT;
+				}
+				else if (subModeCh == ML) {
+					subMode = MIXED;
+				}
+				else if (subModeCh == PS) {
+			   // Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result->append((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = ALPHA;
+				}
+			}
+			break;
+
+		case MIXED:
+		  // Mixed (numeric and some punctuation)
+			if (subModeCh < PL) {
+				ch = MIXED_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PL) {
+					subMode = PUNCT;
+				}
+				else if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else if (subModeCh == LL) {
+					subMode = LOWER;
+				}
+				else if (subModeCh == AL) {
+					subMode = ALPHA;
+				}
+				else if (subModeCh == PS) {
+			   // Shift to punctuation
+					priorToShiftMode = subMode;
+					subMode = PUNCT_SHIFT;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result->append((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = ALPHA;
+				}
+			}
+			break;
+
+		case PUNCT:
+		  // Punctuation
+			if (subModeCh < PAL) {
+				ch = PUNCT_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PAL) {
+					subMode = ALPHA;
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+					result->append((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = ALPHA;
+				}
+			}
+			break;
+
+		case ALPHA_SHIFT:
+		  // Restore sub-mode
+			subMode = priorToShiftMode;
+			if (subModeCh < 26) {
+				ch = (char)('A' + subModeCh);
+			}
+			else {
+				if (subModeCh == 26) {
+					ch = ' ';
+				}
+				else {
+					if (subModeCh == 26) {
+						ch = ' ';
+					}
+					else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+						subMode = ALPHA;
+					}
+				}
+			}
+			break;
+
+		case PUNCT_SHIFT:
+		  // Restore sub-mode
+			subMode = priorToShiftMode;
+			if (subModeCh < PAL) {
+				ch = PUNCT_CHARS[subModeCh];
+			}
+			else {
+				if (subModeCh == PAL) {
+					subMode = ALPHA;
+					// 2012-11-27 added from recent java code:
+				}
+				else if (subModeCh == MODE_SHIFT_TO_BYTE_COMPACTION_MODE) {
+			   // PS before Shift-to-Byte is used as a padding character,
+			   // see 5.4.2.4 of the specification
+					result->append((char)byteCompactionData[i]);
+				}
+				else if (subModeCh == TEXT_COMPACTION_MODE_LATCH) {
+					subMode = ALPHA;
+				}
+			}
+			break;
+		}
+		if (ch != 0) {
+		  // Append decoded character to result
+			result->append(ch);
+		}
+		i++;
+	}
 }
 
 /**
@@ -356,101 +389,104 @@ void DecodedBitStreamParser::decodeTextCompaction(ArrayRef<int> textCompactionDa
  * @return The next index into the codeword array.
  */
 int DecodedBitStreamParser::byteCompaction(int mode,
-                                           ArrayRef<int> codewords,
-                                           int codeIndex, Ref<String> result) {
-  if (mode == BYTE_COMPACTION_MODE_LATCH) {
-    // Total number of Byte Compaction characters to be encoded
-    // is not a multiple of 6
-    int count = 0;
-    int64_t value = 0;
-    ArrayRef<char> decodedData = new Array<char>(6);
-    ArrayRef<int> byteCompactedCodewords = new Array<int>(6);
-    bool end = false;
-    int nextCode = codewords[codeIndex++];
-    while ((codeIndex < codewords[0]) && !end) {
-      byteCompactedCodewords[count++] = nextCode;
-      // Base 900
-      value = 900 * value + nextCode;
-      nextCode = codewords[codeIndex++];
-      // perhaps it should be ok to check only nextCode >= TEXT_COMPACTION_MODE_LATCH
-      if (nextCode == TEXT_COMPACTION_MODE_LATCH ||
-          nextCode == BYTE_COMPACTION_MODE_LATCH ||
-          nextCode == NUMERIC_COMPACTION_MODE_LATCH ||
-          nextCode == BYTE_COMPACTION_MODE_LATCH_6 ||
-          nextCode == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
-          nextCode == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
-          nextCode == MACRO_PDF417_TERMINATOR)
-      {
-        end = true;
-      }
-      else
-      {
-        if ((count%5 == 0) && (count > 0))
-        {
-          // Decode every 5 codewords
-          // Convert to Base 256
-          for (int j = 0; j < 6; ++j)
-          {
-            decodedData[5 - j] = (char) (value%256);
-            value >>= 8;
-          }
-          result->append(string(&(decodedData->values()[0]), decodedData->values().size()));
-          count = 0;
-        }
-      }
-    }
+	ArrayRef<int> codewords,
+	int codeIndex, Ref<String> result)
+{
+	if (mode == BYTE_COMPACTION_MODE_LATCH) {
+	  // Total number of Byte Compaction characters to be encoded
+	  // is not a multiple of 6
+		int count = 0;
+		int64_t value = 0;
+		ArrayRef<char> decodedData = new Array<char>(6);
+		ArrayRef<int> byteCompactedCodewords = new Array<int>(6);
+		bool end = false;
+		int nextCode = codewords[codeIndex++];
+		while ((codeIndex < codewords[0]) && !end) {
+			byteCompactedCodewords[count++] = nextCode;
+			// Base 900
+			value = 900 * value + nextCode;
+			nextCode = codewords[codeIndex++];
+			// perhaps it should be ok to check only nextCode >= TEXT_COMPACTION_MODE_LATCH
+			if (nextCode == TEXT_COMPACTION_MODE_LATCH ||
+				nextCode == BYTE_COMPACTION_MODE_LATCH ||
+				nextCode == NUMERIC_COMPACTION_MODE_LATCH ||
+				nextCode == BYTE_COMPACTION_MODE_LATCH_6 ||
+				nextCode == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
+				nextCode == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
+				nextCode == MACRO_PDF417_TERMINATOR)
+			{
+				end = true;
+			}
+			else
+			{
+				if ((count % 5 == 0) && (count > 0))
+				{
+				  // Decode every 5 codewords
+				  // Convert to Base 256
+					for (int j = 0; j < 6; ++j)
+					{
+						decodedData[5 - j] = (char)(value % 256);
+						value >>= 8;
+					}
+					result->append(string(&(decodedData->values()[0]), decodedData->values().size()));
+					count = 0;
+				}
+			}
+		}
 
-    // if the end of all codewords is reached the last codeword needs to be added
-    if (codeIndex == codewords[0] && nextCode < TEXT_COMPACTION_MODE_LATCH)
-      byteCompactedCodewords[count++] = nextCode;
+		// if the end of all codewords is reached the last codeword needs to be added
+		if (codeIndex == codewords[0] && nextCode < TEXT_COMPACTION_MODE_LATCH)
+			byteCompactedCodewords[count++] = nextCode;
 
-    // If Byte Compaction mode is invoked with codeword 901,
-    // the last group of codewords is interpreted directly
-    // as one byte per codeword, without compaction.
-    for (int i = 0; i < count; i++)
-    {
-      result->append((char)byteCompactedCodewords[i]);
-    }
+		  // If Byte Compaction mode is invoked with codeword 901,
+		  // the last group of codewords is interpreted directly
+		  // as one byte per codeword, without compaction.
+		for (int i = 0; i < count; i++)
+		{
+			result->append((char)byteCompactedCodewords[i]);
+		}
 
-  } else if (mode == BYTE_COMPACTION_MODE_LATCH_6) {
-    // Total number of Byte Compaction characters to be encoded
-    // is an integer multiple of 6
-    int count = 0;
-    int64_t value = 0;
-    bool end = false;
-    while (codeIndex < codewords[0] && !end) {
-      int code = codewords[codeIndex++];
-      if (code < TEXT_COMPACTION_MODE_LATCH) {
-        count++;
-        // Base 900
-        value = 900 * value + code;
-      } else {
-        if (code == TEXT_COMPACTION_MODE_LATCH ||
-            code == BYTE_COMPACTION_MODE_LATCH ||
-            code == NUMERIC_COMPACTION_MODE_LATCH ||
-            code == BYTE_COMPACTION_MODE_LATCH_6 ||
-            code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
-            code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
-            code == MACRO_PDF417_TERMINATOR) {
-          codeIndex--;
-          end = true;
-        }
-      }
-      if ((count % 5 == 0) && (count > 0)) {
-        // Decode every 5 codewords
-        // Convert to Base 256
-        ArrayRef<char> decodedData = new Array<char>(6);
-        for (int j = 0; j < 6; ++j) {
-          decodedData[5 - j] = (char) (value & 0xFF);
-          value >>= 8;
-        }
-        result->append(string(&decodedData[0],6));
-        // 2012-11-27 hfn after recent java code/fix by srowen
-        count = 0;
-      }
-    }
-  }
-  return codeIndex;
+	}
+	else if (mode == BYTE_COMPACTION_MODE_LATCH_6) {
+   // Total number of Byte Compaction characters to be encoded
+   // is an integer multiple of 6
+		int count = 0;
+		int64_t value = 0;
+		bool end = false;
+		while (codeIndex < codewords[0] && !end) {
+			int code = codewords[codeIndex++];
+			if (code < TEXT_COMPACTION_MODE_LATCH) {
+				count++;
+				// Base 900
+				value = 900 * value + code;
+			}
+			else {
+				if (code == TEXT_COMPACTION_MODE_LATCH ||
+					code == BYTE_COMPACTION_MODE_LATCH ||
+					code == NUMERIC_COMPACTION_MODE_LATCH ||
+					code == BYTE_COMPACTION_MODE_LATCH_6 ||
+					code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
+					code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
+					code == MACRO_PDF417_TERMINATOR) {
+					codeIndex--;
+					end = true;
+				}
+			}
+			if ((count % 5 == 0) && (count > 0)) {
+			  // Decode every 5 codewords
+			  // Convert to Base 256
+				ArrayRef<char> decodedData = new Array<char>(6);
+				for (int j = 0; j < 6; ++j) {
+					decodedData[5 - j] = (char)(value & 0xFF);
+					value >>= 8;
+				}
+				result->append(string(&decodedData[0], 6));
+				// 2012-11-27 hfn after recent java code/fix by srowen
+				count = 0;
+			}
+		}
+	}
+	return codeIndex;
 }
 
 /**
@@ -462,45 +498,50 @@ int DecodedBitStreamParser::byteCompaction(int mode,
  * @return The next index into the codeword array.
  */
 int DecodedBitStreamParser::numericCompaction(ArrayRef<int> codewords,
-                                              int codeIndex,
-                                              Ref<String> result) {
-  int count = 0;
-  bool end = false;
-  
-  ArrayRef<int> numericCodewords = new Array<int>(MAX_NUMERIC_CODEWORDS);
-  
-  while (codeIndex < codewords[0] && !end) {
-    int code = codewords[codeIndex++];
-    if (codeIndex == codewords[0]) {
-      end = true;
-    }
-    if (code < TEXT_COMPACTION_MODE_LATCH) {
-      numericCodewords[count] = code;
-      count++;
-    } else {
-      if (code == TEXT_COMPACTION_MODE_LATCH ||
-          code == BYTE_COMPACTION_MODE_LATCH ||
-          code == BYTE_COMPACTION_MODE_LATCH_6 ||
-          code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
-          code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
-          code == MACRO_PDF417_TERMINATOR) {
-        codeIndex--;
-        end = true;
-      }
-    }
-    if (count % MAX_NUMERIC_CODEWORDS == 0 ||
-        code == NUMERIC_COMPACTION_MODE_LATCH ||
-        end) {
-      // Re-invoking Numeric Compaction mode (by using codeword 902
-      // while in Numeric Compaction mode) serves  to terminate the
-      // current Numeric Compaction mode grouping as described in 5.4.4.2,
-      // and then to start a new one grouping.
-      Ref<String> s = decodeBase900toBase10(numericCodewords, count);
-      result->append(s->getText());
-      count = 0;
-    }
-  }
-  return codeIndex;
+	int codeIndex,
+	Ref<String> result)
+{
+	int count = 0;
+	bool end = false;
+
+	ArrayRef<int> numericCodewords = new Array<int>(MAX_NUMERIC_CODEWORDS);
+
+	while (codeIndex < codewords[0] && !end) {
+		int code = codewords[codeIndex++];
+		if (codeIndex == codewords[0]) {
+			end = true;
+		}
+		if (code < TEXT_COMPACTION_MODE_LATCH) {
+			numericCodewords[count] = code;
+			count++;
+		}
+		else {
+			if (code == TEXT_COMPACTION_MODE_LATCH ||
+				code == BYTE_COMPACTION_MODE_LATCH ||
+				code == BYTE_COMPACTION_MODE_LATCH_6 ||
+				code == BEGIN_MACRO_PDF417_CONTROL_BLOCK ||
+				code == BEGIN_MACRO_PDF417_OPTIONAL_FIELD ||
+				code == MACRO_PDF417_TERMINATOR) {
+				codeIndex--;
+				end = true;
+			}
+		}
+		if (count % MAX_NUMERIC_CODEWORDS == 0 ||
+			code == NUMERIC_COMPACTION_MODE_LATCH ||
+			end) {
+			// Re-invoking Numeric Compaction mode (by using codeword 902
+			// while in Numeric Compaction mode) serves  to terminate the
+			// current Numeric Compaction mode grouping as described in 5.4.4.2,
+			// and then to start a new one grouping.
+			int ret;
+			Ref<String> s;
+			if ((ret = decodeBase900toBase10(numericCodewords, count, s)) < 0)
+				return ret;
+			result->append(s->getText());
+			count = 0;
+		}
+	}
+	return codeIndex;
 }
 
 /**
@@ -546,18 +587,18 @@ int DecodedBitStreamParser::numericCompaction(ArrayRef<int> codewords,
 
   Remove leading 1 =>  Result is 000213298174000
 */
-Ref<String> DecodedBitStreamParser::decodeBase900toBase10(ArrayRef<int> codewords, int count)
+int DecodedBitStreamParser::decodeBase900toBase10(ArrayRef<int> codewords, int count, Ref<String> &res)
 {
-  BigInteger result = BigInteger(0);
-  for (int i = 0; i < count; i++) {
-    result = result + (EXP900[count - i - 1] * BigInteger(codewords[i]));
-  }
-  string resultString = bigIntegerToString(result);
-  if (resultString[0] != '1') {
-    throw FormatException("DecodedBitStreamParser::decodeBase900toBase10: String does not begin with 1");
-  }
-  string resultString2;
-  resultString2.assign(resultString.begin()+1,resultString.end());
-  Ref<String> res (new String(resultString2));
-  return res;
+	BigInteger result = BigInteger(0);
+	for (int i = 0; i < count; i++) {
+		result = result + (EXP900[count - i - 1] * BigInteger(codewords[i]));
+	}
+	string resultString = bigIntegerToString(result);
+	if (resultString[0] != '1') {
+		return -1;
+	}
+	string resultString2;
+	resultString2.assign(resultString.begin() + 1, resultString.end());
+	res = new String(resultString2);
+	return 0;
 }

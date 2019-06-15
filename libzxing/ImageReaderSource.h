@@ -55,23 +55,23 @@ using namespace zxing::qrcode;
 
 class ImageReaderSource : public zxing::LuminanceSource {
 private:
-  typedef LuminanceSource Super;
+	typedef LuminanceSource Super;
 
-  const zxing::ArrayRef<char> image;
-  const int comps;
+	const zxing::ArrayRef<char> image;
+	const int comps;
 
-  char convertPixel(const char* pixel) const;
+	char convertPixel(const char *pixel) const;
 
 public:
-  static zxing::Ref<LuminanceSource> create(char* buf, int buf_size, int width, int height);
+	static int create(char *buf, int buf_size, int width, int height, zxing::Ref<LuminanceSource> &result);
 
-  ImageReaderSource(zxing::ArrayRef<char> image, int width, int height, int comps);
+	ImageReaderSource(zxing::ArrayRef<char> image, int width, int height, int comps);
 
-  zxing::ArrayRef<char> getRow(int y, zxing::ArrayRef<char> row) const;
-  zxing::ArrayRef<char> getMatrix() const;
+	int getRow(int y, zxing::ArrayRef<char> row, zxing::ArrayRef<char> &result) const;
+	zxing::ArrayRef<char> getMatrix() const;
 };
 
-extern int ex_decode(uint8_t* buf, int buf_size, int width, int height, vector<Ref<Result> > * results, DecodeHints &hints);
+extern int ex_decode(uint8_t *buf, int buf_size, int width, int height, vector<Ref<Result> > *results, DecodeHints &hints);
 
 
 #endif /* __IMAGE_READER_SOURCE_H_ */

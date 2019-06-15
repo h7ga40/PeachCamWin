@@ -20,55 +20,42 @@
 namespace zxing {
 namespace multi {
 
-ByQuadrantReader::ByQuadrantReader(Reader& delegate) : delegate_(delegate) {}
+ByQuadrantReader::ByQuadrantReader(Reader &delegate) : delegate_(delegate) {}
 
-ByQuadrantReader::~ByQuadrantReader(){}
+ByQuadrantReader::~ByQuadrantReader() {}
 
-Ref<Result> ByQuadrantReader::decode(Ref<BinaryBitmap> image){
-  return decode(image, DecodeHints::DEFAULT_HINT);
+int ByQuadrantReader::decode(Ref<BinaryBitmap> image, Ref<Result> &result)
+{
+	return decode(image, DecodeHints::DEFAULT_HINT, result);
 }
 
-Ref<Result> ByQuadrantReader::decode(Ref<BinaryBitmap> image, DecodeHints hints){
-  int width = image->getWidth();
-  int height = image->getHeight();
-  int halfWidth = width / 2;
-  int halfHeight = height / 2;
-  Ref<BinaryBitmap> topLeft = image->crop(0, 0, halfWidth, halfHeight);
-  try {
-    return delegate_.decode(topLeft, hints);
-  } catch (ReaderException const& re) {
-    (void)re;
-    // continue
-  }
+int ByQuadrantReader::decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result)
+{
+	int width = image->getWidth();
+	int height = image->getHeight();
+	int halfWidth = width / 2;
+	int halfHeight = height / 2;
+	int ret;
+	Ref<BinaryBitmap> topLeft = image->crop(0, 0, halfWidth, halfHeight);
+	if ((ret = delegate_.decode(topLeft, hints, result)) == 0)
+		return 0;
 
-  Ref<BinaryBitmap> topRight = image->crop(halfWidth, 0, halfWidth, halfHeight);
-  try {
-    return delegate_.decode(topRight, hints);
-  } catch (ReaderException const& re) {
-    (void)re;
-    // continue
-  }
+	Ref<BinaryBitmap> topRight = image->crop(halfWidth, 0, halfWidth, halfHeight);
+	if ((ret = delegate_.decode(topRight, hints, result)) == 0)
+		return 0;
 
-  Ref<BinaryBitmap> bottomLeft = image->crop(0, halfHeight, halfWidth, halfHeight);
-  try {
-    return delegate_.decode(bottomLeft, hints);
-  } catch (ReaderException const& re) {
-    (void)re;
-    // continue
-  }
+	Ref<BinaryBitmap> bottomLeft = image->crop(0, halfHeight, halfWidth, halfHeight);
+	if ((ret = delegate_.decode(bottomLeft, hints, result)) == 0)
+		return 0;
 
-  Ref<BinaryBitmap> bottomRight = image->crop(halfWidth, halfHeight, halfWidth, halfHeight);
-  try {
-    return delegate_.decode(bottomRight, hints);
-  } catch (ReaderException const& re) {
-    (void)re;
-    // continue
-  }
+	Ref<BinaryBitmap> bottomRight = image->crop(halfWidth, halfHeight, halfWidth, halfHeight);
+	if ((ret = delegate_.decode(bottomRight, hints, result)) == 0)
+		return 0;
 
-  int quarterWidth = halfWidth / 2;
-  int quarterHeight = halfHeight / 2;
-  Ref<BinaryBitmap> center = image->crop(quarterWidth, quarterHeight, halfWidth, halfHeight);
-  return delegate_.decode(center, hints);
+	int quarterWidth = halfWidth / 2;
+	int quarterHeight = halfHeight / 2;
+	Ref<BinaryBitmap> center = image->crop(quarterWidth, quarterHeight, halfWidth, halfHeight);
+	return delegate_.decode(center, hints, result);
 }
 
 } // End zxing::multi namespace

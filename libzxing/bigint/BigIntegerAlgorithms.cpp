@@ -1,6 +1,7 @@
 #include "BigIntegerAlgorithms.hh"
 
-BigUnsigned gcd(BigUnsigned a, BigUnsigned b) {
+BigUnsigned gcd(BigUnsigned a, BigUnsigned b)
+{
 	BigUnsigned trash;
 	// Neat in-place alternating technique.
 	for (;;) {
@@ -14,7 +15,8 @@ BigUnsigned gcd(BigUnsigned a, BigUnsigned b) {
 }
 
 void extendedEuclidean(BigInteger m, BigInteger n,
-		BigInteger &g, BigInteger &r, BigInteger &s) {
+	BigInteger &g, BigInteger &r, BigInteger &s)
+{
 	if (&g == &r || &g == &s || &r == &s)
 		throw "BigInteger extendedEuclidean: Outputs are aliased";
 	BigInteger r1(1), s1(0), r2(0), s2(1), q;
@@ -28,7 +30,7 @@ void extendedEuclidean(BigInteger m, BigInteger n,
 		}
 		// Subtract q times the second invariant from the first invariant.
 		m.divideWithRemainder(n, q);
-		r1 -= q*r2; s1 -= q*s2;
+		r1 -= q * r2; s1 -= q * s2;
 
 		if (m.isZero()) {
 			r = r2; s = s2; g = n;
@@ -36,11 +38,12 @@ void extendedEuclidean(BigInteger m, BigInteger n,
 		}
 		// Subtract q times the first invariant from the second invariant.
 		n.divideWithRemainder(m, q);
-		r2 -= q*r1; s2 -= q*s1;
+		r2 -= q * r1; s2 -= q * s1;
 	}
 }
 
-BigUnsigned modinv(const BigInteger &x, const BigUnsigned &n) {
+BigUnsigned modinv(const BigInteger &x, const BigUnsigned &n)
+{
 	BigInteger g, r, s;
 	extendedEuclidean(x, n, g, r, s);
 	if (g == 1)
@@ -51,7 +54,8 @@ BigUnsigned modinv(const BigInteger &x, const BigUnsigned &n) {
 }
 
 BigUnsigned modexp(const BigInteger &base, const BigUnsigned &exponent,
-		const BigUnsigned &modulus) {
+	const BigUnsigned &modulus)
+{
 	BigUnsigned ans = 1, base2 = (base % modulus).getMagnitude();
 	BigUnsigned::Index i = exponent.bitLength();
 	// For each bit of the exponent, most to least significant...

@@ -26,18 +26,20 @@
 
 using zxing::Exception;
 
-void Exception::deleteMessage() {
-  delete [] message;
+void Exception::deleteMessage()
+{
+	delete[] message;
 }
 
-char const* Exception::copy(char const* msg) {
-  char* message = 0;
-  if (msg) {
-    int l = strlen(msg)+1;
-    if (l) {
-      message = new char[l];
-      strncpy_s(message, l, msg, l);
-    }
-  }
-  return message;
+char const *Exception::copy(char const *msg)
+{
+	char *message = 0;
+	if (msg) {
+		int l = strlen(msg) + 1;
+		if (l) {
+			message = new char[l];
+			strncpy_s(message, l, msg, l);
+		}
+	}
+	return message;
 }

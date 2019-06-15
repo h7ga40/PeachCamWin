@@ -26,23 +26,23 @@
 #include <zxing/common/Array.h>
 
 namespace zxing {
-	
+
 class GlobalHistogramBinarizer : public Binarizer {
 private:
-  ArrayRef<char> luminances;
-  ArrayRef<int> buckets;
+	ArrayRef<char> luminances;
+	ArrayRef<int> buckets;
 public:
-  GlobalHistogramBinarizer(Ref<LuminanceSource> source);
-  virtual ~GlobalHistogramBinarizer();
-		
-  virtual Ref<BitArray> getBlackRow(int y, Ref<BitArray> row);
-  virtual Ref<BitMatrix> getBlackMatrix();
-  static int estimateBlackPoint(ArrayRef<int> const& buckets);
-  Ref<Binarizer> createBinarizer(Ref<LuminanceSource> source);
+	GlobalHistogramBinarizer(Ref<LuminanceSource> source);
+	virtual ~GlobalHistogramBinarizer();
+
+	virtual int getBlackRow(int y, Ref<BitArray> row, Ref<BitArray> &result);
+	virtual int getBlackMatrix(Ref<BitMatrix> &matrix);
+	static int estimateBlackPoint(ArrayRef<int> const &buckets);
+	Ref<Binarizer> createBinarizer(Ref<LuminanceSource> source);
 private:
-  void initArrays(int luminanceSize);
+	void initArrays(int luminanceSize);
 };
 
 }
-	
+
 #endif /* GLOBALHISTOGRAMBINARIZER_H_ */

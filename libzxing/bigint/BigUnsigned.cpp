@@ -5,37 +5,39 @@
 // The templates used by these constructors and converters are at the bottom of
 // BigUnsigned.hh.
 
-BigUnsigned::BigUnsigned(unsigned long  x) { initFromPrimitive      (x); }
-BigUnsigned::BigUnsigned(unsigned int   x) { initFromPrimitive      (x); }
-BigUnsigned::BigUnsigned(unsigned short x) { initFromPrimitive      (x); }
-BigUnsigned::BigUnsigned(         long  x) { initFromSignedPrimitive(x); }
-BigUnsigned::BigUnsigned(         int   x) { initFromSignedPrimitive(x); }
-BigUnsigned::BigUnsigned(         short x) { initFromSignedPrimitive(x); }
+BigUnsigned::BigUnsigned(unsigned long  x) { initFromPrimitive(x); }
+BigUnsigned::BigUnsigned(unsigned int   x) { initFromPrimitive(x); }
+BigUnsigned::BigUnsigned(unsigned short x) { initFromPrimitive(x); }
+BigUnsigned::BigUnsigned(long  x) { initFromSignedPrimitive(x); }
+BigUnsigned::BigUnsigned(int   x) { initFromSignedPrimitive(x); }
+BigUnsigned::BigUnsigned(short x) { initFromSignedPrimitive(x); }
 
-unsigned long  BigUnsigned::toUnsignedLong () const { return convertToPrimitive      <unsigned long >(); }
-unsigned int   BigUnsigned::toUnsignedInt  () const { return convertToPrimitive      <unsigned int  >(); }
+unsigned long  BigUnsigned::toUnsignedLong() const { return convertToPrimitive      <unsigned long >(); }
+unsigned int   BigUnsigned::toUnsignedInt() const { return convertToPrimitive      <unsigned int  >(); }
 unsigned short BigUnsigned::toUnsignedShort() const { return convertToPrimitive      <unsigned short>(); }
-long           BigUnsigned::toLong         () const { return convertToSignedPrimitive<         long >(); }
-int            BigUnsigned::toInt          () const { return convertToSignedPrimitive<         int  >(); }
-short          BigUnsigned::toShort        () const { return convertToSignedPrimitive<         short>(); }
+long           BigUnsigned::toLong() const { return convertToSignedPrimitive<         long >(); }
+int            BigUnsigned::toInt() const { return convertToSignedPrimitive<         int  >(); }
+short          BigUnsigned::toShort() const { return convertToSignedPrimitive<         short>(); }
 
 // BIT/BLOCK ACCESSORS
 
-void BigUnsigned::setBlock(Index i, Blk newBlock) {
+void BigUnsigned::setBlock(Index i, Blk newBlock)
+{
 	if (newBlock == 0) {
 		if (i < len) {
 			blk[i] = 0;
 			zapLeadingZeros();
 		}
 		// If i >= len, no effect.
-	} else {
+	}
+	else {
 		if (i >= len) {
 			// The nonzero block extends the number.
-			allocateAndCopy(i+1);
+			allocateAndCopy(i + 1);
 			// Zero any added blocks that we aren't setting.
 			for (Index j = len; j < i; j++)
 				blk[j] = 0;
-			len = i+1;
+			len = i + 1;
 		}
 		blk[i] = newBlock;
 	}
@@ -44,7 +46,8 @@ void BigUnsigned::setBlock(Index i, Blk newBlock) {
 /* Evidently the compiler wants BigUnsigned:: on the return type because, at
  * that point, it hasn't yet parsed the BigUnsigned:: on the name to get the
  * proper scope. */
-BigUnsigned::Index BigUnsigned::bitLength() const {
+BigUnsigned::Index BigUnsigned::bitLength() const
+{
 	if (isZero())
 		return 0;
 	else {
@@ -58,7 +61,8 @@ BigUnsigned::Index BigUnsigned::bitLength() const {
 	}
 }
 
-void BigUnsigned::setBit(Index bi, bool newBit) {
+void BigUnsigned::setBit(Index bi, bool newBit)
+{
 	Index blockI = bi / N;
 	Blk block = getBlock(blockI), mask = Blk(1) << (bi % N);
 	block = newBit ? (block | mask) : (block & ~mask);
@@ -66,8 +70,9 @@ void BigUnsigned::setBit(Index bi, bool newBit) {
 }
 
 // COMPARISON
-BigUnsigned::CmpRes BigUnsigned::compareTo(const BigUnsigned &x) const {
-	// A bigger length implies a bigger number.
+BigUnsigned::CmpRes BigUnsigned::compareTo(const BigUnsigned &x) const
+{
+// A bigger length implies a bigger number.
 	if (len < x.len)
 		return less;
 	else if (len > x.len)
@@ -100,11 +105,11 @@ BigUnsigned::CmpRes BigUnsigned::compareTo(const BigUnsigned &x) const {
  * variable and then copy it into the requested output variable *this.
  * Each put-here operation uses the DTRT_ALIASED macro (Do The Right Thing on
  * aliased calls) to generate code for this check.
- * 
+ *
  * I adopted this approach on 2007.02.13 (see Assignment Operators in
  * BigUnsigned.hh).  Before then, put-here operations rejected aliased calls
  * with an exception.  I think doing the right thing is better.
- * 
+ *
  * Some of the put-here operations can probably handle aliased calls safely
  * without the extra copy because (for example) they process blocks strictly
  * right-to-left.  At some point I might determine which ones don't need the
@@ -121,13 +126,15 @@ BigUnsigned::CmpRes BigUnsigned::compareTo(const BigUnsigned &x) const {
 
 
 
-void BigUnsigned::add(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::add(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, add(a, b));
 	// If one argument is zero, copy the other.
 	if (a.len == 0) {
 		operator =(b);
 		return;
-	} else if (b.len == 0) {
+	}
+	else if (b.len == 0) {
 		operator =(a);
 		return;
 	}
@@ -141,7 +148,8 @@ void BigUnsigned::add(const BigUnsigned &a, const BigUnsigned &b) {
 	if (a.len >= b.len) {
 		a2 = &a;
 		b2 = &b;
-	} else {
+	}
+	else {
 		a2 = &b;
 		b2 = &a;
 	}
@@ -181,17 +189,19 @@ void BigUnsigned::add(const BigUnsigned &a, const BigUnsigned &b) {
 		len--;
 }
 
-void BigUnsigned::subtract(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::subtract(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, subtract(a, b));
 	if (b.len == 0) {
 		// If b is zero, copy a.
 		operator =(a);
 		return;
-	} else if (a.len < b.len)
-		// If a is shorter than b, the result is negative.
+	}
+	else if (a.len < b.len)
+	 // If a is shorter than b, the result is negative.
 		throw "BigUnsigned::subtract: "
-			"Negative result in unsigned calculation";
-	// Some variables...
+		"Negative result in unsigned calculation";
+// Some variables...
 	bool borrowIn, borrowOut;
 	Blk temp;
 	Index i;
@@ -224,8 +234,9 @@ void BigUnsigned::subtract(const BigUnsigned &a, const BigUnsigned &b) {
 	if (borrowIn) {
 		len = 0;
 		throw "BigUnsigned::subtract: Negative result in unsigned calculation";
-	} else
-		// Copy over the rest of the blocks
+	}
+	else
+	 // Copy over the rest of the blocks
 		for (; i < a.len; i++)
 			blk[i] = a.blk[i];
 	// Zap leading zeros
@@ -291,13 +302,15 @@ void BigUnsigned::subtract(const BigUnsigned &a, const BigUnsigned &b) {
  * the test `y == 0' handles this case specially.
  */
 inline BigUnsigned::Blk getShiftedBlock(const BigUnsigned &num,
-	BigUnsigned::Index x, unsigned int y) {
+	BigUnsigned::Index x, unsigned int y)
+{
 	BigUnsigned::Blk part1 = (x == 0 || y == 0) ? 0 : (num.blk[x - 1] >> (BigUnsigned::N - y));
 	BigUnsigned::Blk part2 = (x == num.len) ? 0 : (num.blk[x] << y);
 	return part1 | part2;
 }
 
-void BigUnsigned::multiply(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::multiply(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, multiply(a, b));
 	// If either a or b is zero, set to zero.
 	if (a.len == 0 || b.len == 0) {
@@ -375,16 +388,17 @@ void BigUnsigned::multiply(const BigUnsigned &a, const BigUnsigned &b) {
  * The seemingly bizarre pattern of inputs and outputs was chosen so that the
  * function copies as little as possible (since it is implemented by repeated
  * subtraction of multiples of b from *this).
- * 
+ *
  * "modWithQuotient" might be a better name for this function, but I would
  * rather not change the name now.
  */
-void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q) {
-	/* Defending against aliased calls is more complex than usual because we
-	 * are writing to both *this and q.
-	 * 
-	 * It would be silly to try to write quotient and remainder to the
-	 * same variable.  Rule that out right away. */
+void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q)
+{
+/* Defending against aliased calls is more complex than usual because we
+ * are writing to both *this and q.
+ *
+ * It would be silly to try to write quotient and remainder to the
+ * same variable.  Rule that out right away. */
 	if (this == &q)
 		throw "BigUnsigned::divideWithRemainder: Cannot write quotient and remainder into the same variable";
 	/* Now *this and q are separate, so the only concern is that b might be
@@ -430,7 +444,7 @@ void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q) {
 	 *        Turn on bit i2 of block i of the quotient q.
 	 *        Copy subtractBuf back into *this.
 	 *    Otherwise bit i2 of block i remains off, and *this is unchanged.
-	 * 
+	 *
 	 * Eventually q will contain the entire quotient, and *this will
 	 * be left with the remainder.
 	 *
@@ -499,7 +513,7 @@ void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q) {
 					temp--;
 				}
 				// Since 2005.01.11, indices of `subtractBuf' directly match those of `blk', so use `k'.
-				subtractBuf[k] = temp; 
+				subtractBuf[k] = temp;
 				borrowIn = borrowOut;
 			}
 			// No more extra iteration to deal with `bHigh'.
@@ -524,7 +538,7 @@ void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q) {
 					k--;
 					blk[k] = subtractBuf[k];
 				}
-			} 
+			}
 		}
 	}
 	// Zap possible leading zero in quotient
@@ -534,14 +548,15 @@ void BigUnsigned::divideWithRemainder(const BigUnsigned &b, BigUnsigned &q) {
 	zapLeadingZeros();
 	// Deallocate subtractBuf.
 	// (Thanks to Brad Spencer for noticing my accidental omission of this!)
-	delete [] subtractBuf;
+	delete[] subtractBuf;
 }
 
 /* BITWISE OPERATORS
  * These are straightforward blockwise operations except that they differ in
  * the output length and the necessity of zapLeadingZeros. */
 
-void BigUnsigned::bitAnd(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::bitAnd(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, bitAnd(a, b));
 	// The bitwise & can't be longer than either operand.
 	len = (a.len >= b.len) ? b.len : a.len;
@@ -552,14 +567,16 @@ void BigUnsigned::bitAnd(const BigUnsigned &a, const BigUnsigned &b) {
 	zapLeadingZeros();
 }
 
-void BigUnsigned::bitOr(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::bitOr(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, bitOr(a, b));
 	Index i;
 	const BigUnsigned *a2, *b2;
 	if (a.len >= b.len) {
 		a2 = &a;
 		b2 = &b;
-	} else {
+	}
+	else {
 		a2 = &b;
 		b2 = &a;
 	}
@@ -572,14 +589,16 @@ void BigUnsigned::bitOr(const BigUnsigned &a, const BigUnsigned &b) {
 	// Doesn't need zapLeadingZeros.
 }
 
-void BigUnsigned::bitXor(const BigUnsigned &a, const BigUnsigned &b) {
+void BigUnsigned::bitXor(const BigUnsigned &a, const BigUnsigned &b)
+{
 	DTRT_ALIASED(this == &a || this == &b, bitXor(a, b));
 	Index i;
 	const BigUnsigned *a2, *b2;
 	if (a.len >= b.len) {
 		a2 = &a;
 		b2 = &b;
-	} else {
+	}
+	else {
 		a2 = &b;
 		b2 = &a;
 	}
@@ -592,12 +611,13 @@ void BigUnsigned::bitXor(const BigUnsigned &a, const BigUnsigned &b) {
 	zapLeadingZeros();
 }
 
-void BigUnsigned::bitShiftLeft(const BigUnsigned &a, int b) {
+void BigUnsigned::bitShiftLeft(const BigUnsigned &a, int b)
+{
 	DTRT_ALIASED(this == &a, bitShiftLeft(a, b));
 	if (b < 0) {
 		if (b << 1 == 0)
 			throw "BigUnsigned::bitShiftLeft: "
-				"Pathological shift amount not implemented";
+			"Pathological shift amount not implemented";
 		else {
 			bitShiftRight(a, -b);
 			return;
@@ -618,12 +638,13 @@ void BigUnsigned::bitShiftLeft(const BigUnsigned &a, int b) {
 		len--;
 }
 
-void BigUnsigned::bitShiftRight(const BigUnsigned &a, int b) {
+void BigUnsigned::bitShiftRight(const BigUnsigned &a, int b)
+{
 	DTRT_ALIASED(this == &a, bitShiftRight(a, b));
 	if (b < 0) {
 		if (b << 1 == 0)
 			throw "BigUnsigned::bitShiftRight: "
-				"Pathological shift amount not implemented";
+			"Pathological shift amount not implemented";
 		else {
 			bitShiftLeft(a, -b);
 			return;
@@ -656,7 +677,8 @@ void BigUnsigned::bitShiftRight(const BigUnsigned &a, int b) {
 // INCREMENT/DECREMENT OPERATORS
 
 // Prefix increment
-void BigUnsigned::operator ++() {
+void BigUnsigned::operator ++()
+{
 	Index i;
 	bool carry = true;
 	for (i = 0; i < len && carry; i++) {
@@ -672,12 +694,14 @@ void BigUnsigned::operator ++() {
 }
 
 // Postfix increment: same as prefix
-void BigUnsigned::operator ++(int) {
+void BigUnsigned::operator ++(int)
+{
 	operator ++();
 }
 
 // Prefix decrement
-void BigUnsigned::operator --() {
+void BigUnsigned::operator --()
+{
 	if (len == 0)
 		throw "BigUnsigned::operator --(): Cannot decrement an unsigned zero";
 	Index i;
@@ -692,6 +716,7 @@ void BigUnsigned::operator --() {
 }
 
 // Postfix decrement: same as prefix
-void BigUnsigned::operator --(int) {
+void BigUnsigned::operator --(int)
+{
 	operator --();
 }

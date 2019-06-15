@@ -25,10 +25,10 @@ namespace zxing {
 namespace multi {
 
 class MultiDetector : public zxing::qrcode::Detector {
-  public:
-    MultiDetector(Ref<BitMatrix> image);
-    virtual ~MultiDetector();
-    virtual std::vector<Ref<DetectorResult> > detectMulti(DecodeHints hints);
+public:
+	MultiDetector(Ref<BitMatrix> image);
+	virtual ~MultiDetector();
+	virtual int detectMulti(DecodeHints hints, std::vector<Ref<DetectorResult>> &result);
 };
 
 }

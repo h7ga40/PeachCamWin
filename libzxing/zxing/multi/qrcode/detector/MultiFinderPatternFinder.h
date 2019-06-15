@@ -25,18 +25,18 @@ namespace zxing {
 namespace multi {
 
 class MultiFinderPatternFinder : zxing::qrcode::FinderPatternFinder {
-  private:
-    std::vector<std::vector<Ref<zxing::qrcode::FinderPattern> > > selectBestPatterns();
+private:
+	int selectBestPatterns(std::vector<std::vector<Ref<zxing::qrcode::FinderPattern>>> &result);
 
-    static const float MAX_MODULE_COUNT_PER_EDGE;
-    static const float MIN_MODULE_COUNT_PER_EDGE;
-    static const float DIFF_MODSIZE_CUTOFF_PERCENT;
-    static const float DIFF_MODSIZE_CUTOFF;
+	static const float MAX_MODULE_COUNT_PER_EDGE;
+	static const float MIN_MODULE_COUNT_PER_EDGE;
+	static const float DIFF_MODSIZE_CUTOFF_PERCENT;
+	static const float DIFF_MODSIZE_CUTOFF;
 
-  public:
-    MultiFinderPatternFinder(Ref<BitMatrix> image, Ref<ResultPointCallback> resultPointCallback);
-    virtual ~MultiFinderPatternFinder();
-    virtual std::vector<Ref<zxing::qrcode::FinderPatternInfo> > findMulti(DecodeHints const& hints);
+public:
+	MultiFinderPatternFinder(Ref<BitMatrix> image, Ref<ResultPointCallback> resultPointCallback);
+	virtual ~MultiFinderPatternFinder();
+	virtual int findMulti(DecodeHints const &hints, std::vector<Ref<zxing::qrcode::FinderPatternInfo>> &result);
 
 
 };

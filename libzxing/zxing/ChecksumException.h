@@ -22,13 +22,13 @@
 #include <zxing/ReaderException.h>
 
 namespace zxing {
-  class ChecksumException : public ReaderException {
-    typedef ReaderException Base;
-  public:
-    ChecksumException() throw();
-    ChecksumException(const char *msg) throw();
-    ~ChecksumException() throw();
-  };
+class ChecksumException : public ReaderException {
+	typedef ReaderException Base;
+public:
+	ChecksumException() throw();
+	ChecksumException(const char *msg) throw();
+	~ChecksumException() throw();
+};
 }
 
 #endif // __CHECKSUM_EXCEPTION_H__

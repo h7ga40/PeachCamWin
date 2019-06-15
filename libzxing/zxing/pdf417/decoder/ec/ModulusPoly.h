@@ -35,13 +35,13 @@ class ModulusGF;
  * @author Sean Owen
  * @see com.google.zxing.common.reedsolomon.GenericGFPoly
  */
-class ModulusPoly: public Counted {
+class ModulusPoly : public Counted {
 
-  private:
+private:
 	ModulusGF &field_;
 	ArrayRef<int> coefficients_;
-  public:
-	ModulusPoly(ModulusGF& field, ArrayRef<int> coefficients);
+public:
+	ModulusPoly(ModulusGF &field, ArrayRef<int> coefficients);
 	~ModulusPoly();
 	ArrayRef<int> getCoefficients();
 	int getDegree();
@@ -55,9 +55,9 @@ class ModulusPoly: public Counted {
 	Ref<ModulusPoly> multiply(int scalar);
 	Ref<ModulusPoly> multiplyByMonomial(int degree, int coefficient);
 	std::vector<Ref<ModulusPoly> > divide(Ref<ModulusPoly> other);
-	#if 0
-    public String toString();
-	#endif
+#if 0
+	public String toString();
+#endif
 };
 
 }

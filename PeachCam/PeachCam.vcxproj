@@ -356,16 +356,16 @@
     <ProjectReference Include="..\libzxing\libzxing.vcxproj">
       <Project>{89afb09b-93fa-4215-9b69-686c455f0005}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\libzxing\zxing\aztec\libzxing-aztec.vcxproj">
+    <ProjectReference Include="..\libzxing\zxing\aztec\aztec.vcxproj">
       <Project>{150e9ab8-a424-4b54-9286-f6f25e54038d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\libzxing\zxing\datamatrix\libzxing-datamatrix.vcxproj">
+    <ProjectReference Include="..\libzxing\zxing\datamatrix\datamatrix.vcxproj">
       <Project>{c417bcd9-d5ad-46dc-96cc-4e41c971f9af}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\libzxing\zxing\pdf417\libzxing-pdf417.vcxproj">
+    <ProjectReference Include="..\libzxing\zxing\pdf417\pdf417.vcxproj">
       <Project>{60d69ad9-4a13-4e8e-8dc2-95e1fbdfc0c5}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\libzxing\zxing\qrcode\libzxing-qrcode.vcxproj">
+    <ProjectReference Include="..\libzxing\zxing\qrcode\qrcode.vcxproj">
       <Project>{6da3660b-dc59-4b11-b9ee-e20f2f2a431f}</Project>
     </ProjectReference>
     <ProjectReference Include="..\opencv-lib\3rdparty\libjpeg\libjpeg.vcxproj">

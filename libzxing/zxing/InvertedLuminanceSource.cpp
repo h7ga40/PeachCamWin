@@ -24,45 +24,57 @@ using zxing::ArrayRef;
 using zxing::LuminanceSource;
 using zxing::InvertedLuminanceSource;
 
-InvertedLuminanceSource::InvertedLuminanceSource(Ref<LuminanceSource> const& delegate_)
-    : Super(delegate_->getWidth(), delegate_->getHeight()), delegate(delegate_) {}  
-
-ArrayRef<char> InvertedLuminanceSource::getRow(int y, ArrayRef<char> row) const {
-  row = delegate->getRow(y, row);
-  int width = getWidth();
-  for (int i = 0; i < width; i++) {
-    row[i] = (byte) (255 - (row[i] & 0xFF));
-  }
-  return row;
+InvertedLuminanceSource::InvertedLuminanceSource(Ref<LuminanceSource> const &delegate_)
+	: Super(delegate_->getWidth(), delegate_->getHeight()), delegate(delegate_)
+{
 }
 
-ArrayRef<char> InvertedLuminanceSource::getMatrix() const {
-  ArrayRef<char> matrix = delegate->getMatrix();
-  int length = getWidth() * getHeight();
-  ArrayRef<char> invertedMatrix(length);
-  for (int i = 0; i < length; i++) {
-    invertedMatrix[i] = (byte) (255 - (matrix[i] & 0xFF));
-  }
-  return invertedMatrix;
+int InvertedLuminanceSource::getRow(int y, ArrayRef<char> row, ArrayRef<char> &result) const
+{
+	int ret;
+	if ((ret = delegate->getRow(y, row, row)) < 0)
+		return ret;
+	int width = getWidth();
+	for (int i = 0; i < width; i++) {
+		row[i] = (byte)(255 - (row[i] & 0xFF));
+	}
+	result = row;
+	return 0;
 }
 
-zxing::boolean InvertedLuminanceSource::isCropSupported() const {
-  return delegate->isCropSupported();
+ArrayRef<char> InvertedLuminanceSource::getMatrix() const
+{
+	ArrayRef<char> matrix = delegate->getMatrix();
+	int length = getWidth() * getHeight();
+	ArrayRef<char> invertedMatrix(length);
+	for (int i = 0; i < length; i++) {
+		invertedMatrix[i] = (byte)(255 - (matrix[i] & 0xFF));
+	}
+	return invertedMatrix;
 }
 
-Ref<LuminanceSource> InvertedLuminanceSource::crop(int left, int top, int width, int height) const {
-  return Ref<LuminanceSource>(new InvertedLuminanceSource(delegate->crop(left, top, width, height)));
+zxing::boolean InvertedLuminanceSource::isCropSupported() const
+{
+	return delegate->isCropSupported();
 }
 
-boolean InvertedLuminanceSource::isRotateSupported() const {
-  return delegate->isRotateSupported();
+Ref<LuminanceSource> InvertedLuminanceSource::crop(int left, int top, int width, int height) const
+{
+	return Ref<LuminanceSource>(new InvertedLuminanceSource(delegate->crop(left, top, width, height)));
 }
 
-Ref<LuminanceSource> InvertedLuminanceSource::invert() const {
-  return delegate;
+boolean InvertedLuminanceSource::isRotateSupported() const
+{
+	return delegate->isRotateSupported();
 }
 
-Ref<LuminanceSource> InvertedLuminanceSource::rotateCounterClockwise() const {
-  return Ref<LuminanceSource>(new InvertedLuminanceSource(delegate->rotateCounterClockwise()));
+Ref<LuminanceSource> InvertedLuminanceSource::invert() const
+{
+	return delegate;
+}
+
+Ref<LuminanceSource> InvertedLuminanceSource::rotateCounterClockwise() const
+{
+	return Ref<LuminanceSource>(new InvertedLuminanceSource(delegate->rotateCounterClockwise()));
 }
 

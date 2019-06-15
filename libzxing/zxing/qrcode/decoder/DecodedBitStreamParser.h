@@ -38,32 +38,32 @@ namespace qrcode {
 
 class DecodedBitStreamParser {
 public:
-  typedef std::map<DecodeHintType, std::string> Hashtable;
+	typedef std::map<DecodeHintType, std::string> Hashtable;
 
 private:
-  static char const ALPHANUMERIC_CHARS[];
-  static char toAlphaNumericChar(size_t value);
+	static char const ALPHANUMERIC_CHARS[];
+	static char toAlphaNumericChar(size_t value);
 
-  static void decodeHanziSegment(Ref<BitSource> bits, std::string &result, int count);
-  static void decodeKanjiSegment(Ref<BitSource> bits, std::string &result, int count);
-  static void decodeByteSegment(Ref<BitSource> bits, std::string &result, int count);
-  static void decodeByteSegment(Ref<BitSource> bits_,
-                                std::string& result,
-                                int count,
-                                zxing::common::CharacterSetECI* currentCharacterSetECI,
-                                ArrayRef< ArrayRef<char> >& byteSegments,
-                                Hashtable const& hints);
-  static void decodeAlphanumericSegment(Ref<BitSource> bits, std::string &result, int count, bool fc1InEffect);
-  static void decodeNumericSegment(Ref<BitSource> bits, std::string &result, int count);
+	static int decodeHanziSegment(Ref<BitSource> bits, std::string &result, int count);
+	static int decodeKanjiSegment(Ref<BitSource> bits, std::string &result, int count);
+	static int decodeByteSegment(Ref<BitSource> bits_,
+		std::string &result,
+		int count,
+		zxing::common::CharacterSetECI *currentCharacterSetECI,
+		ArrayRef< ArrayRef<char> > &byteSegments,
+		Hashtable const &hints);
+	static int decodeAlphanumericSegment(Ref<BitSource> bits, std::string &result, int count, bool fc1InEffect);
+	static int decodeNumericSegment(Ref<BitSource> bits, std::string &result, int count);
 
-  static void append(std::string &ost, const char *bufIn, size_t nIn, const char *src);
-  static void append(std::string &ost, std::string const& in, const char *src);
+	static int append(std::string &ost, const char *bufIn, size_t nIn, const char *src);
+	static int append(std::string &ost, std::string const &in, const char *src);
 
 public:
-  static Ref<DecoderResult> decode(ArrayRef<char> bytes,
-                                   Version *version,
-                                   ErrorCorrectionLevel const& ecLevel,
-                                   Hashtable const& hints);
+	static int decode(ArrayRef<char> bytes,
+		Version *version,
+		ErrorCorrectionLevel const &ecLevel,
+		Hashtable const &hints,
+		Ref<DecoderResult> &result);
 };
 
 }

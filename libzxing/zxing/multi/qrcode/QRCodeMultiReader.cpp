@@ -22,36 +22,37 @@
 
 namespace zxing {
 namespace multi {
-QRCodeMultiReader::QRCodeMultiReader(){}
+QRCodeMultiReader::QRCodeMultiReader() {}
 
-QRCodeMultiReader::~QRCodeMultiReader(){}
+QRCodeMultiReader::~QRCodeMultiReader() {}
 
-std::vector<Ref<Result> > QRCodeMultiReader::decodeMultiple(Ref<BinaryBitmap> image, 
-  DecodeHints hints)
+int QRCodeMultiReader::decodeMultiple(Ref<BinaryBitmap> image,
+	DecodeHints hints, std::vector<Ref<Result>> &results)
 {
-  std::vector<Ref<Result> > results;
-  MultiDetector detector(image->getBlackMatrix());
+	Ref<BitMatrix> matrix;
+	image->getBlackMatrix(matrix);
+	MultiDetector detector(matrix);
+	int ret;
 
-  std::vector<Ref<DetectorResult> > detectorResult =  detector.detectMulti(hints);
-  for (unsigned int i = 0; i < detectorResult.size(); i++) {
-    try {
-      Ref<DecoderResult> decoderResult = getDecoder().decode(detectorResult[i]->getBits());
-      ArrayRef< Ref<ResultPoint> > points = detectorResult[i]->getPoints();
-      Ref<Result> result = Ref<Result>(new Result(decoderResult->getText(),
-      decoderResult->getRawBytes(), 
-      points, BarcodeFormat::QR_CODE));
-      // result->putMetadata(ResultMetadataType.BYTE_SEGMENTS, decoderResult->getByteSegments());
-      // result->putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, decoderResult->getECLevel().toString());
-      results.push_back(result);
-    } catch (ReaderException const& re) {
-      (void)re;
-      // ignore and continue 
-    }
-  }
-  if (results.empty()){
-    throw ReaderException("No code detected");
-  }
-  return results;
+	std::vector<Ref<DetectorResult> > detectorResult;
+	if ((ret = detector.detectMulti(hints, detectorResult)) < 0)
+		return ret;
+	for (unsigned int i = 0; i < detectorResult.size(); i++) {
+		Ref<DecoderResult> decoderResult;
+		if ((ret = getDecoder().decode(detectorResult[i]->getBits(), decoderResult)) < 0)
+			continue;
+		ArrayRef< Ref<ResultPoint> > points = detectorResult[i]->getPoints();
+		Ref<Result> result = Ref<Result>(new Result(decoderResult->getText(),
+			decoderResult->getRawBytes(),
+			points, BarcodeFormat::QR_CODE));
+			// result->putMetadata(ResultMetadataType.BYTE_SEGMENTS, decoderResult->getByteSegments());
+			// result->putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, decoderResult->getECLevel().toString());
+		results.push_back(result);
+	}
+	if (results.empty()) {
+		return -1;
+	}
+	return 0;
 }
 
 } // End zxing::multi namespace

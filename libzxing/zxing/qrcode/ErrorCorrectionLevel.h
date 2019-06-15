@@ -27,24 +27,24 @@ namespace qrcode {
 
 class ErrorCorrectionLevel {
 private:
-  int ordinal_;
-  int bits_;
-  std::string name_;
-  ErrorCorrectionLevel(int inOrdinal, int bits, char const* name);
-  static ErrorCorrectionLevel *FOR_BITS[];
-  static int N_LEVELS;
+	int ordinal_;
+	int bits_;
+	std::string name_;
+	ErrorCorrectionLevel(int inOrdinal, int bits, char const *name);
+	static ErrorCorrectionLevel *FOR_BITS[];
+	static int N_LEVELS;
 public:
-  static ErrorCorrectionLevel L;
-  static ErrorCorrectionLevel M;
-  static ErrorCorrectionLevel Q;
-  static ErrorCorrectionLevel H;
+	static ErrorCorrectionLevel L;
+	static ErrorCorrectionLevel M;
+	static ErrorCorrectionLevel Q;
+	static ErrorCorrectionLevel H;
 
-  int ordinal() const;
-  int bits() const;
-  std::string const& name() const;
-  operator std::string const& () const;
+	int ordinal() const;
+	int bits() const;
+	std::string const &name() const;
+	operator std::string const &() const;
 
-  static ErrorCorrectionLevel& forBits(int bits);
+	static ErrorCorrectionLevel &forBits(int bits);
 };
 }
 }

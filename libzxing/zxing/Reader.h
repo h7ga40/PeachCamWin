@@ -26,13 +26,13 @@
 
 namespace zxing {
 
- class Reader : public Counted {
-  protected:
-   Reader() {}
-  public:
-   virtual Ref<Result> decode(Ref<BinaryBitmap> image);
-   virtual Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints) = 0;
-   virtual ~Reader();
+class Reader : public Counted {
+protected:
+	Reader() {}
+public:
+	virtual int decode(Ref<BinaryBitmap> image, Ref<Result> &result);
+	virtual int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result) = 0;
+	virtual ~Reader();
 };
 
 }

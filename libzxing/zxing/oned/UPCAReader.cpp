@@ -33,38 +33,53 @@ using zxing::FormatException;
 
 UPCAReader::UPCAReader() : ean13Reader() {}
 
-Ref<Result> UPCAReader::decodeRow(int rowNumber, Ref<BitArray> row) {
-  return maybeReturnResult(ean13Reader.decodeRow(rowNumber, row));
+int UPCAReader::decodeRow(int rowNumber, Ref<BitArray> row, Ref<Result> &result)
+{
+	int ret;
+	if ((ret = ean13Reader.decodeRow(rowNumber, row, result)) < 0)
+		return ret;
+	return maybeReturnResult(result, result);
 }
 
-Ref<Result> UPCAReader::decodeRow(int rowNumber,
-                                  Ref<BitArray> row,
-                                  Range const& startGuardRange) {
-  return maybeReturnResult(ean13Reader.decodeRow(rowNumber, row, startGuardRange));
+int UPCAReader::decodeRow(int rowNumber, Ref<BitArray> row,
+	Range const &startGuardRange, Ref<Result> &result)
+{
+	int ret;
+	if ((ret = ean13Reader.decodeRow(rowNumber, row, startGuardRange, result)) < 0)
+		return ret;
+	return maybeReturnResult(result, result);
 }
 
-Ref<Result> UPCAReader::decode(Ref<BinaryBitmap> image, DecodeHints hints) {
-  return maybeReturnResult(ean13Reader.decode(image, hints));
+int UPCAReader::decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result)
+{
+	int ret;
+	if ((ret = ean13Reader.decode(image, hints, result)) < 0)
+		return ret;
+	return maybeReturnResult(result, result);
 }
 
 int UPCAReader::decodeMiddle(Ref<BitArray> row,
-                             Range const& startRange,
-                             std::string& resultString) {
-  return ean13Reader.decodeMiddle(row, startRange, resultString);
+	Range const &startRange,
+	std::string &resultString)
+{
+	return ean13Reader.decodeMiddle(row, startRange, resultString);
 }
 
-Ref<Result> UPCAReader::maybeReturnResult(Ref<Result> result) {
-  const std::string& text = (result->getText())->getText();
-  if (text[0] == '0') {
-    Ref<String> resultString(new String(text.substr(1)));
-    Ref<Result> res(new Result(resultString, result->getRawBytes(), result->getResultPoints(),
-                               BarcodeFormat::UPC_A));
-    return res;
-  } else {
-    throw FormatException();
-  }
+int UPCAReader::maybeReturnResult(Ref<Result> result, Ref<Result> &result2)
+{
+	const std::string &text = (result->getText())->getText();
+	if (text[0] == '0') {
+		Ref<String> resultString(new String(text.substr(1)));
+		result2 = new Result(resultString, result->getRawBytes(), result->getResultPoints(),
+			BarcodeFormat::UPC_A);
+		return 0;
+	}
+	else {
+		return -1;
+	}
 }
 
-zxing::BarcodeFormat UPCAReader::getBarcodeFormat(){
-  return BarcodeFormat::UPC_A;
+zxing::BarcodeFormat UPCAReader::getBarcodeFormat()
+{
+	return BarcodeFormat::UPC_A;
 }

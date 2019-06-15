@@ -29,18 +29,18 @@ namespace oned {
 
 class EAN13Reader : public UPCEANReader {
 private:
-  std::vector<int> decodeMiddleCounters;
-  static void determineFirstDigit(std::string& resultString,
-                                  int lgPatternFound);
+	std::vector<int> decodeMiddleCounters;
+	static int determineFirstDigit(std::string &resultString,
+		int lgPatternFound);
 
 public:
-  EAN13Reader();
+	EAN13Reader();
 
-  int decodeMiddle(Ref<BitArray> row,
-                   Range const& startRange,
-                   std::string& resultString);
+	int decodeMiddle(Ref<BitArray> row,
+		Range const &startRange,
+		std::string &resultString);
 
-  BarcodeFormat getBarcodeFormat();
+	BarcodeFormat getBarcodeFormat();
 };
 
 }

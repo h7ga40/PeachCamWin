@@ -31,24 +31,28 @@ using zxing::ResultPoint;
 
 
 AztecDetectorResult::AztecDetectorResult(Ref<BitMatrix> bits,
-                                         ArrayRef< Ref<ResultPoint> > points,
-                                         bool compact,
-                                         int nbDatablocks,
-                                         int nbLayers)
-  : DetectorResult(bits, points),
-    compact_(compact),
-    nbDatablocks_(nbDatablocks),
-    nbLayers_(nbLayers) {
-    }
-        
-bool AztecDetectorResult::isCompact() {
-  return compact_;
+	ArrayRef< Ref<ResultPoint> > points,
+	bool compact,
+	int nbDatablocks,
+	int nbLayers)
+	: DetectorResult(bits, points),
+	compact_(compact),
+	nbDatablocks_(nbDatablocks),
+	nbLayers_(nbLayers)
+{
 }
-        
-int AztecDetectorResult::getNBDatablocks() {
-  return nbDatablocks_;
+
+bool AztecDetectorResult::isCompact()
+{
+	return compact_;
 }
-        
-int AztecDetectorResult::getNBLayers() {
-  return nbLayers_;
+
+int AztecDetectorResult::getNBDatablocks()
+{
+	return nbDatablocks_;
+}
+
+int AztecDetectorResult::getNBLayers()
+{
+	return nbLayers_;
 }

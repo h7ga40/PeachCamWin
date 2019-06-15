@@ -28,21 +28,21 @@
 
 namespace zxing {
 namespace aztec {
-        
+
 class AztecReader : public Reader {
- private:
-  Decoder decoder_;
-            
- protected:
-  Decoder &getDecoder();
-            
- public:
-  AztecReader();
-  virtual Ref<Result> decode(Ref<BinaryBitmap> image);
-  virtual Ref<Result> decode(Ref<BinaryBitmap> image, DecodeHints hints);
-  virtual ~AztecReader();
+private:
+	Decoder decoder_;
+
+protected:
+	Decoder &getDecoder();
+
+public:
+	AztecReader();
+	virtual int decode(Ref<BinaryBitmap> image, Ref<Result> &result);
+	virtual int decode(Ref<BinaryBitmap> image, DecodeHints hints, Ref<Result> &result);
+	virtual ~AztecReader();
 };
-        
+
 }
 }
 

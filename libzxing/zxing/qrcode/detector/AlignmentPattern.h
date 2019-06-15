@@ -26,20 +26,20 @@
 #include <cmath>
 
 namespace zxing {
-	namespace qrcode {
-		
-		class AlignmentPattern : public ResultPoint {
-		private:
-			float estimatedModuleSize_;
-			
-		public:
-			AlignmentPattern(float posX, float posY, float estimatedModuleSize);
-			bool aboutEquals(float moduleSize, float i, float j) const;
-      Ref<AlignmentPattern> combineEstimate(float i, float j,
-                                            float newModuleSize) const;
-		};
-		
-	}
+namespace qrcode {
+
+class AlignmentPattern : public ResultPoint {
+private:
+	float estimatedModuleSize_;
+
+public:
+	AlignmentPattern(float posX, float posY, float estimatedModuleSize);
+	bool aboutEquals(float moduleSize, float i, float j) const;
+	Ref<AlignmentPattern> combineEstimate(float i, float j,
+		float newModuleSize) const;
+};
+
+}
 }
 
 #endif // __ALIGNMENT_PATTERN_H__

@@ -26,10 +26,10 @@
 namespace zxing {
 
 class ReaderException : public Exception {
- public:
-  ReaderException() throw() {}
-  ReaderException(char const* msg) throw() : Exception(msg) {}
-  ~ReaderException() throw() {}
+public:
+	ReaderException() throw() {}
+	ReaderException(char const *msg) throw() : Exception(msg) {}
+	~ReaderException() throw() {}
 };
 
 }

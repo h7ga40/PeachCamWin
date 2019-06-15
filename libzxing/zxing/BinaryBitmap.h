@@ -26,31 +26,31 @@
 #include <zxing/Binarizer.h>
 
 namespace zxing {
-	
-	class BinaryBitmap : public Counted {
-	private:
-		Ref<Binarizer> binarizer_;
-		
-	public:
-		BinaryBitmap(Ref<Binarizer> binarizer);
-		virtual ~BinaryBitmap();
-		
-		Ref<BitArray> getBlackRow(int y, Ref<BitArray> row);
-		Ref<BitMatrix> getBlackMatrix();
-		
-		Ref<LuminanceSource> getLuminanceSource() const;
 
-		int getWidth() const;
-		int getHeight() const;
+class BinaryBitmap : public Counted {
+private:
+	Ref<Binarizer> binarizer_;
 
-		bool isRotateSupported() const;
-		Ref<BinaryBitmap> rotateCounterClockwise();
+public:
+	BinaryBitmap(Ref<Binarizer> binarizer);
+	virtual ~BinaryBitmap();
 
-		bool isCropSupported() const;
-		Ref<BinaryBitmap> crop(int left, int top, int width, int height);
+	int getBlackRow(int y, Ref<BitArray> row, Ref<BitArray> &result);
+	int getBlackMatrix(Ref<BitMatrix> &matrix);
 
-	};
-	
+	Ref<LuminanceSource> getLuminanceSource() const;
+
+	int getWidth() const;
+	int getHeight() const;
+
+	bool isRotateSupported() const;
+	Ref<BinaryBitmap> rotateCounterClockwise();
+
+	bool isCropSupported() const;
+	Ref<BinaryBitmap> crop(int left, int top, int width, int height);
+
+};
+
 }
 
 #endif /* BINARYBITMAP_H_ */

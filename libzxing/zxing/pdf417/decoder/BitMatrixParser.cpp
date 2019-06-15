@@ -39,17 +39,17 @@ const int BitMatrixParser::MAX_CW_CAPACITY = 929;
 const int BitMatrixParser::MODULES_IN_SYMBOL = 17;
 
 BitMatrixParser::BitMatrixParser(Ref<BitMatrix> bitMatrix)
-  : bitMatrix_(bitMatrix)
+	: bitMatrix_(bitMatrix)
 {
-  rows_ = 0;
-  leftColumnECData_ = 0;
-  rightColumnECData_ = 0;
-  for (int i = 0; i < 3; i++) {
-    aLeftColumnTriple_[i]=0;
-    aRightColumnTriple_[i]=0;
-  }
-  eraseCount_ = 0;
-  ecLevel_ = -1;
+	rows_ = 0;
+	leftColumnECData_ = 0;
+	rightColumnECData_ = 0;
+	for (int i = 0; i < 3; i++) {
+		aLeftColumnTriple_[i] = 0;
+		aRightColumnTriple_[i] = 0;
+	}
+	eraseCount_ = 0;
+	ecLevel_ = -1;
 }
 
 /**
@@ -67,28 +67,32 @@ BitMatrixParser::BitMatrixParser(Ref<BitMatrix> bitMatrix)
   * @throw FormatException for example if number of rows is too big or something
   * with row processing is bad
   */
-ArrayRef<int> BitMatrixParser::readCodewords()
+int BitMatrixParser::readCodewords(ArrayRef<int> &result)
 {
   //int width = bitMatrix_->getWidth();
-  int height = bitMatrix_->getHeight();
+	int height = bitMatrix_->getHeight();
 
-  erasures_ = new Array<int>(MAX_CW_CAPACITY);
+	erasures_ = new Array<int>(MAX_CW_CAPACITY);
 
-  ArrayRef<int> codewords (new Array<int>(MAX_CW_CAPACITY));
-  int next = 0;
-  int rowNumber = 0;
-  for (int i = 0; i < height; i++) {
-    if (rowNumber >= MAX_ROWS) {
-      // Something is wrong, since we have exceeded
-      // the maximum rows in the specification.
-      throw FormatException("BitMatrixParser::readCodewords(PDF): Too many rows!");
-    }
-    // Process Row
-    next = processRow(rowNumber, codewords, next);
-    rowNumber++;
-  }
-  erasures_ = trimArray(erasures_, eraseCount_);
-  return trimArray(codewords, next);
+	ArrayRef<int> codewords(new Array<int>(MAX_CW_CAPACITY));
+	int next = 0;
+	int rowNumber = 0;
+	for (int i = 0; i < height; i++) {
+		if (rowNumber >= MAX_ROWS) {
+		  // Something is wrong, since we have exceeded
+		  // the maximum rows in the specification.
+			return -1;
+		}
+		// Process Row
+		next = processRow(rowNumber, codewords, next);
+		rowNumber++;
+	}
+	int ret;
+	if ((ret = trimArray(erasures_, eraseCount_, erasures_)) < 0)
+		return ret;
+	if ((ret = trimArray(codewords, next, result)) < 0)
+		return ret;
+	return 0;
 }
 
 /**
@@ -103,76 +107,79 @@ ArrayRef<int> BitMatrixParser::readCodewords()
  * @return the next available index into the codeword array after processing
  *         this row.
  */
-int BitMatrixParser::processRow(int rowNumber, ArrayRef<int> codewords, int next) {
-  int width = bitMatrix_->getWidth();
-  int columnNumber = 0;
-  int cwClusterNumber = -1;
-  int64_t symbol = 0;
-  for (int i = 0; i < width; i += MODULES_IN_SYMBOL) {
-    for (int mask = MODULES_IN_SYMBOL - 1; mask >= 0; mask--) {
-      if (bitMatrix_->get(i + (MODULES_IN_SYMBOL - 1 - mask), rowNumber)) {
-        symbol |= int64_t(1) << mask;
-      }
-    }
-    if (columnNumber > 0) {
-      cwClusterNumber = -1;
-      int cw = getCodeword(symbol,&cwClusterNumber);
-      
-      // 2012-06-27 HFN: cwClusterNumber should be the modulus of the row number by 3; otherwise,
-      // handle the codeword as erasure:
-      if ((cwClusterNumber >= 0) && (cwClusterNumber != rowNumber % 3)) {
-        cw = -1;
-      }
-      
-      if (cw < 0 && i < width - MODULES_IN_SYMBOL) {
-        // Skip errors on the Right row indicator column
-        if (eraseCount_ >= (int)erasures_->size()) {
-          throw FormatException("BitMatrixParser::processRow(PDF417): eraseCount too big!");
-        }
-        erasures_[eraseCount_] = next;
-        next++;
-        eraseCount_++;
-      } else {
-        if (next >= codewords->size()) {
-          throw FormatException("BitMatrixParser::processRow(PDF417): codewords index out of bound.");
-        }
-        codewords[next++] = cw;
-      }
-    } else {
-      // Left row indicator column
-      cwClusterNumber = -1;
-      int cw = getCodeword(symbol,&cwClusterNumber);
-      aLeftColumnTriple_[rowNumber % 3] = cw; /* added 2012-06-22 hfn */
-      if (ecLevel_ < 0 && rowNumber % 3 == 1) {
-        leftColumnECData_ = cw;
-      }
-    }
-    symbol = 0;
-    columnNumber++;
-  }
-  if (columnNumber > 1) {
-    // Right row indicator column is in codeword[next]
-    // Overwrite the last codeword i.e. Right Row Indicator
-    --next;
-    aRightColumnTriple_[rowNumber % 3] = codewords[next]; /* added 2012-06-22 hfn */
-    if (rowNumber % 3 == 2) {
-      if (ecLevel_ < 0) {
-        rightColumnECData_ = codewords[next];
-        if (rightColumnECData_ == leftColumnECData_ && (int)leftColumnECData_ > 0) {  /* leftColumnECData_ != 0 */
-          ecLevel_ = ((rightColumnECData_ % 30) - rows_ % 3) / 3;
-        }
-      }
-      // 2012-06-22 hfn: verify whether outer columns are still okay:
-      if (!VerifyOuterColumns(rowNumber)) {
-        throw FormatException("BitMatrixParser::processRow(PDF417): outer columns corrupted!");
-      }
-    }
-    codewords[next] = 0;
-  }
-  return next;
+int BitMatrixParser::processRow(int rowNumber, ArrayRef<int> codewords, int next)
+{
+	int width = bitMatrix_->getWidth();
+	int columnNumber = 0;
+	int cwClusterNumber = -1;
+	int64_t symbol = 0;
+	for (int i = 0; i < width; i += MODULES_IN_SYMBOL) {
+		for (int mask = MODULES_IN_SYMBOL - 1; mask >= 0; mask--) {
+			if (bitMatrix_->get(i + (MODULES_IN_SYMBOL - 1 - mask), rowNumber)) {
+				symbol |= int64_t(1) << mask;
+			}
+		}
+		if (columnNumber > 0) {
+			cwClusterNumber = -1;
+			int cw = getCodeword(symbol, &cwClusterNumber);
+
+			// 2012-06-27 HFN: cwClusterNumber should be the modulus of the row number by 3; otherwise,
+			// handle the codeword as erasure:
+			if ((cwClusterNumber >= 0) && (cwClusterNumber != rowNumber % 3)) {
+				cw = -1;
+			}
+
+			if (cw < 0 && i < width - MODULES_IN_SYMBOL) {
+			  // Skip errors on the Right row indicator column
+				if (eraseCount_ >= (int)erasures_->size()) {
+					return -1;
+				}
+				erasures_[eraseCount_] = next;
+				next++;
+				eraseCount_++;
+			}
+			else {
+				if (next >= codewords->size()) {
+					return -1;
+				}
+				codewords[next++] = cw;
+			}
+		}
+		else {
+	   // Left row indicator column
+			cwClusterNumber = -1;
+			int cw = getCodeword(symbol, &cwClusterNumber);
+			aLeftColumnTriple_[rowNumber % 3] = cw; /* added 2012-06-22 hfn */
+			if (ecLevel_ < 0 && rowNumber % 3 == 1) {
+				leftColumnECData_ = cw;
+			}
+		}
+		symbol = 0;
+		columnNumber++;
+	}
+	if (columnNumber > 1) {
+	  // Right row indicator column is in codeword[next]
+	  // Overwrite the last codeword i.e. Right Row Indicator
+		--next;
+		aRightColumnTriple_[rowNumber % 3] = codewords[next]; /* added 2012-06-22 hfn */
+		if (rowNumber % 3 == 2) {
+			if (ecLevel_ < 0) {
+				rightColumnECData_ = codewords[next];
+				if (rightColumnECData_ == leftColumnECData_ && (int)leftColumnECData_ > 0) {  /* leftColumnECData_ != 0 */
+					ecLevel_ = ((rightColumnECData_ % 30) - rows_ % 3) / 3;
+				}
+			}
+			// 2012-06-22 hfn: verify whether outer columns are still okay:
+			if (!VerifyOuterColumns(rowNumber)) {
+				return -1;
+			}
+		}
+		codewords[next] = 0;
+	}
+	return next;
 }
 
-/* Static methods. */  
+/* Static methods. */
 
 /**
   * Trim the array to the required size.
@@ -181,17 +188,17 @@ int BitMatrixParser::processRow(int rowNumber, ArrayRef<int> codewords, int next
   * @param size  the size to trim it to
   * @return the new trimmed array
   */
-ArrayRef<int> BitMatrixParser::trimArray(ArrayRef<int> array, int size)
+int BitMatrixParser::trimArray(ArrayRef<int> array, int size, ArrayRef<int> &result)
 {
-  if (size < 0) {
-    throw IllegalArgumentException("BitMatrixParser::trimArray: negative size!");
-  }
-  // 2012-10-12 hfn don't throw "NoErrorException" when size == 0
-  ArrayRef<int> a = new Array<int>(size);
-  for (int i = 0; i < size; i++) {
-    a[i] = array[i];
-  }
-  return a;
+	if (size < 0) {
+		return -1;
+	}
+	// 2012-10-12 hfn don't throw "NoErrorException" when size == 0
+	result = new Array<int>(size);
+	for (int i = 0; i < size; i++) {
+		result[i] = array[i];
+	}
+	return 0;
 }
 
 /**
@@ -207,18 +214,19 @@ ArrayRef<int> BitMatrixParser::trimArray(ArrayRef<int> array, int size)
   */
 int BitMatrixParser::getCodeword(int64_t symbol, int *pi)
 {
-  int64_t sym = symbol & 0x3FFFF;
-  int i = findCodewordIndex(sym);
-  if (i == -1) {
-    return -1;
-  } else {
-    int cw = CODEWORD_TABLE[i] - 1;
-    if (pi!= NULL) {
-      *pi = cw / 929;
-    }
-    cw %= 929;
-    return cw;
-  }
+	int64_t sym = symbol & 0x3FFFF;
+	int i = findCodewordIndex(sym);
+	if (i == -1) {
+		return -1;
+	}
+	else {
+		int cw = CODEWORD_TABLE[i] - 1;
+		if (pi != NULL) {
+			*pi = cw / 929;
+		}
+		cw %= 929;
+		return cw;
+	}
 }
 
 /**
@@ -230,19 +238,21 @@ int BitMatrixParser::getCodeword(int64_t symbol, int *pi)
   */
 int BitMatrixParser::findCodewordIndex(int64_t symbol)
 {
-  int first = 0;
-  int upto = SYMBOL_TABLE_LENGTH;
-  while (first < upto) {
-    int mid = ((unsigned int)(first + upto)) >> 1; // Compute mid point.
-    if (symbol < SYMBOL_TABLE[mid]) {
-      upto = mid; // repeat search in bottom half.
-    } else if (symbol > SYMBOL_TABLE[mid]) {
-      first = mid + 1; // Repeat search in top half.
-    } else {
-      return mid; // Found it. return position
-    }
-  }
-  return -1;
+	int first = 0;
+	int upto = SYMBOL_TABLE_LENGTH;
+	while (first < upto) {
+		int mid = ((unsigned int)(first + upto)) >> 1; // Compute mid point.
+		if (symbol < SYMBOL_TABLE[mid]) {
+			upto = mid; // repeat search in bottom half.
+		}
+		else if (symbol > SYMBOL_TABLE[mid]) {
+			first = mid + 1; // Repeat search in top half.
+		}
+		else {
+			return mid; // Found it. return position
+		}
+	}
+	return -1;
 }
 
 /*
@@ -250,9 +260,9 @@ int BitMatrixParser::findCodewordIndex(int64_t symbol)
  */
 bool BitMatrixParser::VerifyOuterColumns(int rownumber)
 {
-  return IsEqual(aLeftColumnTriple_[0], aRightColumnTriple_[1], rownumber)
-      && IsEqual(aLeftColumnTriple_[1], aRightColumnTriple_[2], rownumber)
-      && IsEqual(aLeftColumnTriple_[2], aRightColumnTriple_[0], rownumber);
+	return IsEqual(aLeftColumnTriple_[0], aRightColumnTriple_[1], rownumber)
+		&& IsEqual(aLeftColumnTriple_[1], aRightColumnTriple_[2], rownumber)
+		&& IsEqual(aLeftColumnTriple_[2], aRightColumnTriple_[0], rownumber);
 }
 
 /*
@@ -261,19 +271,19 @@ bool BitMatrixParser::VerifyOuterColumns(int rownumber)
  */
 bool BitMatrixParser::IsEqual(int &a, int &b, int rownumber)
 {
-  int ret = (a == b) || (a == -1) || (b == -1);
-  if (!ret) {
-    int row3 = rownumber / 3;
-    int row30 = row3 * 30;
-    int row59 = row30 + 29;
-    if (a < row30 || a > row59) {
-      a = -1;
-    }
-    if (b < row30 || b > row59) {
-      b = -1;
-    }
-  }
-  return true;
+	int ret = (a == b) || (a == -1) || (b == -1);
+	if (!ret) {
+		int row3 = rownumber / 3;
+		int row30 = row3 * 30;
+		int row59 = row30 + 29;
+		if (a < row30 || a > row59) {
+			a = -1;
+		}
+		if (b < row30 || b > row59) {
+			b = -1;
+		}
+	}
+	return true;
 }
 
 const int BitMatrixParser::SYMBOL_TABLE[] =
@@ -994,4 +1004,4 @@ const int BitMatrixParser::CODEWORD_TABLE[] =
 };
 
 const int BitMatrixParser::SYMBOL_TABLE_LENGTH =
-    sizeof(BitMatrixParser::SYMBOL_TABLE) / sizeof(int);
+sizeof(BitMatrixParser::SYMBOL_TABLE) / sizeof(int);

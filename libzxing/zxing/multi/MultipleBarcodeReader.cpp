@@ -19,10 +19,11 @@
 namespace zxing {
 namespace multi {
 
-MultipleBarcodeReader::~MultipleBarcodeReader() { }
+MultipleBarcodeReader::~MultipleBarcodeReader() {}
 
-std::vector<Ref<Result> > MultipleBarcodeReader::decodeMultiple(Ref<BinaryBitmap> image) {
-  return decodeMultiple(image, DecodeHints::DEFAULT_HINT);
+int MultipleBarcodeReader::decodeMultiple(Ref<BinaryBitmap> image, std::vector<Ref<Result>> &results)
+{
+	return decodeMultiple(image, DecodeHints::DEFAULT_HINT, results);
 }
 
 } // End zxing::multi namespace

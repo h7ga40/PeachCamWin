@@ -26,11 +26,11 @@ namespace zxing {
 
 class FormatException : public ReaderException {
 public:
-  FormatException();
-  FormatException(const char *msg);
-  ~FormatException() throw();
+	FormatException();
+	FormatException(const char *msg);
+	~FormatException() throw();
 
-  static FormatException const& getFormatInstance();
+	static FormatException const &getFormatInstance();
 };
 
 }

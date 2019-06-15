@@ -11,12 +11,14 @@ namespace zxing {
 namespace datamatrix {
 
 DetectorException::DetectorException(const char *msg) :
-    Exception(msg) {
+	Exception(msg)
+{
 
 }
 
-DetectorException::~DetectorException() throw () {
-  // TODO Auto-generated destructor stub
+DetectorException::~DetectorException() throw ()
+{
+// TODO Auto-generated destructor stub
 }
 
 }

@@ -38,21 +38,21 @@ class ModulusPoly;
  */
 class ModulusGF {
 
-  public: 
+public:
 	static ModulusGF PDF417_GF;
 
-  private:
+private:
 	ArrayRef<int> expTable_;
 	ArrayRef<int> logTable_;
 	Ref<ModulusPoly> zero_;
 	Ref<ModulusPoly> one_;
 	int modulus_;
 
-  public:
+public:
 	ModulusGF(int modulus, int generator);
 	Ref<ModulusPoly> getZero();
 	Ref<ModulusPoly> getOne();
-	Ref<ModulusPoly> buildMonomial(int degree, int coefficient);
+	int buildMonomial(int degree, int coefficient, Ref<ModulusPoly> &result);
 
 	int add(int a, int b);
 	int subtract(int a, int b);
@@ -61,7 +61,7 @@ class ModulusGF {
 	int inverse(int a);
 	int multiply(int a, int b);
 	int getSize();
-  
+
 };
 
 }

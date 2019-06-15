@@ -26,9 +26,9 @@ namespace zxing {
 
 class IllegalArgumentException : public Exception {
 public:
-  IllegalArgumentException();
-  IllegalArgumentException(const char *msg);
-  ~IllegalArgumentException() throw();
+	IllegalArgumentException();
+	IllegalArgumentException(const char *msg);
+	~IllegalArgumentException() throw();
 };
 
 }

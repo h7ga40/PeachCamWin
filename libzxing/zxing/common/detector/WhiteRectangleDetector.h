@@ -32,27 +32,27 @@
 namespace zxing {
 
 class WhiteRectangleDetector : public Counted {
-  private:
-    static int INIT_SIZE;
-    static int CORR;
-    Ref<BitMatrix> image_;
-    int width_;
-    int height_;
-    int leftInit_;
-    int rightInit_;
-    int downInit_;
-    int upInit_;
+private:
+	static int INIT_SIZE;
+	static int CORR;
+	Ref<BitMatrix> image_;
+	int width_;
+	int height_;
+	int leftInit_;
+	int rightInit_;
+	int downInit_;
+	int upInit_;
 
-  public:
-    WhiteRectangleDetector(Ref<BitMatrix> image);
-    WhiteRectangleDetector(Ref<BitMatrix> image, int initSize, int x, int y);
-    std::vector<Ref<ResultPoint> > detect();
+public:
+	WhiteRectangleDetector(Ref<BitMatrix> image);
+	WhiteRectangleDetector(Ref<BitMatrix> image, int initSize, int x, int y);
+	int detect(std::vector<Ref<ResultPoint>> &result);
 
-  private: 
-    Ref<ResultPoint> getBlackPointOnSegment(int aX, int aY, int bX, int bY);
-    std::vector<Ref<ResultPoint> > centerEdges(Ref<ResultPoint> y, Ref<ResultPoint> z,
-                                    Ref<ResultPoint> x, Ref<ResultPoint> t);
-    bool containsBlackPoint(int a, int b, int fixed, bool horizontal);
+private:
+	Ref<ResultPoint> getBlackPointOnSegment(int aX, int aY, int bX, int bY);
+	std::vector<Ref<ResultPoint> > centerEdges(Ref<ResultPoint> y, Ref<ResultPoint> z,
+		Ref<ResultPoint> x, Ref<ResultPoint> t);
+	bool containsBlackPoint(int a, int b, int fixed, bool horizontal);
 };
 }
 
