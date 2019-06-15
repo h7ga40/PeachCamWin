@@ -34,7 +34,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "mbed.h"
 #include <string.h>
 #include <math.h>
-#include <kernel.h>
 #include "adafruit_gfx.h"
 #include "gfxfont.h"
 #include "draw_font.h"

@@ -6,7 +6,7 @@
 #include "MediaTask.h"
 #include "NetTask.h"
 #include "SensorTask.h"
-#include <expat.h>
+#include "expat.h"
 #include "draw_font.h"
 #include "adafruit_gfx.h"
 #include "bh1792.h"
@@ -476,26 +476,35 @@ extern "C" int usrcmd_lpt(int argc, char **argv)
 
 void zxing_callback(const char *addr, int size)
 {
-	if (size > 0)
-		lcd_drawString(&lcd, addr, 0, 0, 0xFCCC, 0x0000);
-	else
-		lcd_fillRect(&lcd, 0, 0, lcd._width, 12, 0x0000);
+	if (size <= 0) {
+		lcd_fillRect(&lcd, 0, 20, lcd._width / 2, lcd._height / 2, 0x0000);
+		return;
+	}
+
+	lcd_drawString(&lcd, addr, 0, 20, 0xFCCC, 0x0000);
 
 	// The structure to manage the QR code
 	QRCode qrcode;
 
 	// Allocate a chunk of memory to store the QR code
-	uint8_t *qrcodeBytes = new uint8_t[qrcode_getBufferSize(3)];
-
+	uint8_t *qrcodeBytes = (uint8_t *)malloc(qrcode_getBufferSize(3));
+	if (qrcodeBytes != NULL) {
 	qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, addr);
 
 	for (int y = 0; y < qrcode.size; y++) {
 		for (int x = 0; x < qrcode.size; x++) {
 			if (qrcode_getModule(&qrcode, x, y)) {
-				lcd_fillRect(&lcd, 2 * x + 12, 2 * y + 12, 2, 2, 0xFFFF);
+					lcd_fillRect(&lcd, 2 * x + 32, 2 * y + 32, 2, 2, 0xF000);
+					//lcd_drawPixel(&lcd, x, y, 0xFFFF);
+				}
+				else {
+					lcd_fillRect(&lcd, 2 * x + 32, 2 * y + 32, 2, 2, 0xCCCC);
 				//lcd_drawPixel(&lcd, x, y, 0xFFFF);
 			}
 		}
+		}
+
+		free(qrcodeBytes);
 	}
 }
 
