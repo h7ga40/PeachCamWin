@@ -35,7 +35,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	class ttcmn
 	{

@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	partial struct codemap
 	{

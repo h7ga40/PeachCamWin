@@ -27,7 +27,7 @@
  */
 using System;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	partial struct codemap
 	{

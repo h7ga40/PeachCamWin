@@ -36,7 +36,7 @@ using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	/* Parsing modes */
 	enum ParsingMode

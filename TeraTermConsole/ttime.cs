@@ -37,7 +37,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	class ttime
 	{

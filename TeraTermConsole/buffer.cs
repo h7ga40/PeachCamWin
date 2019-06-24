@@ -38,7 +38,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Text;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	class Buffer
 	{

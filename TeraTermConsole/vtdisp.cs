@@ -34,7 +34,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	enum ScrollType
 	{

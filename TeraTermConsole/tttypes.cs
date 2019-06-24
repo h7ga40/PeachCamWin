@@ -35,7 +35,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	/* Window Id */
 	enum WindowId

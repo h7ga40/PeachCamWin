@@ -30,7 +30,7 @@
 /* TERATERM.EXE, TELNET routines */
 using System;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	struct combining_map_t
 	{

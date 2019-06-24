@@ -37,7 +37,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	public class VTWindow : ScrollableControl
 	{
@@ -262,7 +262,7 @@ namespace TeraTrem
 #endif
 			VTDisp.DispSetActive(true);
 
-			/* Reset TeraTrem */
+			/* Reset TeraTerm */
 			VTTerm.ResetTerminal();
 
 			VTDisp.ChangeFont();
@@ -427,7 +427,7 @@ namespace TeraTrem
 			}
 		}
 
-		void ButtonDown(Point p, TeraTrem.MouseButtons LMR)
+		void ButtonDown(Point p, TeraTerm.MouseButtons LMR)
 		{
 			bool mousereport;
 
@@ -435,7 +435,7 @@ namespace TeraTrem
 				return;
 			}
 
-			if (AfterDblClk && (LMR == TeraTrem.MouseButtons.IdLeftButton) &&
+			if (AfterDblClk && (LMR == TeraTerm.MouseButtons.IdLeftButton) &&
 				(Math.Abs(p.X - DblClkX) <= SystemInformation.DoubleClickSize.Width) &&
 				(Math.Abs(p.Y - DblClkY) <= SystemInformation.DoubleClickSize.Height)) {
 				/* triple click */
@@ -454,19 +454,19 @@ namespace TeraTrem
 					bool box = false;
 
 					// select several pages of output from Tera Term window (2005.5.15 yutaka)
-					if (LMR == TeraTrem.MouseButtons.IdLeftButton && keyboard.ShiftKey()) {
+					if (LMR == TeraTerm.MouseButtons.IdLeftButton && keyboard.ShiftKey()) {
 						Buffer.BuffSeveralPagesSelect(p.X, p.Y);
 
 					}
 					else {
 						// Select rectangular block with Alt Key.Delete Shift key.(2005.5.15 yutaka)
-						if (LMR == TeraTrem.MouseButtons.IdLeftButton && keyboard.AltKey()) {
+						if (LMR == TeraTerm.MouseButtons.IdLeftButton && keyboard.AltKey()) {
 							box = true;
 						}
 
 						// Starting the selection only by a left button.(2007.11.20 maya)
 						if (!ts.SelectOnlyByLButton ||
-							(ts.SelectOnlyByLButton && LMR == TeraTrem.MouseButtons.IdLeftButton)) {
+							(ts.SelectOnlyByLButton && LMR == TeraTerm.MouseButtons.IdLeftButton)) {
 							Buffer.BuffStartSelect(p.X, p.Y, box);
 							TplClk = false;
 
@@ -479,13 +479,13 @@ namespace TeraTrem
 				}
 
 				switch (LMR) {
-				case TeraTrem.MouseButtons.IdRightButton:
+				case TeraTerm.MouseButtons.IdRightButton:
 					RButton = true;
 					break;
-				case TeraTrem.MouseButtons.IdMiddleButton:
+				case TeraTerm.MouseButtons.IdMiddleButton:
 					MButton = true;
 					break;
-				case TeraTrem.MouseButtons.IdLeftButton:
+				case TeraTerm.MouseButtons.IdLeftButton:
 					LButton = true;
 					break;
 				}
@@ -596,7 +596,7 @@ namespace TeraTrem
 			DblClkX = point.X;
 			DblClkY = point.Y;
 
-			if (VTTerm.MouseReport(MouseEvent.IdMouseEventBtnDown, TeraTrem.MouseButtons.IdLeftButton, DblClkX, DblClkY)) {
+			if (VTTerm.MouseReport(MouseEvent.IdMouseEventBtnDown, TeraTerm.MouseButtons.IdLeftButton, DblClkX, DblClkY)) {
 				return;
 			}
 
@@ -621,13 +621,13 @@ namespace TeraTrem
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
 			if (e.Button == System.Windows.Forms.MouseButtons.Left) {
-				ButtonDown(e.Location, TeraTrem.MouseButtons.IdLeftButton);
+				ButtonDown(e.Location, TeraTerm.MouseButtons.IdLeftButton);
 			}
 			else if (e.Button == System.Windows.Forms.MouseButtons.Middle) {
-				ButtonDown(e.Location, TeraTrem.MouseButtons.IdMiddleButton);
+				ButtonDown(e.Location, TeraTerm.MouseButtons.IdMiddleButton);
 			}
 			else if (e.Button == System.Windows.Forms.MouseButtons.Right) {
-				ButtonDown(e.Location, TeraTrem.MouseButtons.IdRightButton);
+				ButtonDown(e.Location, TeraTerm.MouseButtons.IdRightButton);
 			}
 			base.OnMouseDown(e);
 		}
@@ -635,7 +635,7 @@ namespace TeraTrem
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
 			if (e.Button == System.Windows.Forms.MouseButtons.Left) {
-				VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdLeftButton, e.Location.X, e.Location.Y);
+				VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTerm.MouseButtons.IdLeftButton, e.Location.X, e.Location.Y);
 
 				if (LButton)
 					ButtonUp(false);
@@ -643,7 +643,7 @@ namespace TeraTrem
 			else if (e.Button == System.Windows.Forms.MouseButtons.Middle) {
 				bool mousereport;
 
-				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdMiddleButton, e.Location.X, e.Location.Y);
+				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTerm.MouseButtons.IdMiddleButton, e.Location.X, e.Location.Y);
 
 				if (MButton) {
 					// added DisablePasteMouseMButton (2008.3.2 maya)
@@ -658,7 +658,7 @@ namespace TeraTrem
 			else if (e.Button == System.Windows.Forms.MouseButtons.Right) {
 				bool mousereport;
 
-				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTrem.MouseButtons.IdRightButton, e.Location.X, e.Location.Y);
+				mousereport = VTTerm.MouseReport(MouseEvent.IdMouseEventBtnUp, TeraTerm.MouseButtons.IdRightButton, e.Location.X, e.Location.Y);
 
 				if (RButton) {
 					// 右ボタン押下でのペーストを禁止する (2005.3.16 yutaka)
@@ -740,7 +740,7 @@ namespace TeraTrem
 			if (line == 1 && ts.MouseWheelScrollLine > 0)
 				line *= ts.MouseWheelScrollLine;
 
-			if (!VTTerm.MouseReport(MouseEvent.IdMouseEventWheel, e.Delta < 0 ? TeraTrem.MouseButtons.IdMiddleButton : TeraTrem.MouseButtons.IdLeftButton, pt.X, pt.Y)) {
+			if (!VTTerm.MouseReport(MouseEvent.IdMouseEventWheel, e.Delta < 0 ? TeraTerm.MouseButtons.IdMiddleButton : TeraTerm.MouseButtons.IdLeftButton, pt.X, pt.Y)) {
 				if (VTTerm.WheelToCursorMode()) {
 					if (e.Delta < 0) {
 						keyboard.KeyDown(this, Keys.Down, (ushort)line, (ushort)((int)keyboard.MapVirtualKey((ushort)Keys.Down, 0) | 0x100));

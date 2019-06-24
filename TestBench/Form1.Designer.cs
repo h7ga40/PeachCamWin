@@ -34,7 +34,7 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.button1 = new System.Windows.Forms.Button();
-			this.vtWindow1 = new TeraTrem.VTWindow();
+			this.vtWindow1 = new TeraTerm.VTWindow();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
 			this.cmbAudioList = new System.Windows.Forms.ComboBox();
 			this.cmbVideoList = new System.Windows.Forms.ComboBox();
@@ -115,7 +115,7 @@
 			this.vtWindow1.Size = new System.Drawing.Size(629, 166);
 			this.vtWindow1.TabIndex = 6;
 			this.vtWindow1.Text = "vtWindow1";
-			this.vtWindow1.DataReceive += new TeraTrem.DataReceiveEventHandlear(this.vtWindow1_DataReceive);
+			this.vtWindow1.DataReceive += new TeraTerm.DataReceiveEventHandlear(this.vtWindow1_DataReceive);
 			// 
 			// timer1
 			// 
@@ -226,7 +226,7 @@
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button button1;
-		private TeraTrem.VTWindow vtWindow1;
+		private TeraTerm.VTWindow vtWindow1;
 		private System.Windows.Forms.Timer timer1;
 		private System.Windows.Forms.ComboBox cmbAudioList;
 		private System.Windows.Forms.ComboBox cmbVideoList;

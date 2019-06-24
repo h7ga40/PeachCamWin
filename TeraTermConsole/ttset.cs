@@ -35,7 +35,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	class ttset
 	{

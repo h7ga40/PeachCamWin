@@ -33,7 +33,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
-namespace TeraTrem
+namespace TeraTerm
 {
 	class clipboar
 	{
