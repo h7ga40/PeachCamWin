@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITestBench", "ITestBench\IT
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestBenchInit", "TestBenchInit\TestBenchInit.vcxproj", "{513B50C4-D9FE-4148-B6FA-C53C36ECB689}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeraTremConsole", "TeraTremConsole\TeraTremConsole.csproj", "{F57422B2-2D55-46BD-9462-8493EF819216}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeraTermConsole", "TeraTermConsole\TeraTermConsole.csproj", "{F57422B2-2D55-46BD-9462-8493EF819216}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopencv-videoio", "opencv-lib\videoio\videoio.vcxproj", "{F5A7384F-31B3-4B41-B2D6-DA6B57C4DEA2}"
 EndProject

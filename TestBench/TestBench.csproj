@@ -103,9 +103,9 @@
       <Project>{d7439707-fbc7-4c48-9706-5e1c75830cfc}</Project>
       <Name>ITestBench</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TeraTremConsole\TeraTremConsole.csproj">
+    <ProjectReference Include="..\TeraTermConsole\TeraTermConsole.csproj">
       <Project>{f57422b2-2d55-46bd-9462-8493ef819216}</Project>
-      <Name>TeraTremConsole</Name>
+      <Name>TeraTermConsole</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
