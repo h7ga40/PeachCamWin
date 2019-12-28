@@ -22,32 +22,32 @@ void SPI::init()
 	uint32 pin = 0;
 
 	switch (mode) {
-	// ���p���X ���b�`��s
+	// 正パルス ラッチ先行
 	case 0:
 		// IN_POS_OUT_NEG_EDGE
 		options |= SPI_CONFIG_OPTION_MODE0;
-		// SCLK�͎n�߂ƏI����LOW�Ƃ���
+		// SCLKは始めと終わりでLOWとする
 		pin = 0x000B000B;
 		break;
-	// ���p���X �V�t�g��s
+	// 正パルス シフト先行
 	case 1:
 		// IN_NEG_OUT_POS_EDGE
 		options |= SPI_CONFIG_OPTION_MODE1;
-		// SCLK�͎n�߂ƏI����LOW�Ƃ���
+		// SCLKは始めと終わりでLOWとする
 		pin = 0x000B000B;
 		break;
-	// ���p���X ���b�`��s
+	// 負パルス ラッチ先行
 	case 2:
 		// IN_NEG_OUT_POS_EDGE
 		options |= SPI_CONFIG_OPTION_MODE2;
-		// SCLK�͎n�߂ƏI����HIGH�Ƃ���
+		// SCLKは始めと終わりでHIGHとする
 		pin = 0x0B0B0B0B;
 		break;
-	// ���p���X �V�t�g��s
+	// 負パルス シフト先行
 	case 3:
 		// IN_POS_OUT_NEG_EDGE
 		options |= SPI_CONFIG_OPTION_MODE3;
-		// SCLK�͎n�߂ƏI����HIGH�Ƃ���
+		// SCLKは始めと終わりでHIGHとする
 		pin = 0x0B0B0B0B;
 		break;
 	}

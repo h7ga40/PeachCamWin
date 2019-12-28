@@ -201,7 +201,7 @@ int ESP32Stack::socket_recv(void *handle, void *data, unsigned size)
         return NSAPI_ERROR_NO_SOCKET;
     }
 
-    int32_t recv = _esp->recv(socket->id, (uint8_t *)data, size);
+    int32_t recv = _esp->recv(socket->id, (uint8_t *)data, size, -1);
     if (recv == -1) {
         return NSAPI_ERROR_WOULD_BLOCK;
     } else if (recv < 0) {

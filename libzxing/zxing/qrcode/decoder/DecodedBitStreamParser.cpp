@@ -323,7 +323,7 @@ int DecodedBitStreamParser::decodeAlphanumericSegment(Ref<BitSource> bits_,
 			}
 			else {
 				if (i < s.length() - 1 && s[i + 1] == '%') {
-				  // %% is rendered as %
+					// %% is rendered as %
 					r << s[i++];
 				}
 				else {

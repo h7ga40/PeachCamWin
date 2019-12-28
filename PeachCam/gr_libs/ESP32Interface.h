@@ -161,7 +161,7 @@ public:
      * @return          Number of entries in @a, or if @a count was 0 number of available networks, negative on error
      *                  see @a nsapi_error
      */
-    virtual int scan(WiFiAccessPoint *res, unsigned count);
+    virtual int scan(nsapi_wifi_ap_t *res, unsigned count);
 
     /** Translates a hostname to an IP address with specific version
      *
@@ -236,7 +236,7 @@ private:
     Callback<void(nsapi_event_t, intptr_t)> _connection_status_cb;
 
     void set_connection_status(nsapi_connection_status_t connection_status);
-    void wifi_status_cb(int8_t wifi_status);
+    static void wifi_status_cb(ESP32Interface *self, int8_t wifi_status);
 };
 
 #endif

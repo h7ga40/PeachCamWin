@@ -103,7 +103,7 @@ public:
      *  @return          Number of entries in \p count, or if \p count was 0 number of available networks,
      *                   negative on error see @a nsapi_error
      */
-    virtual nsapi_size_or_error_t scan(WiFiAccessPoint *res, nsapi_size_t count) = 0;
+    virtual nsapi_size_or_error_t scan(nsapi_wifi_ap_t *res, nsapi_size_t count) = 0;
 
     virtual WiFiInterface *wifiInterface()
     {

@@ -131,7 +131,8 @@ namespace TestBench
 			interfaces.Remove(obj.id);
 		}
 
-		private IUnitInterface CreateSerial(ref serial_t obj, PinName tx, PinName rx)
+		private IUnitInterface CreateSerial(ref serial_t obj, PinName tx, PinName rx,
+			PinName rts = PinName.NC, PinName cts = PinName.NC)
 		{
 			var p = PinMap.Peripheral(tx, PinMap.PinMap_UART_TX);
 			if (p == (int)PinName.NC)
@@ -139,12 +140,18 @@ namespace TestBench
 			var t = PinMap.Peripheral(rx, PinMap.PinMap_UART_RX);
 			if ((t == (int)PinName.NC) || (p != t))
 				return null;
+			var r = PinMap.Peripheral(rts, PinMap.PinMap_UART_RTS);
+			if ((rts != PinName.NC) && ((r == (int)PinName.NC) || (p != r)))
+				return null;
+			var s = PinMap.Peripheral(cts, PinMap.PinMap_UART_CTS);
+			if ((cts != PinName.NC) && ((s == (int)PinName.NC) || (p != s)))
+				return null;
 
 			if (!interfaces.TryGetValue(obj.id, out var uif)) {
 				if (pin_if.ContainsKey(tx) || pin_if.ContainsKey(rx)) {
 					throw new ArgumentException();
 				}
-				uif = new Serial((UARTName)p, tx, rx);
+				uif = new Serial((UARTName)p, tx, rx, rts, cts);
 				obj.id = uif.GetHashCode();
 				interfaces.Add(obj.id, uif);
 			}
@@ -618,13 +625,31 @@ namespace TestBench
 				System.Threading.Thread.Yield();
 		}
 
-		public IESP32 esp32_init(PinName en, PinName io0, PinName tx, PinName rx, bool debug,
-			PinName rts, PinName cts, int baudrate)
+		public IESP32 esp32_init(PinName en, PinName io0, PinName tx, PinName rx,
+			bool debug, PinName rts, PinName cts, int baudrate)
 		{
 			if (esp != null)
 				return esp;
 
-			esp = new ESP32Driver(en, io0, tx, rx, debug, rts, cts, baudrate);
+			Gpio gpio_en = null;
+			if (en != PinName.NC) {
+				var en_obj = new gpio_t();
+				gpio_en = (Gpio)CreateGpio(ref en_obj, en);
+				gpio_en.SetDirection(PinDirection.PIN_OUTPUT);
+			}
+
+			Gpio gpio_io0 = null;
+			if (io0 != PinName.NC) {
+				var io0_obj = new gpio_t();
+				gpio_io0 = (Gpio)CreateGpio(ref io0_obj, io0);
+				gpio_io0.SetDirection(PinDirection.PIN_OUTPUT);
+			}
+
+			var serial_obj = new serial_t();
+			var serial = (Serial)CreateSerial(ref serial_obj, tx, rx, rts, cts);
+			serial.SetBaudRate(baudrate);
+
+			esp = new ESP32Driver(this, gpio_en, gpio_io0, serial, debug);
 
 			return esp;
 		}

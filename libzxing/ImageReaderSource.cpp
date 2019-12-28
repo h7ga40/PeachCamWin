@@ -35,12 +35,12 @@ inline char ImageReaderSource::convertPixel(char const *pixel_) const
 {
 	unsigned char const *pixel = (unsigned char const *)pixel_;
 	if (comps == 1 || comps == 2) {
-	  // Gray or gray+alpha
+		// Gray or gray+alpha
 		return pixel[0];
 	} if (comps == 3 || comps == 4) {
-	  // Red, Green, Blue, (Alpha)
-	  // We assume 16 bit values here
-	  // 0x200 = 1<<9, half an lsb of the result to force rounding
+		// Red, Green, Blue, (Alpha)
+		// We assume 16 bit values here
+		// 0x200 = 1<<9, half an lsb of the result to force rounding
 		return (char)((306 * (int)pixel[0] + 601 * (int)pixel[1] +
 			117 * (int)pixel[2] + 0x200) >> 10);
 	}

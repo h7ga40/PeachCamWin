@@ -32,7 +32,7 @@ ESP32Interface::ESP32Interface(PinName en, PinName io0, PinName tx, PinName rx, 
 	_connection_status(NSAPI_STATUS_DISCONNECTED),
 	_connection_status_cb(NULL)
 {
-	_esp->attach_wifi_status(callback(this, &ESP32Interface::wifi_status_cb));
+	_esp->attach_wifi_status((intptr_t)this, (intptr_t)&ESP32Interface::wifi_status_cb);
 }
 
 ESP32Interface::ESP32Interface(PinName tx, PinName rx, bool debug) :
@@ -48,7 +48,7 @@ ESP32Interface::ESP32Interface(PinName tx, PinName rx, bool debug) :
 	_connection_status(NSAPI_STATUS_DISCONNECTED),
 	_connection_status_cb(NULL)
 {
-	_esp->attach_wifi_status(callback(this, &ESP32Interface::wifi_status_cb));
+	_esp->attach_wifi_status((intptr_t)this, (intptr_t)&ESP32Interface::wifi_status_cb);
 }
 
 nsapi_error_t ESP32Interface::set_network(const char *ip_address, const char *netmask, const char *gateway)
@@ -133,28 +133,28 @@ int ESP32Interface::disconnect()
 
 const char *ESP32Interface::get_ip_address()
 {
-	if (!_esp->getIPAddress((LPSTR)_ip_address, sizeof(_ip_address)))
+	if (!_esp->getIPAddress((uint8_t *)_ip_address, sizeof(_ip_address)))
 		_ip_address[0] = '\0';
 	return _ip_address;
 }
 
 const char *ESP32Interface::get_mac_address()
 {
-	if (!_esp->getMACAddress((LPSTR)_mac_address, sizeof(_mac_address)))
+	if (!_esp->getMACAddress((uint8_t *)_mac_address, sizeof(_mac_address)))
 		_mac_address[0] = '\0';
 	return _mac_address;
 }
 
 const char *ESP32Interface::get_gateway()
 {
-	if (!_esp->getGateway((LPSTR)_gateway, sizeof(_gateway)))
+	if (!_esp->getGateway((uint8_t *)_gateway, sizeof(_gateway)))
 		_gateway[0] = '\0';
 	return _gateway;
 }
 
 const char *ESP32Interface::get_netmask()
 {
-	if (!_esp->getNetmask((LPSTR)_netmask, sizeof(_netmask)))
+	if (!_esp->getNetmask((uint8_t *)_netmask, sizeof(_netmask)))
 		_netmask[0] = '\0';
 	return _netmask;
 }
@@ -164,22 +164,9 @@ int8_t ESP32Interface::get_rssi()
 	return _esp->getRSSI();
 }
 
-int ESP32Interface::scan(WiFiAccessPoint *res, unsigned count)
+int ESP32Interface::scan(nsapi_wifi_ap_t *res, unsigned count)
 {
-	int ret = 0;
-	union {
-		intptr_t ptr;
-		bool (*func)(ESP32Interface *_this);
-	} callback;
-
-	callback.func = [](ESP32Interface *_this) {
-
-		return true;
-	};
-
-	_esp->scan(callback.ptr, (intptr_t)this);
-
-	return ret;
+	return _esp->scan(res, count);
 }
 
 void ESP32Interface::attach(mbed::Callback<void(nsapi_event_t, intptr_t)> status_cb)
@@ -202,14 +189,14 @@ void ESP32Interface::set_connection_status(nsapi_connection_status_t connection_
 	}
 }
 
-void ESP32Interface::wifi_status_cb(int8_t wifi_status)
+void ESP32Interface::wifi_status_cb(ESP32Interface *self, int8_t wifi_status)
 {
 	switch (wifi_status) {
 	case ESP32_STATUS_DISCONNECTED:
-		set_connection_status(NSAPI_STATUS_DISCONNECTED);
+		self->set_connection_status(NSAPI_STATUS_DISCONNECTED);
 		break;
 	case ESP32_STATUS_GOT_IP:
-		set_connection_status(NSAPI_STATUS_GLOBAL_UP);
+		self->set_connection_status(NSAPI_STATUS_GLOBAL_UP);
 		break;
 	case ESP32_STATUS_CONNECTED:
 	default:
@@ -248,7 +235,7 @@ bool ESP32Interface::mdns_query(const char *hostname, SocketAddress &addr)
 {
 	char address[NSAPI_IPv6_SIZE];
 
-	if (!_esp->mdns_query((LPSTR)hostname, address, sizeof(address)))
+	if (!_esp->mdns_query((LPSTR)hostname, (uint8_t *)address, sizeof(address)))
 		return false;
 
 	addr.set_ip_address(address);

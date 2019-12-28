@@ -116,6 +116,7 @@ typedef signed int nsapi_value_or_error_t;
  *  The security type specifies a particular security to use when
  *  connected to a WiFi network
  */
+#if 0
 typedef enum nsapi_security {
     NSAPI_SECURITY_NONE         = 0x0,      /*!< open access point */
     NSAPI_SECURITY_WEP          = 0x1,      /*!< phrase conforms to WEP */
@@ -126,6 +127,9 @@ typedef enum nsapi_security {
     NSAPI_SECURITY_CHAP         = 0x6,      /*!< phrase conforms to PPP authentication context */
     NSAPI_SECURITY_UNKNOWN      = 0xFF,     /*!< unknown/unsupported security in scan results */
 } nsapi_security_t;
+#else
+typedef enum NSAPI_SECURITY nsapi_security_t;
+#endif
 
 /** Maximum size of IP address representation
  */
@@ -279,6 +283,7 @@ typedef nsapi_socket_option_t nsapi_option_t;
  *
  *  Structure representing a WiFi Access Point
  */
+#if 0
 typedef struct nsapi_wifi_ap {
     char ssid[33]; /* 32 is what 802.11 defines as longest possible name; +1 for the \0 */
     uint8_t bssid[6];
@@ -286,7 +291,9 @@ typedef struct nsapi_wifi_ap {
     int8_t rssi;
     uint8_t channel;
 } nsapi_wifi_ap_t;
-
+#else
+typedef struct nsapi_wifi_ap nsapi_wifi_ap_t;
+#endif
 
 /** nsapi_stack structure
  *

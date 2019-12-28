@@ -300,6 +300,37 @@ namespace TestBench
 	}
 
 	[ComVisible(true)]
+	public enum NSAPI_SECURITY
+	{
+		NONE = 0x0,      /*!< open access point */
+		WEP = 0x1,      /*!< phrase conforms to WEP */
+		WPA = 0x2,      /*!< phrase conforms to WPA */
+		WPA2 = 0x3,      /*!< phrase conforms to WPA2 */
+		WPA_WPA2 = 0x4,      /*!< phrase conforms to WPA/WPA2 */
+		PAP = 0x5,      /*!< phrase conforms to PPP authentication context */
+		CHAP = 0x6,      /*!< phrase conforms to PPP authentication context */
+		UNKNOWN = 0xFF,     /*!< unknown/unsupported security in scan results */
+	}
+
+	[ComVisible(true), StructLayout(LayoutKind.Sequential, Pack = 4)]
+	public struct nsapi_wifi_ap
+	{
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 33)]
+		public byte[] ssid;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+		public byte[] bssid;
+		public NSAPI_SECURITY security;
+		public sbyte rssi;
+		public byte channel;
+	}
+
+	[ComVisible(true), UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void SocketAttachCallback(IntPtr data);
+
+	[ComVisible(true), UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void WifiStatusCallback(IntPtr self, byte wifi_status);
+
+	[ComVisible(true)]
 	public interface IESP32
 	{
 		int get_free_id();
@@ -307,9 +338,9 @@ namespace TestBench
 		bool open([In, MarshalAs(UnmanagedType.LPStr)]string type, int id, [In, MarshalAs(UnmanagedType.LPStr)]string addr, int port, int opt = 0);
 		bool close(int id, bool accept_id);
 		bool accept(out int p_id);
-		bool send(int id, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] data, uint len);
-		bool recv(int id, [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] data, uint len);
-		void socket_attach(int id, IntPtr callback, IntPtr data);
+		bool send(int id, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] data, int len);
+		int recv(int id, [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] data, int len, int timeout);
+		void socket_attach(int id, [MarshalAs(UnmanagedType.FunctionPtr)]SocketAttachCallback callback, IntPtr data);
 		bool socket_setopt_i(int id, [In, MarshalAs(UnmanagedType.LPStr)]string optname, int optval);
 		bool socket_setopt_s(int id, [In, MarshalAs(UnmanagedType.LPStr)]string optname, [In, MarshalAs(UnmanagedType.LPStr)]string optval);
 		bool socket_getopt_i(int id, [In, MarshalAs(UnmanagedType.LPStr)]string optname, out int optval);
@@ -318,24 +349,24 @@ namespace TestBench
 		bool cre_server(ushort portno);
 		bool del_server();
 
-		void attach_wifi_status(IntPtr callback);
+		void attach_wifi_status(IntPtr status_self, [MarshalAs(UnmanagedType.FunctionPtr)]WifiStatusCallback callback);
 
 		bool dhcp(bool enabled, int mode);
 		bool set_network([In, MarshalAs(UnmanagedType.LPStr)]string ip_address, [In, MarshalAs(UnmanagedType.LPStr)]string netmask, [In, MarshalAs(UnmanagedType.LPStr)]string gateway);
 		bool connect([In, MarshalAs(UnmanagedType.LPStr)]string ap, [In, MarshalAs(UnmanagedType.LPStr)]string passPhrase);
 		bool disconnect();
-		bool getMACAddress([Out, MarshalAs(UnmanagedType.LPStr, SizeParamIndex = 1)]string buf, int len);
-		bool getIPAddress([Out, MarshalAs(UnmanagedType.LPStr, SizeParamIndex = 1)]string buf, int len);
-		bool getGateway([Out, MarshalAs(UnmanagedType.LPStr, SizeParamIndex = 1)]string buf, int len);
-		bool getNetmask([Out, MarshalAs(UnmanagedType.LPStr, SizeParamIndex = 1)]string buf, int len);
+		bool getMACAddress([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] buf, int len);
+		bool getIPAddress([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] buf, int len);
+		bool getGateway([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] buf, int len);
+		bool getNetmask([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)]byte[] buf, int len);
 		byte getRSSI();
-		void scan(IntPtr callback, IntPtr usrdata);
+		int scan([In, Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.Struct)]nsapi_wifi_ap[] res, int limit);
 		bool ntp(bool enabled, int timezone, [In, MarshalAs(UnmanagedType.LPStr)]string server0, [In, MarshalAs(UnmanagedType.LPStr)]string server1, [In, MarshalAs(UnmanagedType.LPStr)]string server2);
 		long ntp_time();
 		bool esp_time(out int sec, out int usec);
 		int ping([In, MarshalAs(UnmanagedType.LPStr)]string addr);
 		bool mdns(bool enabled, [In, MarshalAs(UnmanagedType.LPStr)]string hostname, [In, MarshalAs(UnmanagedType.LPStr)]string service, ushort portno);
-		bool mdns_query([In, MarshalAs(UnmanagedType.LPStr)]string hostname, [Out, MarshalAs(UnmanagedType.LPStr, SizeParamIndex = 2)]string addr, int len);
+		bool mdns_query([In, MarshalAs(UnmanagedType.LPStr)]string hostname, [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] addr, int len);
 		bool sleep(bool enebled);
 	}
 
