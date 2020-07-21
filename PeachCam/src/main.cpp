@@ -525,7 +525,7 @@ int main()
 	TouchKey::touch_pos_t touch_pos[TOUCH_NUM];
 
 	/* Reset touch IC */
-	TouckKey_LCD_shield touch(P4_0, P2_13, I2C_SDA, I2C_SCL);
+	TouchKey_LCD_shield touch(P4_0, P2_13, I2C_SDA, I2C_SCL);
 	touch.Reset();
 
 	globalState.storage->wait_connect();

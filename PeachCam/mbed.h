@@ -40,7 +40,7 @@ int mkdir(const char *name, mode_t mode);
 
 __declspec(dllimport) extern ITestBench *TestBench;
 
-#define TouckKey_LCD_shield TouchKey_4_3inch
+#define TouchKey_LCD_shield TouchKey_4_3inch
 
 int set_time(time_t tm);
 

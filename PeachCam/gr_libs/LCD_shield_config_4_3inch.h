@@ -6,7 +6,7 @@
 #include "TouchKey_4_3inch.h"
 
 #define LcdCfgTbl_LCD_shield  LcdCfgTbl_4_3inch
-#define TouckKey_LCD_shield   TouchKey_4_3inch
+#define TouchKey_LCD_shield   TouchKey_4_3inch
 
 #endif
 

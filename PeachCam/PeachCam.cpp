@@ -189,7 +189,7 @@ int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
 		p++;
 	}
 
-	if ((found == 0) && (argv[0] != '\0'))
+	if ((found == 0) && (*argv[0] != '\0'))
 		printf("Unknown command found.\n");
 
 	return result;
