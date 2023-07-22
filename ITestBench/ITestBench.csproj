@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TestBench</RootNamespace>
     <AssemblyName>ITestBench</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,8 +52,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd $(TargetDir)
-set WINSDK="C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools"
-%25WINSDK%25\Tlbexp $(TargetFileName) /nologo /win32 /out:$(TargetName)32.tlb
-%25WINSDK%25\Tlbexp $(TargetFileName) /nologo /win64 /out:$(TargetName)64.tlb</PostBuildEvent>
+"$(SDK40ToolsPath)Tlbexp" $(TargetFileName) /nologo /win32 /out:$(TargetName)32.tlb
+"$(SDK40ToolsPath)Tlbexp" $(TargetFileName) /nologo /win64 /out:$(TargetName)64.tlb</PostBuildEvent>
   </PropertyGroup>
 </Project>

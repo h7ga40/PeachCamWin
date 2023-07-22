@@ -259,3 +259,13 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/LibMPSSE/AN_178_User Guide for LibMPSSE-SPI.pdf
+/LibMPSSE/ReleaseNotes-SPI.txt
+/LibMPSSE/samples/SPI
+/LibMPSSE/include
+/LibMPSSE/lib/linux/i386
+/LibMPSSE/lib/windows/i386/libMPSSE.lib
+/LibMPSSE/lib/windows/i386/libMPSSE.dll
+/LibMPSSE/lib/windows/i386/libMPSSE.a
+/LibMPSSE_
+/.svn
